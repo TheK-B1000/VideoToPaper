@@ -1,0 +1,12 @@
+[
+  {
+    "text": "Today we are talking about multi-agent reinforcement learning.",
+    "start_time": 0.0,
+    "end_time": 5.2
+  },
+  {
+    "text": "One challenge is non-stationarity because each agent is learning while others are also changing.",
+    "start_time": 5.2,
+    "end_time": 13.8
+  }
+]

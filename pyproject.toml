@@ -1,0 +1,38 @@
+[project]
+name = "videotopaper"
+version = "0.1.0"
+description = "A capstone AI engineering project for turning video transcripts into timestamp-grounded research briefs."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.7",
+]
+ai = [
+  "openai>=1.0",
+  "python-dotenv>=1.0",
+]
+api = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+]
+rag = [
+  "chromadb>=0.5",
+]
+ui = [
+  "streamlit>=1.38",
+]
+ingestion = [
+  "youtube-transcript-api>=0.6",
+  "yt-dlp>=2025.1.15",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
