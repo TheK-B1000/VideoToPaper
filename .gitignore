@@ -12,6 +12,7 @@ htmlcov/
 data/processed/
 data/raw/
 reports/
+.tmp/
 
 .DS_Store
 Thumbs.db

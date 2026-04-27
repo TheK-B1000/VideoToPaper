@@ -8,17 +8,29 @@ Use this file at the end of each work session. Keep entries short, concrete, and
 
 YYYY-MM-DD
 
-### Feature
+### Week / Module
 
-What did you build?
+Which part of the Inquiry Engine did you work on?
+
+### Source Under Test
+
+Which video, transcript, or mock fixture did you use?
+
+### Objective
+
+What did you build or change?
+
+### Manual Attempt Notes
+
+What did you try before using AI help?
+
+### AI Assistance Used
+
+What review, debugging, or edge-case help did you ask for after the first draft existed?
 
 ### Input and Output Contract
 
 What data shape enters the component, and what data shape leaves it?
-
-### Design Notes
-
-Why did you choose this approach?
 
 ### Tests Added
 
@@ -26,8 +38,16 @@ What success paths, edge cases, and failure modes did you cover?
 
 ### What Broke
 
-What errors or misunderstandings came up?
+What errors, surprises, or misunderstandings came up?
 
-### Interview Explanation
+### Proof Of Competency
 
-How would you explain this feature to a hiring manager?
+How would you explain this feature to a hiring manager without looking at the code?
+
+### Artifact Checklist
+
+- Working code
+- At least three tests
+- README or docs update
+- Architecture or data-flow sketch
+- Interview explanation

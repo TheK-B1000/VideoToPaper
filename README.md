@@ -1,21 +1,18 @@
-# VideoToPaper
+# The Inquiry Engine
 
-VideoToPaper is a capstone AI engineering project that turns long-form video transcripts into structured, timestamp-grounded research briefs.
+The Inquiry Engine is an applied AI engineering capstone for turning a YouTube video into an educational research paper that takes the speaker seriously, checks empirical claims against authoritative literature, and points the reader toward further inquiry.
 
-This repository is scaffolded for the roadmap in `AI_Engineer_Capstone_Roadmap.docx`. The first milestone is intentionally small: build the transcript data structure and chunking algorithm by hand before adding LLMs, YouTube ingestion, databases, APIs, retrieval, or UI.
+This repository still uses the `videotopaper` package path for continuity, but the scaffold now reflects the newer Inquiry Engine plan. The current setup is aimed at week 1 and week 2 of that plan: source provenance, speaker context, transcript offsets, chunking, and argument-structure handoff.
 
-## Current Status
+## Current Setup
 
-The repo is set up for Week 1 and Week 2 work:
-
-- Canonical mock transcript data in `data/mock_transcript.json`
-- Python package skeleton in `src/videotopaper`
-- Starter stubs for transcript cleaning, validation, persistence, and chunking
-- Smoke tests in `tests`
-- Windows setup and test scripts in `scripts`
-- Development log template in `docs/development_log.md`
-
-The core feature functions currently raise `NotImplementedError` on purpose. Implement them manually as you work through the curriculum.
+- `data/mock_video.json` models a source registry entry with speaker context.
+- `data/mock_transcript.json` models a transcript document with `source_text` plus offset-preserving segments.
+- `src/videotopaper/sources.py` stubs the source-ingestion work for week 1.
+- `src/videotopaper/transcripts.py` stubs offset-aware transcript loading and validation for week 1.
+- `src/videotopaper/chunking.py` and `src/videotopaper/arguments.py` stub the week 2 chunking and argument-mapping handoff.
+- `docs/capstone_plan.md` summarizes the new 10-week roadmap inside the repo.
+- `docs/development_log.md` mirrors the new weekly operating rhythm and proof-of-competency standard.
 
 ## Project Layout
 
@@ -23,6 +20,7 @@ The core feature functions currently raise `NotImplementedError` on purpose. Imp
 VideoToPaper/
   data/
     mock_transcript.json
+    mock_video.json
   docs/
     capstone_plan.md
     development_log.md
@@ -32,7 +30,9 @@ VideoToPaper/
   src/
     videotopaper/
       __init__.py
+      arguments.py
       chunking.py
+      sources.py
       transcripts.py
   tests/
     test_scaffold.py
@@ -47,10 +47,18 @@ Install Python 3.11 or newer, then run:
 .\scripts\setup.ps1
 ```
 
+The setup script creates `.venv`, installs the local package plus dev tooling when `pip` is available, and still runs the scaffold tests if that install step has to be skipped.
+
 If Python is not on your PATH, pass the interpreter explicitly:
 
 ```powershell
 .\scripts\setup.ps1 -Python "C:\Path\To\python.exe"
+```
+
+If you need an offline bootstrap without package installs:
+
+```powershell
+.\scripts\setup.ps1 -WithoutPip
 ```
 
 Activate the virtual environment:
@@ -59,63 +67,72 @@ Activate the virtual environment:
 .\.venv\Scripts\Activate.ps1
 ```
 
-Run tests:
+Run tests again at any point:
 
 ```powershell
 .\scripts\test.ps1
 ```
 
-If PowerShell blocks local scripts because they are unsigned, run the same command with a one-time bypass:
+If PowerShell blocks local scripts because they are unsigned, use a one-time bypass:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1
 ```
 
-The starter scaffold has no third-party Python dependencies. Later roadmap weeks will add optional dependency groups from `pyproject.toml`.
+Optional extras are grouped by the later roadmap phases:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[ingestion,ai,retrieval,storage,api,ui]"
+```
 
 ## Week 1 Starting Point
 
-Implement these functions in `src/videotopaper/transcripts.py`:
+Implement these functions manually:
 
-- `clean_text`
-- `validate_segment`
-- `load_transcript`
-- `save_transcript`
+- `register_video` in `src/videotopaper/sources.py`
+- `capture_speaker_context` in `src/videotopaper/sources.py`
+- `load_transcript` in `src/videotopaper/transcripts.py`
+- `clean_text` in `src/videotopaper/transcripts.py`
+- `validate_segment` in `src/videotopaper/transcripts.py`
 
-Use the canonical segment shape:
-
-```json
-{
-  "text": "Reinforcement learning is useful for sequential decision making.",
-  "start_time": 12.4,
-  "end_time": 18.9
-}
-```
-
-## Week 2 Starting Point
-
-Implement `chunk_transcript` in `src/videotopaper/chunking.py`.
-
-Expected output shape:
+The starter data now assumes a richer ingestion contract than the old scaffold:
 
 ```json
 {
-  "chunk_id": "chunk_001",
-  "text": "...",
-  "start_time": 12.4,
-  "end_time": 145.2,
-  "word_count": 650
+  "video_id": "vid_001",
+  "title": "What Most People Get Wrong About Reinforcement Learning",
+  "url": "https://www.youtube.com/watch?v=example123",
+  "duration_seconds": 2840,
+  "speaker": {
+    "name": "Dr. Jane Smith",
+    "credentials": "Professor of Computer Science, Stanford",
+    "stated_expertise": ["reinforcement learning", "multi-agent systems"],
+    "stated_motivations": "Concerned about misconceptions in popular AI discourse"
+  },
+  "transcript_origin": "youtube_auto",
+  "ingested_at": "2026-04-27T10:00:00Z"
 }
 ```
+
+Transcript segments are now expected to preserve character offsets against the original transcript text.
+
+## Week 2 Handoff
+
+Implement these functions manually:
+
+- `chunk_transcript` in `src/videotopaper/chunking.py`
+- `extract_argument_map` in `src/videotopaper/arguments.py`
+
+Week 2 is no longer just about grouping sentences by word count. The chunker now needs to preserve timestamps and character offsets so the argument map can anchor the speaker's thesis, supporting points, qualifications, and examples back to the source.
 
 ## Manual-First Rule
 
-For each feature:
+For each component:
 
 1. Specify the behavior in plain language.
 2. Define the input and output contract.
-3. Attempt the implementation manually first.
-4. Use AI for review, debugging, edge cases, and refactoring after the first draft exists.
+3. Spend at least 30 minutes on a manual first draft.
+4. Use AI for review, debugging, edge cases, and refactoring after that draft exists.
 5. Add tests.
-6. Write a short development log entry explaining the design.
+6. Write a short development log entry explaining the design and what you learned.

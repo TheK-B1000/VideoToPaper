@@ -1,52 +1,53 @@
-# Capstone Plan
+# The Inquiry Engine Plan
 
 ## Goal
 
-Build a production-minded Video-to-Research AI Assistant that turns a video transcript into a structured, evidence-grounded research brief.
+Build a video-to-paper pipeline that ingests a YouTube video, charitably reconstructs the speaker's argument, verifies empirical claims against authoritative literature, and produces an educational research paper for further inquiry.
 
-## Roadmap
+## Output Standard
 
-1. Transcript ingestion and cleaning
-2. Transcript chunking
-3. LLM summarization pipeline
-4. Structured claim extraction
-5. Relational data modeling
-6. FastAPI backend
-7. Vector search and retrieval-augmented generation
-8. Research brief generation
-9. Evaluation and quality assurance
-10. Streamlit demo and portfolio polish
+The output should read like a thoughtful editor took the speaker seriously, checked the literature, and wrote for a reader who wants to understand. If it reads like a takedown or an endorsement, the system has failed.
 
-## Architectural Pattern
+## Core Posture
 
-```text
-messy input -> clean structured data -> AI processing -> evidence-grounded output -> usable product
-```
+- Charitable reconstruction of the speaker's perspective
+- Evidence-balanced retrieval rather than confirmation seeking
+- Reader-centered paper structure with explicit limits and further reading
+- Verifiable citations that resolve to real sources
 
-## Early Milestones
+## Weekly Roadmap
 
-Week 1 establishes a canonical transcript segment:
+1. Source and speaker ingestion with provenance plus transcript offset preservation
+2. Chunking plus argument-structure extraction
+3. Claim classification and verification-strategy routing
+4. Steelmanning the speaker's perspective
+5. Tiered external evidence retrieval with balance scoring
+6. Relational schema design plus a FastAPI backend
+7. Evidence integration and per-claim adjudication
+8. Educational paper generation
+9. Three-axis evaluation: steelman fidelity, evidence balance, educational quality
+10. Frontend, demo, and portfolio packaging
 
-```json
-{
-  "text": "Reinforcement learning is useful for sequential decision making.",
-  "start_time": 12.4,
-  "end_time": 18.9
-}
-```
+## Failure Modes To Guard Against
 
-Week 2 groups timestamped segments into traceable chunks:
+- `Strawmanning`: the paper describes a version of the speaker's argument the speaker would not recognize.
+- `Cherry-picking`: the evidence review represents only the literature that supports a preferred verdict.
 
-```json
-{
-  "chunk_id": "chunk_001",
-  "text": "...",
-  "start_time": 12.4,
-  "end_time": 145.2,
-  "word_count": 650
-}
-```
+## Current Repository Focus
+
+This scaffold is intentionally limited to the first two weeks of the plan:
+
+- `data/mock_video.json` captures source provenance and speaker context.
+- `data/mock_transcript.json` captures transcript text plus character-offset-preserving segments.
+- `src/videotopaper/sources.py` and `src/videotopaper/transcripts.py` cover week 1 starter work.
+- `src/videotopaper/chunking.py` and `src/videotopaper/arguments.py` cover the week 2 handoff.
 
 ## Completion Standard
 
-A feature is complete only when you can explain how it works, why the design was chosen, and how it would be extended without referring to the code.
+A component is complete when you can explain:
+
+1. How it works
+2. Why this design was chosen
+3. How it would be extended
+
+Do that without referring to the code.

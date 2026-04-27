@@ -1,0 +1,17 @@
+{
+  "video_id": "vid_001",
+  "title": "What Most People Get Wrong About Reinforcement Learning",
+  "url": "https://www.youtube.com/watch?v=example123",
+  "duration_seconds": 2840,
+  "speaker": {
+    "name": "Dr. Jane Smith",
+    "credentials": "Professor of Computer Science, Stanford",
+    "stated_expertise": [
+      "reinforcement learning",
+      "multi-agent systems"
+    ],
+    "stated_motivations": "Concerned about misconceptions in popular AI discourse"
+  },
+  "transcript_origin": "youtube_auto",
+  "ingested_at": "2026-04-27T10:00:00Z"
+}
