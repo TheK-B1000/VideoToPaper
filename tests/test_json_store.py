@@ -7,7 +7,6 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from src.data.json_store import load_json, save_json
 
-
 def test_save_and_load_json():
     file_path = "data/outputs/test_json_store.json"
     data = {
