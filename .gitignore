@@ -9,8 +9,18 @@ __pycache__/
 htmlcov/
 
 .env
-data/processed/
-data/raw/
+
+# Keep layout; ignore generated/large files under these trees
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/outputs/*
+!data/outputs/.gitkeep
+
+logs/runs/*
+!logs/runs/.gitkeep
+
 reports/
 .tmp/
 

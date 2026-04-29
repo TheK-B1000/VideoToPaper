@@ -1,0 +1,1 @@
+# VideoToPaper — add pinned dependencies here (Python >= 3.11).
