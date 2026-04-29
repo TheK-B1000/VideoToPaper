@@ -78,8 +78,35 @@ def validate_segment(segment: dict, config=None) -> dict:
         start_time = float(start_time)
         end_time = float(end_time)
 
-    return {
-        "text": cleaned_text,
+    validated_segment = {
+        "text": text_raw,
+        "cleaned_text": cleaned_text,
         "start_time": start_time,
         "end_time": end_time,
     }
+
+    if "char_start" in segment or "char_end" in segment:
+        if "char_start" not in segment:
+            raise ValueError("missing required offset field: char_start")
+        if "char_end" not in segment:
+            raise ValueError("missing required offset field: char_end")
+
+        char_start = segment["char_start"]
+        char_end = segment["char_end"]
+
+        if not isinstance(char_start, int):
+            raise TypeError("char_start must be an integer")
+
+        if not isinstance(char_end, int):
+            raise TypeError("char_end must be an integer")
+
+        if char_start < 0:
+            raise ValueError("char_start cannot be negative")
+
+        if char_end <= char_start:
+            raise ValueError("char_end must be greater than char_start")
+
+        validated_segment["char_start"] = char_start
+        validated_segment["char_end"] = char_end
+    
+    return validated_segment

@@ -24,7 +24,15 @@ def process_transcript(raw_transcript: list, config=None) -> list:
     cleaned_segments = []
 
     for segment in raw_transcript:
-        cleaned_segment = validate_segment(segment, config)
-        cleaned_segments.append(cleaned_segment)
+        validated = validate_segment(segment, config)
+        out = {
+            "text": validated["cleaned_text"],
+            "start_time": validated["start_time"],
+            "end_time": validated["end_time"],
+        }
+        if "char_start" in validated:
+            out["char_start"] = validated["char_start"]
+            out["char_end"] = validated["char_end"]
+        cleaned_segments.append(out)
 
     return cleaned_segments
