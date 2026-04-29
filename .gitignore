@@ -20,6 +20,7 @@ data/outputs/*
 
 logs/runs/*
 !logs/runs/.gitkeep
+logs/test_runs/
 
 reports/
 .tmp/
