@@ -25,16 +25,61 @@ def test_process_transcript_accepts_valid_transcript():
 
     assert result == [
         {
-            "text": "reinforcement learning is useful",
+            "text": "  Um, reinforcement    learning is useful uh! ",
+            "cleaned_text": "reinforcement learning is useful",
             "start_time": 12.4,
             "end_time": 18.9
         },
         {
             "text": "The agent learns from rewards.",
+            "cleaned_text": "The agent learns from rewards.",
             "start_time": 19.0,
             "end_time": 24.2
         }
     ]
+
+
+def test_process_transcript_preserves_offsets():
+    raw_transcript = [
+        {
+            "text": "  Um, reinforcement learning is useful uh! ",
+            "start_time": 12.4,
+            "end_time": 18.9,
+            "char_start": 0,
+            "char_end": 42
+        }
+    ]
+
+    result = process_transcript(raw_transcript)
+
+    assert result[0]["text"] == "  Um, reinforcement learning is useful uh! "
+    assert result[0]["cleaned_text"] == "reinforcement learning is useful"
+    assert result[0]["char_start"] == 0
+    assert result[0]["char_end"] == 42
+
+
+def test_process_transcript_offsets_still_match_source_text():
+    source_text = (
+        "Intro.   Um, reinforcement learning is useful uh! "
+        "The agent learns from rewards."
+    )
+    segment_text = "  Um, reinforcement learning is useful uh! "
+    char_start = source_text.index(segment_text)
+    char_end = char_start + len(segment_text)
+    raw_transcript = [
+        {
+            "text": segment_text,
+            "start_time": 12.4,
+            "end_time": 18.9,
+            "char_start": char_start,
+            "char_end": char_end
+        }
+    ]
+
+    result = process_transcript(raw_transcript)
+
+    assert source_text[result[0]["char_start"]:result[0]["char_end"]] == result[0]["text"]
+    assert result[0]["cleaned_text"] == "reinforcement learning is useful"
 
 
 def test_process_transcript_rejects_non_list():
@@ -75,6 +120,8 @@ def test_process_transcript_rejects_invalid_segment():
 
 
 test_process_transcript_accepts_valid_transcript()
+test_process_transcript_preserves_offsets()
+test_process_transcript_offsets_still_match_source_text()
 test_process_transcript_rejects_non_list()
 test_process_transcript_rejects_empty_list()
 test_process_transcript_rejects_invalid_segment()

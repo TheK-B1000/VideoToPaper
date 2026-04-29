@@ -26,7 +26,8 @@ def process_transcript(raw_transcript: list, config=None) -> list:
     for segment in raw_transcript:
         validated = validate_segment(segment, config)
         out = {
-            "text": validated["cleaned_text"],
+            "text": validated["text"],
+            "cleaned_text": validated["cleaned_text"],
             "start_time": validated["start_time"],
             "end_time": validated["end_time"],
         }
