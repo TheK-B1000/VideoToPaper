@@ -1,6 +1,67 @@
-def main() -> None:
-    """Application entry point."""
-    pass
+from src.data.json_store import load_json
+from src.ops.run_tracker import (
+    create_run_log,
+    record_metric,
+    record_error,
+    finish_run_log,
+    save_run_log
+)
+from src.source.ingestion import ingest_source
+
+def main():
+    config_path = "configs/default_config.json"
+    
+    transcript_path = "data/raw/raw_transcript.json"
+    registry_output_path = "data/outputs/video_registry.json"
+    processed_transcript_output_path = "data/processed/processed_transcript.json"
+
+    run_log = create_run_log(
+        config_path=config_path,
+        input_path=transcript_path,
+        output_path=processed_transcript_output_path,
+        pipeline_name="source_ingestion"
+    )
+
+    try:
+        config = load_json(config_path)
+
+        result = ingest_source(
+            video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            title="What Most People Get Wrong About Reinforcement Learning",
+            duration_seconds=2840,
+            transcript_path=transcript_path,
+            registry_output_path=registry_output_path,
+            processed_transcript_output_path=processed_transcript_output_path,
+            speaker_name="Dr. Jane Smith",
+            speaker_credentials="Professor of Computer Science",
+            speaker_stated_motivations="Concerned about misconceptions in popular AI discourse",
+            speaker_notes="Mock source used for Week 1 ingestion testing",
+            transcript_origin="mock",
+            config=config,
+        )
+
+        processed_segments = result["transcript_record"]["segments"]
+        
+        record_metric(run_log, "processed_segment_count", len(processed_segments))
+        record_metric(run_log, "source_text_char_count", len(result["transcript_record"]["source_text"]))
+        record_metric(run_log, "video_duration_seconds", result["video_record"]["duration_seconds"])
+
+        finish_run_log(run_log, "success")
+
+        print("Source ingestion complete")
+        print(f"Registry output: {registry_output_path}")
+        print(f"Processed transcript output: {processed_transcript_output_path}")
+        print(f"Segments processed: {len(processed_segments)}")
+    
+    except Exception as error:
+        record_error(run_log, str(error))
+        finish_run_log(run_log, "failed")
+        raise
+        
+    finally:
+        save_run_path = save_run_log(run_log)
+        print(f"Run log saved to: {save_run_path}")
+    
 
 
 if __name__ == "__main__":

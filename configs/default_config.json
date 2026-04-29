@@ -1,1 +1,40 @@
-{}
+{
+    "project": {
+        "name": "VideoToPaper",
+        "version": "0.1.0",
+        "environment": "development"
+    },
+    "paths": {
+        "raw_data_dir": "data/raw",
+        "processed_data_dir": "data/processed",
+        "outputs_dir": "data/outputs",
+        "logs_dir": "logs/runs"
+    },
+    "transcript": {
+        "remove_bracket_tags": true,
+        "remove_fillers": true,
+        "fillers": ["um", "uh"],
+        "allow_empty_text": false,
+        "required_segment_fields": ["text", "start_time", "end_time"]
+      },
+      "validation": {
+        "allow_negative_timestamps": false,
+        "require_end_time_after_start_time": true,
+        "coerce_timestamps_to_float": true
+      },
+      "chunking": {
+        "max_chunk_seconds": 120,
+        "max_chunk_chars": 2000,
+        "overlap_seconds": 5
+      },
+      "ml": {
+        "summarizer": "mock",
+        "model_name": "mock_summarizer_v1",
+        "temperature": 0.2
+      },
+      "ops": {
+        "track_runs": true,
+        "log_level": "INFO"
+      }
+
+}
