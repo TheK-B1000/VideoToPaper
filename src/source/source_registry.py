@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
 
+from src.data.json_store import load_json, save_json
 from src.core.embed_builder import (
     build_embed_base_url,
     extract_youtube_video_id
 )
+from src.data.json_store import load_json, save_json
 
 def register_video(
     url: str,
@@ -69,3 +71,76 @@ def register_video(
         "transcript_origin": transcript_origin.strip(),
         "ingested_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def save_registered_video(video_record: dict, file_path: str) -> None:
+    """
+    Save a registered video source record to disk.
+
+    Args:
+        video_record: Registered video metadata dictionary.
+        file_path: Destination JSON path.
+
+    Raises:
+        TypeError: If inputs are invalid.
+        ValueError: If the video record is missing required fields.
+    """
+    if not isinstance(video_record, dict):
+        raise TypeError("video_record must be a dictionary")
+    
+    if not isinstance(file_path, str):
+        raise TypeError("file_path must be a string")
+    
+    required_fields = [
+        "video_id",
+        "title",
+        "url",
+        "embed_base_url",
+        "duration_seconds",
+        "speaker",
+        "transcript_origin",
+        "ingested_at",
+    ]
+
+    for field in required_fields:
+        if field not in video_record:
+            raise ValueError(f"video_record missing required field: {field}")
+
+    save_json(video_record, file_path)
+
+
+def load_registered_video(file_path: str) -> dict:
+    """
+    Load a registered video source record from disk.
+
+    Args:
+        file_path: Source registry JSON path.
+
+    Returns:
+        Registered video metadata dictionary.
+
+    Raises:
+        TypeError: If file_path is not a string.
+        ValueError: If loaded record is malformed.
+    """
+    video_record = load_json(file_path)
+
+    if not isinstance(video_record, dict):
+        raise ValueError("registered video file must contain a dictionary")
+
+    required_fields = [
+        "video_id",
+        "title",
+        "url",
+        "embed_base_url",
+        "duration_seconds",
+        "speaker",
+        "transcript_origin",
+        "ingested_at",
+    ]
+
+    for field in required_fields:
+        if field not in video_record:
+            raise ValueError(f"video_record missing required field: {field}")
+
+    return video_record

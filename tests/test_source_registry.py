@@ -6,7 +6,11 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from src.source.source_registry import register_video
+from src.source.source_registry import (
+    register_video,
+    save_registered_video,
+    load_registered_video,
+)
 
 
 def test_register_video_accepts_valid_video_source():
@@ -92,10 +96,39 @@ def test_register_video_rejects_invalid_url_or_id():
         pass
 
 
+def test_registered_video_can_be_saved_and_reloaded_with_speaker_intact():
+    speaker = {
+        "name": "Dr. Jane Smith",
+        "credentials": "Professor of Computer Science",
+        "stated_motivations": "Concerned about misconceptions in popular AI discourse",
+        "notes": "Long-form educational interview"
+    }
+
+    video_record = register_video(
+        url="https://www.youtube.com/watch?v=ABC123XYZ89",
+        title="What Most People Get Wrong About Reinforcement Learning",
+        duration_seconds=2840,
+        speaker=speaker,
+        transcript_origin="youtube_auto"
+    )
+
+    file_path = "data/outputs/test_registered_video.json"
+
+    save_registered_video(video_record, file_path)
+    loaded_record = load_registered_video(file_path)
+
+    assert Path(file_path).exists()
+    assert loaded_record["video_id"] == "ABC123XYZ89"
+    assert loaded_record["speaker"] == speaker
+    assert loaded_record["embed_base_url"] == "https://www.youtube-nocookie.com/embed/ABC123XYZ89"
+    assert loaded_record["transcript_origin"] == "youtube_auto"
+
+
 test_register_video_accepts_valid_video_source()
 test_register_video_rejects_empty_title()
 test_register_video_rejects_bad_duration()
 test_register_video_rejects_non_dict_speaker()
 test_register_video_rejects_invalid_url_or_id()
+test_registered_video_can_be_saved_and_reloaded_with_speaker_intact()
 
 print("All source_registry tests passed.")
