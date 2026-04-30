@@ -11,8 +11,10 @@
     "chunking": {
       "max_chunk_chars": 1200,
       "min_chunk_chars": 400,
+      "overlap_chars": 150,
       "prefer_sentence_boundaries": true,
-      "preserve_raw_offsets": true
+      "preserve_raw_offsets": true,
+      "overlap_reuses_source_offsets": true
     },
     "anchors": {
       "allowed_types": [
