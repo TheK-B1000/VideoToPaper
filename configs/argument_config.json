@@ -1,0 +1,43 @@
+{
+    "stage": "argument_structure",
+    "input_path": "data/outputs/processed_transcript.json",
+    "output_paths": {
+      "chunks": "data/outputs/chunks.json",
+      "argument_map": "data/outputs/argument_map.json",
+      "anchor_moments": "data/outputs/anchor_moments.json",
+      "run_report_dir": "data/runs",
+      "run_report_prefix": "argument_structure"
+    },
+    "chunking": {
+      "max_chunk_chars": 1200,
+      "min_chunk_chars": 400,
+      "prefer_sentence_boundaries": true,
+      "preserve_raw_offsets": true
+    },
+    "anchors": {
+      "allowed_types": [
+        "verbal_claim",
+        "definition",
+        "example",
+        "qualification",
+        "summary_claim",
+        "visual_reference",
+        "diagram_or_figure",
+        "demo"
+      ],
+      "require_timestamp": true,
+      "require_char_offsets": true
+    },
+    "llm": {
+      "enabled": false,
+      "model": null,
+      "temperature": 0,
+      "structured_output_required": true
+    },
+    "safety": {
+      "drop_invalid_offsets": true,
+      "drop_unverifiable_anchors": true,
+      "reject_external_knowledge": true,
+      "require_supporting_point_anchor": true
+    }
+  }

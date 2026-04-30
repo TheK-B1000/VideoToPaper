@@ -36,7 +36,7 @@ def create_run_log(
     if not isinstance(input_path, str):
         raise TypeError("input_path must be a string")
 
-    if not isinstance(output_path, str):
+    if not isinstance(output_path, (str, dict)):
         raise TypeError("output_path must be a string")
 
     if not isinstance(pipeline_name, str):
