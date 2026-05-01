@@ -52,31 +52,70 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
         chunk_dicts = [chunk.to_dict() for chunk in chunks]
 
         save_json(chunk_dicts, chunks_path)
-        record_metric(run_log, "chunk_count", len(chunk_dicts))
-        finish_run_log(run_log, "success")
 
-    except Exception as e:
-        record_error(run_log, str(e))
-        finish_run_log(run_log, "failed")
+        record_metric(run_log, "input_segment_count", len(segments))
+        record_metric(run_log, "chunk_count", len(chunk_dicts))
+
+        if chunk_dicts:
+            avg_chunk_chars = sum(
+                len(chunk["source_text"])
+                for chunk in chunk_dicts
+            ) / len(chunk_dicts)
+
+            record_metric(run_log, "avg_chunk_chars", avg_chunk_chars)
+            record_metric(
+                run_log,
+                "min_chunk_chars",
+                min(len(chunk["source_text"]) for chunk in chunk_dicts)
+            )
+            record_metric(
+                run_log,
+                "max_chunk_chars",
+                max(len(chunk["source_text"]) for chunk in chunk_dicts)
+            )
+        
+        finish_run_log(run_log, status="success")
+
+    except Exception as error:
+        record_error(run_log, str(error))
+        finish_run_log(run_log, status="failed")
+        save_run_log(run_log)
         raise
 
-    finally:
-        save_run_log(run_log)
+    save_run_log(run_log)
 
     return run_log
 
 
 def _extract_segments(transcript_data: dict) -> list[dict]:
-    """Normalize stored transcript JSON into chunker-facing segment dicts."""
+    """
+    Extract transcript segments from processed transcript data.
+
+    Supports a few likely shapes so the runner is tolerant while the project evolves.
+    Normalizes fields for :func:`chunk_transcript_segments`.
+    """
     if not isinstance(transcript_data, dict):
         raise TypeError("transcript_data must be a dictionary")
 
-    segments = transcript_data.get("segments")
-    if not isinstance(segments, list):
-        raise ValueError("transcript_data must contain a segments list")
+    if "segments" in transcript_data:
+        raw_list = transcript_data["segments"]
+    elif "transcript" in transcript_data and isinstance(
+        transcript_data["transcript"], list
+    ):
+        raw_list = transcript_data["transcript"]
+    elif "processed_segments" in transcript_data:
+        raw_list = transcript_data["processed_segments"]
+    else:
+        raise ValueError(
+            "Could not find transcript segments. Expected one of: "
+            "'segments', 'transcript', or 'processed_segments'."
+        )
+
+    if not isinstance(raw_list, list):
+        raise TypeError("transcript segments must be a list")
 
     normalized: list[dict] = []
-    for index, seg in enumerate(segments):
+    for index, seg in enumerate(raw_list):
         if not isinstance(seg, dict):
             raise TypeError("each segment must be a dictionary")
 

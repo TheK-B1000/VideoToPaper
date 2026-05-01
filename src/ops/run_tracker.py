@@ -15,7 +15,7 @@ def _utc_now_iso() -> str:
 def create_run_log(
     config_path: str,
     input_path: str,
-    output_path: str,
+    output_path: str | dict,
     pipeline_name: str = "transcript_processing"
 ) -> dict:
     """
@@ -24,7 +24,7 @@ def create_run_log(
     Args:
         config_path: Path to the config file used for this run.
         input_path: Path to the raw input file.
-        output_path: Path where the output will be saved.
+        output_path: Single output path string, or a dict of named outputs (e.g. chunks / maps).
         pipeline_name: Name of the pipeline being executed.
 
     Returns:
@@ -37,7 +37,7 @@ def create_run_log(
         raise TypeError("input_path must be a string")
 
     if not isinstance(output_path, (str, dict)):
-        raise TypeError("output_path must be a string")
+        raise TypeError("output_path must be a string or dictionary")
 
     if not isinstance(pipeline_name, str):
         raise TypeError("pipeline_name must be a string")
@@ -48,8 +48,14 @@ def create_run_log(
     if not input_path.strip():
         raise ValueError("input_path cannot be empty")
 
-    if not output_path.strip():
-        raise ValueError("output_path cannot be empty")
+    if isinstance(output_path, str):
+        if not output_path.strip():
+            raise ValueError("output_path cannot be empty")
+        stored_output_path: str | dict = output_path.strip()
+    else:
+        if len(output_path) == 0:
+            raise ValueError("output_path cannot be an empty dictionary")
+        stored_output_path = dict(output_path)
 
     if not pipeline_name.strip():
         raise ValueError("pipeline_name cannot be empty")
@@ -62,7 +68,7 @@ def create_run_log(
         "status": "running",
         "config_path": config_path.strip(),
         "input_path": input_path.strip(),
-        "output_path": output_path.strip(),
+        "output_path": stored_output_path,
         "started_at": started_at,
         "finished_at": None,
         "metrics": {},
