@@ -119,13 +119,26 @@ def test_run_argument_structure_creates_outputs(tmp_path):
     assert argument_map_path.exists()
 
     chunks_output = json.loads(chunks_path.read_text(encoding="utf-8"))
+
+    assert chunks_output["stage"] == "argument_structure"
+    assert chunks_output["input_path"] == str(input_path)
+    assert chunks_output["chunk_count"] >= 1
+    assert "validation" in chunks_output
+    assert "internal" in chunks_output["validation"]
+    assert "source_alignment" in chunks_output["validation"]
+    chunk_list = chunks_output["chunks"]
+    assert isinstance(chunk_list, list)
+    assert len(chunk_list) >= 1
+    assert "chunk_id" in chunk_list[0]
+    assert "source_text" in chunk_list[0]
+
+    internal_val = chunks_output["validation"]["internal"]
+    alignment_val = chunks_output["validation"]["source_alignment"]
+    assert internal_val["invalid_chunk_count"] == 0
+    assert alignment_val["chunk_source_alignment_pass_rate"] == 1.0
+
     anchors_output = json.loads(anchors_path.read_text(encoding="utf-8"))
     argument_map_output = json.loads(argument_map_path.read_text(encoding="utf-8"))
-
-    assert isinstance(chunks_output, list)
-    assert len(chunks_output) >= 1
-    assert "chunk_id" in chunks_output[0]
-    assert "source_text" in chunks_output[0]
 
     assert anchors_output["stage"] == "argument_structure"
     assert "anchors" in anchors_output
@@ -135,5 +148,6 @@ def test_run_argument_structure_creates_outputs(tmp_path):
     assert "validation" in argument_map_output
 
     assert "chunk_count" in run_log["metrics"]
+    assert "chunk_source_alignment_pass_rate" in run_log["metrics"]
     assert "anchor_moment_count" in run_log["metrics"]
     assert "argument_map_valid" in run_log["metrics"]

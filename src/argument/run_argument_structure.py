@@ -4,6 +4,10 @@ from src.argument.argument_map_builder import build_argument_map
 from src.argument.argument_map_validator import validate_argument_map
 from src.argument.chunk_validator import validate_chunks
 from src.argument.chunker import chunk_transcript_segments
+from src.argument.source_alignment_validator import (
+    build_full_source_text_from_segments,
+    validate_chunk_source_alignment,
+)
 from src.core.config import load_config
 from src.data.json_store import load_json, save_json
 from src.ops.run_tracker import (
@@ -19,8 +23,8 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
     Run the argument structure stage.
 
     Chunking, anchor detection, and heuristic argument mapping produce
-    chunks.json, anchor_moments.json, and argument_map.json (including embedded
-    validation metrics).
+    chunks.json (with embedded chunk and source-alignment validation),
+    anchor_moments.json, and argument_map.json (including embedded validation).
 
     Args:
         config_path: Path to the argument structure config file.
@@ -49,6 +53,8 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
 
         segments = _extract_segments(transcript_data)
 
+        full_source_text = build_full_source_text_from_segments(segments)
+
         chunks = chunk_transcript_segments(
             segments=segments,
             max_chunk_chars=chunking_config["max_chunk_chars"],
@@ -56,11 +62,27 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
             overlap_segments=chunking_config.get("overlap_segments", 0),
         )
 
-        validate_chunks(chunks)
+        chunk_validation_metrics = validate_chunks(chunks)
+
+        source_alignment_metrics = validate_chunk_source_alignment(
+            chunks=chunks,
+            full_source_text=full_source_text,
+        )
 
         chunk_dicts = [chunk.to_dict() for chunk in chunks]
 
-        save_json(chunk_dicts, chunks_path)
+        chunk_output = {
+            "stage": config["stage"],
+            "input_path": input_path,
+            "chunk_count": len(chunk_dicts),
+            "validation": {
+                "internal": chunk_validation_metrics,
+                "source_alignment": source_alignment_metrics,
+            },
+            "chunks": chunk_dicts,
+        }
+
+        save_json(chunk_output, chunks_path)
 
         anchors = detect_anchor_moments(
             chunks=chunks,
@@ -120,6 +142,17 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
                 run_log,
                 "max_chunk_chars",
                 max(len(chunk["source_text"]) for chunk in chunk_dicts)
+            )
+
+        for metric_name, metric_value in source_alignment_metrics.items():
+            if metric_name != "misaligned_chunks":
+                record_metric(run_log, metric_name, metric_value)
+
+        if source_alignment_metrics["misaligned_chunks"]:
+            record_metric(
+                run_log,
+                "misaligned_chunks",
+                source_alignment_metrics["misaligned_chunks"],
             )
 
         record_metric(run_log, "anchor_moment_count", len(anchors))
