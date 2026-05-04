@@ -1,0 +1,169 @@
+import pytest
+
+from src.core.claim_inventory import (
+    AnchorClip,
+    build_claim_embed_url,
+    build_claim_inventory,
+    create_claim_record,
+    map_claim_type_to_strategy,
+    verify_verbatim_quote,
+)
+
+
+def test_verbatim_quote_matches_source_offsets():
+    source_text = "Multi-agent RL faces non-stationarity in competitive environments."
+    quote = "non-stationarity"
+
+    start = source_text.index(quote)
+    end = start + len(quote)
+
+    assert verify_verbatim_quote(source_text, quote, start, end) is True
+
+
+def test_verbatim_quote_fails_when_offsets_do_not_match():
+    source_text = "Single-agent algorithms often assume stationarity."
+    quote = "algorithms often"
+
+    wrong_start = 0
+    wrong_end = len(quote)
+
+    assert verify_verbatim_quote(source_text, quote, wrong_start, wrong_end) is False
+
+def test_empirical_claim_routes_to_literature_review():
+    assert map_claim_type_to_strategy("empirical_technical") == "literature_review"
+
+
+def test_normative_claim_does_not_route_to_literature_review():
+    assert map_claim_type_to_strategy("normative") == "no_external_verification"
+
+
+def test_interpretive_claim_does_not_route_to_literature_review():
+    assert map_claim_type_to_strategy("interpretive") == "source_context_review"
+
+
+def test_embed_url_uses_clip_timing():
+    clip = AnchorClip(start=252.4, end=263.0)
+
+    embed_url = build_claim_embed_url(
+        "https://www.youtube-nocookie.com/embed/ABC123",
+        clip,
+    )
+
+    assert embed_url == (
+        "https://www.youtube-nocookie.com/embed/ABC123"
+        "?start=252&end=263&rel=0"
+    )
+
+
+def test_create_claim_record_returns_record_for_valid_verbatim_claim():
+    source_text = "Standard single-agent algorithms assume stationarity."
+    quote = "single-agent algorithms assume stationarity"
+
+    start = source_text.index(quote)
+    end = start + len(quote)
+
+    record = create_claim_record(
+        claim_id="claim_0001",
+        source_text=source_text,
+        verbatim_quote=quote,
+        anchor_chunk="chunk_001",
+        char_offset_start=start,
+        char_offset_end=end,
+        anchor_clip=AnchorClip(start=10.2, end=15.9),
+        claim_type="empirical_technical",
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    assert record is not None
+    assert record.claim_id == "claim_0001"
+    assert record.verbatim_quote == quote
+    assert record.verification_strategy == "literature_review"
+    assert "start=10" in record.embed_url
+    assert "end=15" in record.embed_url
+
+
+def test_create_claim_record_drops_non_verbatim_claim():
+    source_text = "The speaker says one thing."
+    quote = "The speaker says something else."
+
+    record = create_claim_record(
+        claim_id="claim_0002",
+        source_text=source_text,
+        verbatim_quote=quote,
+        anchor_chunk="chunk_001",
+        char_offset_start=0,
+        char_offset_end=len(quote),
+        anchor_clip=AnchorClip(start=5.0, end=9.0),
+        claim_type="empirical_technical",
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    assert record is None
+
+
+def test_invalid_clip_range_raises_error():
+    with pytest.raises(ValueError):
+        build_claim_embed_url(
+            "https://www.youtube-nocookie.com/embed/ABC123",
+            AnchorClip(start=20.0, end=10.0),
+        )
+
+def test_build_claim_inventory_keeps_only_verbatim_claims():
+    source_text = "Standard single-agent algorithms assume stationarity."
+    valid_quote = "single-agent algorithms assume stationarity"
+    invalid_quote = "single-agent algorithms solve everything"
+
+    valid_start = source_text.index(valid_quote)
+    valid_end = valid_start + len(valid_quote)
+
+    candidate_claims = [
+        {
+            "claim_id": "claim_0001",
+            "verbatim_quote": valid_quote,
+            "anchor_chunk": "chunk_001",
+            "char_offset_start": valid_start,
+            "char_offset_end": valid_end,
+            "anchor_clip": {"start": 10.0, "end": 15.0},
+            "claim_type": "empirical_technical",
+        },
+        {
+            "claim_id": "claim_0002",
+            "verbatim_quote": invalid_quote,
+            "anchor_chunk": "chunk_001",
+            "char_offset_start": 0,
+            "char_offset_end": len(invalid_quote),
+            "anchor_clip": {"start": 20.0, "end": 25.0},
+            "claim_type": "empirical_technical",
+        },
+    ]
+
+    inventory = build_claim_inventory(
+        candidate_claims=candidate_claims,
+        source_text_by_chunk_id={"chunk_001": source_text},
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    assert len(inventory) == 1
+    assert inventory[0].claim_id == "claim_0001"
+
+
+def test_build_claim_inventory_skips_claims_with_missing_source_chunk():
+    candidate_claims = [
+        {
+            "claim_id": "claim_0001",
+            "verbatim_quote": "missing chunk quote",
+            "anchor_chunk": "chunk_missing",
+            "char_offset_start": 0,
+            "char_offset_end": 19,
+            "anchor_clip": {"start": 10.0, "end": 15.0},
+            "claim_type": "empirical_technical",
+        }
+    ]
+
+    inventory = build_claim_inventory(
+        candidate_claims=candidate_claims,
+        source_text_by_chunk_id={},
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    assert inventory == []
