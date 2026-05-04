@@ -1,4 +1,5 @@
 from src.argument.anchor_detector import detect_anchor_moments
+from src.argument.anchor_validator import validate_anchors
 from src.argument.chunk_validator import validate_chunks
 from src.argument.chunker import chunk_transcript_segments
 from src.core.config import load_config
@@ -62,6 +63,12 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
             allowed_types=config["anchors"]["allowed_types"],
         )
 
+        anchor_validation = validate_anchors(
+            anchors=anchors,
+            chunks=chunks,
+            allowed_types=config["anchors"]["allowed_types"],
+        )
+
         anchor_output = {
             "stage": config["stage"],
             "input_path": output_paths["chunks"],
@@ -103,7 +110,43 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
 
         for anchor_type, count in anchor_counts_by_type.items():
             record_metric(run_log, f"anchor_{anchor_type}_count", count)
-        
+
+        record_metric(
+            run_log,
+            "anchor_valid_count",
+            anchor_validation["valid_anchor_count"],
+        )
+        record_metric(
+            run_log,
+            "anchor_invalid_count",
+            anchor_validation["invalid_anchor_count"],
+        )
+        record_metric(
+            run_log,
+            "anchor_type_validation_pass_rate",
+            anchor_validation["anchor_type_validation_pass_rate"],
+        )
+        record_metric(
+            run_log,
+            "anchor_offset_validation_pass_rate",
+            anchor_validation["anchor_offset_validation_pass_rate"],
+        )
+        record_metric(
+            run_log,
+            "anchor_timestamp_validation_pass_rate",
+            anchor_validation["anchor_timestamp_validation_pass_rate"],
+        )
+        record_metric(
+            run_log,
+            "anchor_chunk_reference_pass_rate",
+            anchor_validation["anchor_chunk_reference_pass_rate"],
+        )
+        record_metric(
+            run_log,
+            "anchor_source_text_validation_pass_rate",
+            anchor_validation["anchor_source_text_validation_pass_rate"],
+        )
+
         finish_run_log(run_log, status="success")
 
     except Exception as error:
