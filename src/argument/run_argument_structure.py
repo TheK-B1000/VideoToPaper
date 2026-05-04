@@ -267,9 +267,15 @@ def _extract_segments(transcript_data: dict) -> list[dict]:
                 "char_start": int(seg["char_start"]),
                 "char_end": int(seg["char_end"]),
                 "start_seconds": float(
-                    seg.get("start_seconds", seg["start_time"])
+                    seg["start_seconds"]
+                    if "start_seconds" in seg
+                    else seg["start_time"]
                 ),
-                "end_seconds": float(seg.get("end_seconds", seg["end_time"])),
+                "end_seconds": float(
+                    seg["end_seconds"]
+                    if "end_seconds" in seg
+                    else seg["end_time"]
+                ),
             }
         )
 
