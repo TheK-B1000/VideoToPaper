@@ -1,7 +1,14 @@
+import tempfile
+
 import pytest
 
 from src.ops.cost_guard import CostGuardState
 from src.ops.llm_client import safe_llm_call
+
+
+@pytest.fixture(autouse=True)
+def allow_real_llm_env(monkeypatch):
+    monkeypatch.setenv("ALLOW_REAL_LLM_CALLS", "true")
 
 
 def make_budget_config(**overrides):
@@ -13,6 +20,13 @@ def make_budget_config(**overrides):
         "max_output_tokens_per_call": 500,
         "max_total_tokens_per_run": 2_000,
         "max_estimated_cost_usd_per_run": 1.00,
+        "max_estimated_cost_usd_per_day": 1000.0,
+        "max_estimated_cost_usd_per_month": 10_000.0,
+        "max_estimated_cost_usd_per_call": 1.0,
+        "allowed_models": ["gpt-4o-mini"],
+        "max_prompt_chars": 500_000,
+        "max_llm_retries_per_call": 1,
+        "budget_persistence_dir": tempfile.mkdtemp(prefix="vtp_budget_llm_"),
         "fail_closed": True,
     }
 
@@ -43,6 +57,7 @@ def test_safe_llm_call_returns_response():
         input_cost_per_1m_tokens=0.15,
         output_cost_per_1m_tokens=0.60,
         llm_callable=fake_llm_callable,
+        model="gpt-4o-mini",
     )
 
     assert response["text"] == "Fake LLM response"
@@ -60,12 +75,30 @@ def test_safe_llm_call_records_actual_usage():
         input_cost_per_1m_tokens=0.15,
         output_cost_per_1m_tokens=0.60,
         llm_callable=fake_llm_callable,
+        model="gpt-4o-mini",
     )
 
     assert state.llm_call_count == 1
     assert state.total_input_tokens == 12
     assert state.total_output_tokens == 8
     assert state.total_estimated_cost_usd == 0.0001
+
+
+def test_safe_llm_call_rejects_non_positive_output_tokens():
+    state = CostGuardState()
+    budget_config = make_budget_config()
+
+    with pytest.raises(ValueError, match="expected_output_tokens must be greater than zero"):
+        safe_llm_call(
+            prompt_text="Hi",
+            expected_output_tokens=0,
+            budget_config=budget_config,
+            state=state,
+            input_cost_per_1m_tokens=0.15,
+            output_cost_per_1m_tokens=0.60,
+            llm_callable=fake_llm_callable,
+            model="gpt-4o-mini",
+        )
 
 
 def test_safe_llm_call_blocks_when_llm_disabled():
@@ -81,6 +114,7 @@ def test_safe_llm_call_blocks_when_llm_disabled():
             input_cost_per_1m_tokens=0.15,
             output_cost_per_1m_tokens=0.60,
             llm_callable=fake_llm_callable,
+            model="gpt-4o-mini",
         )
 
     assert state.llm_call_count == 0
@@ -106,6 +140,7 @@ def test_safe_llm_call_does_not_call_vendor_when_blocked():
             input_cost_per_1m_tokens=0.15,
             output_cost_per_1m_tokens=0.60,
             llm_callable=fake_vendor_that_should_not_run,
+            model="gpt-4o-mini",
         )
 
     assert was_called is False
@@ -129,6 +164,7 @@ def test_safe_llm_call_falls_back_to_preflight_usage_when_actual_usage_missing()
         input_cost_per_1m_tokens=0.15,
         output_cost_per_1m_tokens=0.60,
         llm_callable=fake_llm_without_usage,
+        model="gpt-4o-mini",
     )
 
     assert response["text"] == "No usage metadata here"

@@ -1,4 +1,9 @@
 from dataclasses import dataclass
+import os
+import re
+from pathlib import Path
+
+from src.ops.budget_persistence import load_daily_spend_usd, load_monthly_spend_usd
 
 
 @dataclass
@@ -59,6 +64,64 @@ def estimate_llm_cost_usd(
     return input_cost + output_cost
 
 
+LLM_KILL_SWITCH_FILENAME = ".llm_kill_switch"
+
+
+def kill_switch_active(root: Path | None = None) -> bool:
+    """Return True if ``.llm_kill_switch`` exists under ``root`` (default: cwd)."""
+    base = root if root is not None else Path.cwd()
+    return (base / LLM_KILL_SWITCH_FILENAME).exists()
+
+
+def assert_real_llm_armed() -> None:
+    """Require explicit env arming before real (non-dry-run) LLM calls."""
+    if os.getenv("ALLOW_REAL_LLM_CALLS", "").strip().lower() != "true":
+        raise PermissionError(
+            "Real LLM calls are not armed (set environment ALLOW_REAL_LLM_CALLS=true)"
+        )
+
+
+def validate_prompt_for_llm(prompt_text: str, budget_config: dict) -> None:
+    """
+    Reject prompts that are oversized, leak key-like material, or carry huge blobs.
+    Fail-closed for citation pipelines that should send chunks, not full dumps.
+    """
+    if not isinstance(prompt_text, str):
+        raise TypeError("prompt_text must be a string")
+
+    max_chars = budget_config.get("max_prompt_chars")
+    if not isinstance(max_chars, int) or max_chars <= 0:
+        raise ValueError("budget_config.max_prompt_chars must be a positive integer")
+
+    if len(prompt_text) > max_chars:
+        raise PermissionError(
+            f"prompt exceeds max_prompt_chars ({max_chars}); refusing LLM call"
+        )
+
+    if budget_config.get("reject_prompt_api_key_like_strings", True):
+        if re.search(r"sk-[a-zA-Z0-9]{16,}", prompt_text):
+            raise PermissionError(
+                "prompt appears to contain an API-key-like substring; refusing LLM call"
+            )
+
+    max_blob = budget_config.get("max_base64_like_line_chars", 4000)
+    if isinstance(max_blob, int) and max_blob > 0:
+        for line in prompt_text.splitlines():
+            stripped = line.strip()
+            if len(stripped) >= max_blob and re.fullmatch(
+                r"[A-Za-z0-9+/=\s]+", stripped
+            ):
+                raise PermissionError(
+                    "prompt contains a very long base64-like line; refusing LLM call"
+                )
+
+    for needle in budget_config.get("reject_prompt_substrings", []) or []:
+        if isinstance(needle, str) and needle and needle in prompt_text:
+            raise PermissionError(
+                f"prompt contains forbidden substring {needle!r}; refusing LLM call"
+            )
+
+
 def assert_llm_call_allowed(
     prompt_text: str,
     expected_output_tokens: int,
@@ -66,26 +129,18 @@ def assert_llm_call_allowed(
     state: CostGuardState,
     input_cost_per_1m_tokens: float,
     output_cost_per_1m_tokens: float,
+    *,
+    model: str | None = None,
+    kill_switch_root: Path | None = None,
 ) -> dict:
     """
-    Validate whether a future LLM call is allowed under the run budget.
+    Validate whether a future LLM call is allowed under run, day, and month budgets.
 
-    This function should be called before any API request is made.
-
-    Args:
-        prompt_text: Full text that would be sent to the LLM.
-        expected_output_tokens: Maximum expected output tokens for the call.
-        budget_config: Budget section from config.
-        state: Current CostGuardState for this pipeline run.
-        input_cost_per_1m_tokens: Model input price per 1M tokens.
-        output_cost_per_1m_tokens: Model output price per 1M tokens.
-
-    Returns:
-        A dictionary with estimated usage/cost for the proposed call.
+    Call **before** any vendor I/O. Requires explicit env arming for real calls.
 
     Raises:
-        PermissionError: If the LLM is disabled, dry-run is enabled, or budget is exceeded.
-        ValueError: If budget settings are invalid.
+        PermissionError: Policy / budget / kill-switch / prompt rejection.
+        ValueError: Invalid configuration or token counts.
     """
     if not isinstance(budget_config, dict):
         raise TypeError("budget_config must be a dictionary")
@@ -101,13 +156,17 @@ def assert_llm_call_allowed(
         "max_output_tokens_per_call",
         "max_total_tokens_per_run",
         "max_estimated_cost_usd_per_run",
+        "max_estimated_cost_usd_per_day",
+        "max_estimated_cost_usd_per_month",
+        "max_estimated_cost_usd_per_call",
+        "allowed_models",
+        "max_prompt_chars",
+        "max_llm_retries_per_call",
+        "budget_persistence_dir",
         "fail_closed",
     ]
 
-    missing_keys = [
-        key for key in required_keys
-        if key not in budget_config
-    ]
+    missing_keys = [key for key in required_keys if key not in budget_config]
 
     if missing_keys:
         raise ValueError(f"budget_config missing required keys: {missing_keys}")
@@ -115,11 +174,19 @@ def assert_llm_call_allowed(
     if budget_config.get("fail_closed", True) is not True:
         raise ValueError("fail_closed must be true for safety")
 
+    if kill_switch_active(kill_switch_root):
+        raise PermissionError("LLM kill switch is active (.llm_kill_switch present)")
+
+    if not budget_config["llm_enabled"]:
+        raise PermissionError("LLM calls are disabled by config")
+
+    validate_prompt_for_llm(prompt_text, budget_config)
+
+    if expected_output_tokens <= 0:
+        raise ValueError("expected_output_tokens must be greater than zero")
+
     input_tokens = estimate_tokens(prompt_text)
     output_tokens = expected_output_tokens
-
-    if output_tokens < 0:
-        raise ValueError("expected_output_tokens cannot be negative")
 
     estimated_call_cost = estimate_llm_cost_usd(
         input_tokens=input_tokens,
@@ -127,6 +194,36 @@ def assert_llm_call_allowed(
         input_cost_per_1m_tokens=input_cost_per_1m_tokens,
         output_cost_per_1m_tokens=output_cost_per_1m_tokens,
     )
+
+    if estimated_call_cost > budget_config["max_estimated_cost_usd_per_call"]:
+        raise PermissionError(
+            "LLM estimated cost limit exceeded for this call "
+            f"({estimated_call_cost:.6f} > "
+            f"{budget_config['max_estimated_cost_usd_per_call']})"
+        )
+
+    persistence_dir = budget_config.get("budget_persistence_dir") or ""
+    will_attempt_real = (
+        bool(budget_config["llm_enabled"]) and not bool(budget_config["dry_run"])
+    )
+
+    if (
+        will_attempt_real
+        and isinstance(persistence_dir, str)
+        and persistence_dir.strip()
+    ):
+        daily = load_daily_spend_usd(persistence_dir)
+        monthly = load_monthly_spend_usd(persistence_dir)
+        day_cap = float(budget_config["max_estimated_cost_usd_per_day"])
+        month_cap = float(budget_config["max_estimated_cost_usd_per_month"])
+        if daily + estimated_call_cost > day_cap:
+            raise PermissionError(
+                "LLM estimated daily cost limit exceeded for this call"
+            )
+        if monthly + estimated_call_cost > month_cap:
+            raise PermissionError(
+                "LLM estimated monthly cost limit exceeded for this call"
+            )
 
     projected_call_count = state.llm_call_count + 1
     projected_total_tokens = (
@@ -136,12 +233,6 @@ def assert_llm_call_allowed(
         + output_tokens
     )
     projected_cost = state.total_estimated_cost_usd + estimated_call_cost
-
-    if not budget_config["llm_enabled"]:
-        raise PermissionError("LLM calls are disabled by config")
-
-    if budget_config["dry_run"]:
-        raise PermissionError("LLM dry_run is enabled; refusing real API call")
 
     if projected_call_count > budget_config["max_llm_calls_per_run"]:
         raise PermissionError("LLM call limit exceeded for this run")
@@ -158,6 +249,28 @@ def assert_llm_call_allowed(
     if projected_cost > budget_config["max_estimated_cost_usd_per_run"]:
         raise PermissionError("LLM estimated cost limit exceeded for this run")
 
+    if budget_config["dry_run"]:
+        raise PermissionError("LLM dry_run is enabled; refusing real API call")
+
+    allowed_raw = budget_config["allowed_models"]
+    if not isinstance(allowed_raw, list) or not all(
+        isinstance(x, str) for x in allowed_raw
+    ):
+        raise ValueError("allowed_models must be a list of strings")
+
+    allowed_norm = [x.strip() for x in allowed_raw if x.strip()]
+    if not allowed_norm:
+        raise PermissionError("allowed_models is empty; no LLM model is permitted")
+
+    if model is None or not str(model).strip():
+        raise PermissionError("model is required and must be a non-empty string")
+
+    model_clean = model.strip()
+    if model_clean not in allowed_norm:
+        raise PermissionError(f"Model not allowed: {model_clean}")
+
+    assert_real_llm_armed()
+
     return {
         "allowed": True,
         "input_tokens": input_tokens,
@@ -166,6 +279,7 @@ def assert_llm_call_allowed(
         "projected_call_count": projected_call_count,
         "projected_total_tokens": projected_total_tokens,
         "projected_cost_usd": projected_cost,
+        "model": model_clean,
     }
 
 

@@ -20,6 +20,9 @@ data/outputs/*
 
 logs/runs/*
 !logs/runs/.gitkeep
+
+logs/budget/*
+!logs/budget/.gitkeep
 logs/test_runs/
 
 reports/

@@ -1,5 +1,5 @@
 ---
-description: All LLM usage goes through safe_llm_call → cost_guard before API; no raw vendor calls outside llm_client.
+description: All LLM usage goes through safe_llm_call → cost_guard before API; fail-closed budget, arming, persistence, ledger.
 alwaysApply: true
 ---
 
@@ -9,20 +9,30 @@ alwaysApply: true
 
 ```text
 pipeline / feature code
-   → safe_llm_call()          # src/ops/llm_client.py — only approved doorway
-   → assert_llm_call_allowed()   # BEFORE any network I/O (budget / dry-run / caps)
-   → vendor API call           # OpenAI / Anthropic / … ONLY inside llm_client
-   → record_llm_usage()        # AFTER response — prefer API-reported tokens & cost
+   → safe_llm_call()                    # src/ops/llm_client.py — only doorway
+        → assert_llm_call_allowed()       # BEFORE network I/O (see checklist below)
+        → retry loop wraps llm_callable ONLY (max_llm_retries_per_call)
+   → vendor API                          # ONLY inside llm_client (injected callable)
+   → record_llm_usage()                  # actual tokens & cost when API returns them
+   → record_spend_usd()                  # daily/month JSON under budget_persistence_dir
+   → append_llm_ledger_entry()           # JSONL audit (allowed/blocked)
 ```
+
+**Checklist inside `assert_llm_call_allowed` (order matters conceptually):** kill switch (`.llm_kill_switch`) → **`llm_enabled`** → prompt validation (`max_prompt_chars`, key-like strings, huge base64-like lines, optional substrings) → **`expected_output_tokens > 0`** → per-call cost vs **`max_estimated_cost_usd_per_call`** → persisted daily/month caps vs **`daily_usage_*.json` / `monthly_usage_*.json`** → run-level caps → **`dry_run`** refusal → **`allowed_models`** → **`ALLOW_REAL_LLM_CALLS=true`**.
 
 **Forbidden:**
 
 ```text
+retry(safe_llm_call(...))     # retries must not wrap the guard
 pipeline code → vendor SDK directly
 ```
 
 If any file can reach the API without going through `safe_llm_call`, it can bypass the guard.
 
-**Policy:** No raw vendor calls anywhere except inside the approved `llm_client` wrapper.
+**Fail-closed:** Default to **`llm_enabled`: false**, **`dry_run`: true**, **`fail_closed`: true**. Incomplete **`budget`** dict → error; no silent allowance.
 
-**Estimates vs reality:** `estimate_tokens()` in `cost_guard` is a coarse heuristic (chars÷4) for pre-flight budgets. Stronger protection later uses the **tokenizer for the target model**. After each real call, **`record_llm_usage`** must be fed **actual** input/output tokens and **actual** billed cost from the API when available—not estimates alone.
+**Persistence paths** (under **`budget_persistence_dir`**, e.g. `logs/budget`): **`daily_usage_YYYY-MM-DD.json`**, **`monthly_usage_YYYY-MM.json`**, **`ledger_YYYY-MM-DD.jsonl`**.
+
+**Policy:** No raw vendor calls anywhere except inside the approved `llm_client` wrapper. **`safe_llm_call`** requires **`model`** and must enforce a strict output budget (**`expected_output_tokens`**); wire the vendor **`max_tokens`** (or equivalent) to that value in real integrations.
+
+**Estimates vs reality:** `estimate_tokens()` (chars÷4) is pre-flight only; prefer the target tokenizer when precision matters. **`record_llm_usage`** must receive **actual** usage/cost from the API when available.

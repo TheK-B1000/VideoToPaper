@@ -1,3 +1,5 @@
+import tempfile
+
 import pytest
 
 from src.ops.cost_guard import (
@@ -18,8 +20,9 @@ def make_budget_config(
     max_total_tokens_per_run: int = 200,
     max_estimated_cost_usd_per_run: float = 0.01,
     fail_closed: bool = True,
+    **extra: object,
 ) -> dict:
-    return {
+    cfg = {
         "llm_enabled": llm_enabled,
         "dry_run": dry_run,
         "max_llm_calls_per_run": max_llm_calls_per_run,
@@ -27,8 +30,22 @@ def make_budget_config(
         "max_output_tokens_per_call": max_output_tokens_per_call,
         "max_total_tokens_per_run": max_total_tokens_per_run,
         "max_estimated_cost_usd_per_run": max_estimated_cost_usd_per_run,
+        "max_estimated_cost_usd_per_day": 1000.0,
+        "max_estimated_cost_usd_per_month": 10_000.0,
+        "max_estimated_cost_usd_per_call": 1.0,
+        "allowed_models": ["gpt-4o-mini"],
+        "max_prompt_chars": 500_000,
+        "max_llm_retries_per_call": 1,
+        "budget_persistence_dir": tempfile.mkdtemp(prefix="vtp_budget_"),
         "fail_closed": fail_closed,
     }
+    cfg.update(extra)
+    return cfg
+
+
+@pytest.fixture(autouse=True)
+def allow_real_llm_env(monkeypatch):
+    monkeypatch.setenv("ALLOW_REAL_LLM_CALLS", "true")
 
 
 def test_estimate_tokens_returns_zero_for_empty_text():
@@ -114,6 +131,7 @@ def test_assert_llm_call_allowed_accepts_safe_call():
         state=state,
         input_cost_per_1m_tokens=0.15,
         output_cost_per_1m_tokens=0.60,
+        model="gpt-4o-mini",
     )
 
     assert result["allowed"] is True
@@ -227,10 +245,12 @@ def test_assert_llm_call_allowed_blocks_estimated_cost_limit():
         max_output_tokens_per_call=1_000_000,
         max_total_tokens_per_run=2_000_000,
     )
+    # Break lines so validate_prompt_for_llm does not treat one giant line as base64-like.
+    big_prompt = "\n".join(["a" * 1999 for _ in range(3)])
 
     with pytest.raises(PermissionError, match="LLM estimated cost limit exceeded for this run"):
         assert_llm_call_allowed(
-            prompt_text="a" * 4000,
+            prompt_text=big_prompt,
             expected_output_tokens=1000,
             budget_config=budget_config,
             state=state,
@@ -303,7 +323,7 @@ def test_assert_llm_call_allowed_rejects_negative_expected_output_tokens():
     state = CostGuardState()
     budget_config = make_budget_config()
 
-    with pytest.raises(ValueError, match="expected_output_tokens cannot be negative"):
+    with pytest.raises(ValueError, match="expected_output_tokens must be greater than zero"):
         assert_llm_call_allowed(
             prompt_text="Short prompt.",
             expected_output_tokens=-1,
@@ -311,6 +331,82 @@ def test_assert_llm_call_allowed_rejects_negative_expected_output_tokens():
             state=state,
             input_cost_per_1m_tokens=0.15,
             output_cost_per_1m_tokens=0.60,
+        )
+
+
+def test_assert_llm_call_blocked_without_arm_env(monkeypatch):
+    monkeypatch.delenv("ALLOW_REAL_LLM_CALLS", raising=False)
+    state = CostGuardState()
+    budget_config = make_budget_config()
+
+    with pytest.raises(PermissionError, match="not armed"):
+        assert_llm_call_allowed(
+            prompt_text="Short prompt.",
+            expected_output_tokens=10,
+            budget_config=budget_config,
+            state=state,
+            input_cost_per_1m_tokens=0.15,
+            output_cost_per_1m_tokens=0.60,
+            model="gpt-4o-mini",
+        )
+
+
+def test_kill_switch_blocks_llm_call(tmp_path):
+    (tmp_path / ".llm_kill_switch").write_text("", encoding="utf-8")
+    state = CostGuardState()
+    budget_config = make_budget_config()
+
+    with pytest.raises(PermissionError, match="kill switch"):
+        assert_llm_call_allowed(
+            prompt_text="Short prompt.",
+            expected_output_tokens=10,
+            budget_config=budget_config,
+            state=state,
+            input_cost_per_1m_tokens=0.15,
+            output_cost_per_1m_tokens=0.60,
+            kill_switch_root=tmp_path,
+            model="gpt-4o-mini",
+        )
+
+
+def test_daily_cost_cap_blocks_when_persistence_high(tmp_path):
+    from src.ops.budget_persistence import record_spend_usd
+
+    persist = str(tmp_path / "budget")
+    record_spend_usd(persist, 10.0)
+
+    state = CostGuardState()
+    budget_config = make_budget_config(
+        max_estimated_cost_usd_per_day=10.0,
+        max_estimated_cost_usd_per_run=100.0,
+        budget_persistence_dir=persist,
+    )
+
+    with pytest.raises(PermissionError, match="daily"):
+        assert_llm_call_allowed(
+            prompt_text="x",
+            expected_output_tokens=500,
+            budget_config=budget_config,
+            state=state,
+            input_cost_per_1m_tokens=15.0,
+            output_cost_per_1m_tokens=60.0,
+            model="gpt-4o-mini",
+        )
+
+
+def test_model_not_in_allowlist_blocked():
+    state = CostGuardState()
+    budget_config = make_budget_config()
+
+    with pytest.raises(PermissionError, match="Model not allowed"):
+        assert_llm_call_allowed(
+            prompt_text="Short prompt.",
+            expected_output_tokens=10,
+            budget_config=budget_config,
+            state=state,
+            input_cost_per_1m_tokens=0.15,
+            output_cost_per_1m_tokens=0.60,
+            model="gpt-4",
         )
 
 
