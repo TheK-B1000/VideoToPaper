@@ -4,8 +4,11 @@ from src.core.claim_inventory import (
     AnchorClip,
     build_claim_embed_url,
     build_claim_inventory,
+    claim_inventory_to_dicts,
     create_claim_record,
+    load_claim_inventory_payload,
     map_claim_type_to_strategy,
+    save_claim_inventory,
     validate_candidate_claim,
     verify_verbatim_quote,
 )
@@ -242,3 +245,60 @@ def test_build_claim_inventory_skips_malformed_candidate():
 
     assert len(inventory) == 1
     assert inventory[0].claim_id == "claim_0001"
+
+
+def test_claim_inventory_to_dicts_converts_records():
+    record = create_claim_record(
+        claim_id="claim_0001",
+        source_text="AI systems need evaluation.",
+        verbatim_quote="AI systems need evaluation",
+        anchor_chunk="chunk_001",
+        char_offset_start=0,
+        char_offset_end=26,
+        anchor_clip=AnchorClip(start=1.0, end=3.0),
+        claim_type="empirical_technical",
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    dicts = claim_inventory_to_dicts([record])
+
+    assert dicts[0]["claim_id"] == "claim_0001"
+    assert dicts[0]["anchor_clip"]["end"] == 3.0
+
+
+def test_save_and_load_claim_inventory_payload(tmp_path):
+    source_text = "Standard single-agent algorithms assume stationarity."
+    quote = "single-agent algorithms assume stationarity"
+
+    start = source_text.index(quote)
+    end = start + len(quote)
+
+    inventory = build_claim_inventory(
+        candidate_claims=[
+            {
+                "claim_id": "claim_0001",
+                "verbatim_quote": quote,
+                "anchor_chunk": "chunk_001",
+                "char_offset_start": start,
+                "char_offset_end": end,
+                "anchor_clip": {"start": 10.0, "end": 15.0},
+                "claim_type": "empirical_technical",
+            }
+        ],
+        source_text_by_chunk_id={"chunk_001": source_text},
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    output_path = tmp_path / "claim_inventory.json"
+
+    saved_path = save_claim_inventory(
+        inventory=inventory,
+        output_path=output_path,
+    )
+
+    loaded_payload = load_claim_inventory_payload(saved_path)
+
+    assert loaded_payload["claim_count"] == 1
+    assert loaded_payload["claims"][0]["claim_id"] == "claim_0001"
+    assert loaded_payload["claims"][0]["verification_strategy"] == "literature_review"
+    assert loaded_payload["claims"][0]["anchor_clip"]["start"] == 10.0

@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from dataclasses import dataclass, asdict
 from typing import Literal
 
@@ -230,3 +232,32 @@ def validate_candidate_claim(candidate: dict) -> bool:
         return False
 
     return True
+
+def claim_inventory_to_dicts(inventory: list[ClaimRecord]) -> list[dict]:
+    return [claim_record_to_dict(record) for record in inventory]
+
+
+def save_claim_inventory(
+    inventory: list[ClaimRecord],
+    output_path: str | Path,
+) -> Path:
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    payload = {
+        "claim_count": len(inventory),
+        "claims": claim_inventory_to_dicts(inventory),
+    }
+
+    output_path.write_text(
+        json.dumps(payload, indent=2),
+        encoding="utf-8",
+    )
+
+    return output_path
+
+
+def load_claim_inventory_payload(input_path: str | Path) -> dict:
+    input_path = Path(input_path)
+
+    return json.loads(input_path.read_text(encoding="utf-8"))
