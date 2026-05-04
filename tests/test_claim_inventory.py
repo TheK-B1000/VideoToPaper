@@ -6,6 +6,7 @@ from src.core.claim_inventory import (
     build_claim_inventory,
     create_claim_record,
     map_claim_type_to_strategy,
+    validate_candidate_claim,
     verify_verbatim_quote,
 )
 
@@ -167,3 +168,77 @@ def test_build_claim_inventory_skips_claims_with_missing_source_chunk():
     )
 
     assert inventory == []
+
+def test_validate_candidate_claim_accepts_valid_candidate():
+    candidate = {
+        "claim_id": "claim_0001",
+        "verbatim_quote": "single-agent algorithms assume stationarity",
+        "anchor_chunk": "chunk_001",
+        "char_offset_start": 9,
+        "char_offset_end": 52,
+        "anchor_clip": {"start": 10.0, "end": 15.0},
+        "claim_type": "empirical_technical",
+    }
+
+    assert validate_candidate_claim(candidate) is True
+
+
+def test_validate_candidate_claim_rejects_missing_required_field():
+    candidate = {
+        "claim_id": "claim_0001",
+        "verbatim_quote": "single-agent algorithms assume stationarity",
+        "anchor_chunk": "chunk_001",
+        "char_offset_start": 9,
+        "char_offset_end": 52,
+        "anchor_clip": {"start": 10.0, "end": 15.0},
+    }
+
+    assert validate_candidate_claim(candidate) is False
+
+
+def test_validate_candidate_claim_rejects_invalid_claim_type():
+    candidate = {
+        "claim_id": "claim_0001",
+        "verbatim_quote": "single-agent algorithms assume stationarity",
+        "anchor_chunk": "chunk_001",
+        "char_offset_start": 9,
+        "char_offset_end": 52,
+        "anchor_clip": {"start": 10.0, "end": 15.0},
+        "claim_type": "made_up_type",
+    }
+
+    assert validate_candidate_claim(candidate) is False
+
+
+def test_build_claim_inventory_skips_malformed_candidate():
+    source_text = "Standard single-agent algorithms assume stationarity."
+    valid_quote = "single-agent algorithms assume stationarity"
+
+    start = source_text.index(valid_quote)
+    end = start + len(valid_quote)
+
+    candidate_claims = [
+        {
+            "claim_id": "claim_0001",
+            "verbatim_quote": valid_quote,
+            "anchor_chunk": "chunk_001",
+            "char_offset_start": start,
+            "char_offset_end": end,
+            "anchor_clip": {"start": 10.0, "end": 15.0},
+            "claim_type": "empirical_technical",
+        },
+        {
+            "claim_id": "claim_0002",
+            "verbatim_quote": "this candidate is malformed",
+            "anchor_chunk": "chunk_001",
+        },
+    ]
+
+    inventory = build_claim_inventory(
+        candidate_claims=candidate_claims,
+        source_text_by_chunk_id={"chunk_001": source_text},
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    assert len(inventory) == 1
+    assert inventory[0].claim_id == "claim_0001"

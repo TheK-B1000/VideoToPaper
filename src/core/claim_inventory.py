@@ -145,6 +145,9 @@ def build_claim_inventory(
     inventory: list[ClaimRecord] = []
 
     for candidate in candidate_claims:
+        if not validate_candidate_claim(candidate):
+            continue
+
         anchor_chunk = candidate["anchor_chunk"]
 
         if anchor_chunk not in source_text_by_chunk_id:
@@ -173,3 +176,57 @@ def build_claim_inventory(
             inventory.append(record)
 
     return inventory
+
+REQUIRED_CANDIDATE_CLAIM_FIELDS = {
+    "claim_id",
+    "verbatim_quote",
+    "anchor_chunk",
+    "char_offset_start",
+    "char_offset_end",
+    "anchor_clip",
+    "claim_type",
+}
+
+
+def validate_candidate_claim(candidate: dict) -> bool:
+    if not isinstance(candidate, dict):
+        return False
+
+    missing_fields = REQUIRED_CANDIDATE_CLAIM_FIELDS - set(candidate.keys())
+
+    if missing_fields:
+        return False
+
+    if not isinstance(candidate["claim_id"], str) or not candidate["claim_id"].strip():
+        return False
+
+    if not isinstance(candidate["verbatim_quote"], str) or not candidate["verbatim_quote"].strip():
+        return False
+
+    if not isinstance(candidate["anchor_chunk"], str) or not candidate["anchor_chunk"].strip():
+        return False
+
+    if not isinstance(candidate["char_offset_start"], int):
+        return False
+
+    if not isinstance(candidate["char_offset_end"], int):
+        return False
+
+    if not isinstance(candidate["anchor_clip"], dict):
+        return False
+
+    if "start" not in candidate["anchor_clip"] or "end" not in candidate["anchor_clip"]:
+        return False
+
+    if candidate["claim_type"] not in {
+        "empirical_technical",
+        "empirical_historical",
+        "empirical_scientific",
+        "interpretive",
+        "normative",
+        "anecdotal",
+        "predictive",
+    }:
+        return False
+
+    return True
