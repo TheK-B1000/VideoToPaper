@@ -109,6 +109,7 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
             "stage": config["stage"],
             "input_path": output_paths["chunks"],
             "anchor_count": len(anchors),
+            "validation": anchor_validation_metrics,
             "anchors": anchors,
         }
 
@@ -144,6 +145,17 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
                 max(len(chunk["source_text"]) for chunk in chunk_dicts)
             )
 
+        for metric_name, metric_value in chunk_validation_metrics.items():
+            if metric_name != "invalid_chunks":
+                record_metric(run_log, metric_name, metric_value)
+
+        if chunk_validation_metrics["invalid_chunks"]:
+            record_metric(
+                run_log,
+                "invalid_chunks",
+                chunk_validation_metrics["invalid_chunks"],
+            )
+
         for metric_name, metric_value in source_alignment_metrics.items():
             if metric_name != "misaligned_chunks":
                 record_metric(run_log, metric_name, metric_value)
@@ -169,12 +181,12 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
 
         record_metric(
             run_log,
-            "anchor_valid_count",
+            "valid_anchor_count",
             anchor_validation_metrics["valid_anchor_count"],
         )
         record_metric(
             run_log,
-            "anchor_invalid_count",
+            "invalid_anchor_count",
             anchor_validation_metrics["invalid_anchor_count"],
         )
         record_metric(
