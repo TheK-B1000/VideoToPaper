@@ -1,0 +1,15 @@
+---
+description: All LLM usage must go through the ops gateway (cost_guard → safe_llm_call), never raw SDK calls.
+alwaysApply: true
+---
+
+# LLM calls: single gate
+
+- **Do not** call vendor APIs directly from feature modules (no `client.responses.create(...)`, `chat.completions.create`, raw `httpx` to model endpoints, etc.).
+- **Do** route every LLM request through **`safe_llm_call`** (or the single wrapper once `src/ops/llm_client.py` exists).
+
+**Target pipeline:** `cost_guard` → `safe_llm_call` → API.
+
+**Why:** One place for budgets, logging, retries, and provider swaps.
+
+When adding new LLM usage: extend `src/ops/` (e.g. `llm_client.py`) and wire `cost_guard.assert_llm_call_allowed` (or equivalent) **before** any network call.
