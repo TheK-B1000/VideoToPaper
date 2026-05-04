@@ -1,5 +1,6 @@
 from src.argument.anchor_detector import detect_anchor_moments
 from src.argument.anchor_validator import validate_anchors
+from src.argument.argument_map_builder import build_argument_map
 from src.argument.chunk_validator import validate_chunks
 from src.argument.chunker import chunk_transcript_segments
 from src.core.config import load_config
@@ -16,8 +17,8 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
     """
     Run the argument structure stage.
 
-    Chunking and anchor detection produce chunks.json and anchor_moments.json.
-    Argument mapping will be added later.
+    Chunking, anchor detection, and heuristic argument mapping produce
+    chunks.json, anchor_moments.json, and argument_map.json.
 
     Args:
         config_path: Path to the argument structure config file.
@@ -31,6 +32,7 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
     output_paths = config["output_paths"]
     chunks_path = output_paths["chunks"]
     anchor_moments_path = output_paths["anchor_moments"]
+    argument_map_path = output_paths["argument_map"]
     chunking_config = config["chunking"]
 
     run_log = create_run_log(
@@ -63,10 +65,15 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
             allowed_types=config["anchors"]["allowed_types"],
         )
 
-        anchor_validation = validate_anchors(
+        anchor_validation_metrics = validate_anchors(
             anchors=anchors,
             chunks=chunks,
             allowed_types=config["anchors"]["allowed_types"],
+        )
+
+        argument_map = build_argument_map(
+            chunks=chunks,
+            anchors=anchors,
         )
 
         anchor_output = {
@@ -77,6 +84,14 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
         }
 
         save_json(anchor_output, anchor_moments_path)
+
+        argument_map_output = {
+            "stage": config["stage"],
+            "input_path": output_paths["anchor_moments"],
+            "argument_map": argument_map,
+        }
+
+        save_json(argument_map_output, argument_map_path)
 
         record_metric(run_log, "input_segment_count", len(segments))
         record_metric(run_log, "chunk_count", len(chunk_dicts))
@@ -114,37 +129,60 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
         record_metric(
             run_log,
             "anchor_valid_count",
-            anchor_validation["valid_anchor_count"],
+            anchor_validation_metrics["valid_anchor_count"],
         )
         record_metric(
             run_log,
             "anchor_invalid_count",
-            anchor_validation["invalid_anchor_count"],
+            anchor_validation_metrics["invalid_anchor_count"],
         )
         record_metric(
             run_log,
             "anchor_type_validation_pass_rate",
-            anchor_validation["anchor_type_validation_pass_rate"],
+            anchor_validation_metrics["anchor_type_validation_pass_rate"],
         )
         record_metric(
             run_log,
             "anchor_offset_validation_pass_rate",
-            anchor_validation["anchor_offset_validation_pass_rate"],
+            anchor_validation_metrics["anchor_offset_validation_pass_rate"],
         )
         record_metric(
             run_log,
             "anchor_timestamp_validation_pass_rate",
-            anchor_validation["anchor_timestamp_validation_pass_rate"],
+            anchor_validation_metrics["anchor_timestamp_validation_pass_rate"],
         )
         record_metric(
             run_log,
             "anchor_chunk_reference_pass_rate",
-            anchor_validation["anchor_chunk_reference_pass_rate"],
+            anchor_validation_metrics["anchor_chunk_reference_pass_rate"],
         )
         record_metric(
             run_log,
             "anchor_source_text_validation_pass_rate",
-            anchor_validation["anchor_source_text_validation_pass_rate"],
+            anchor_validation_metrics["anchor_source_text_validation_pass_rate"],
+        )
+
+        record_metric(run_log, "argument_map_type", argument_map["map_type"])
+        record_metric(
+            run_log,
+            "thesis_candidate_count",
+            len(argument_map["thesis_candidates"]),
+        )
+        record_metric(
+            run_log,
+            "supporting_point_count",
+            len(argument_map["supporting_points"]),
+        )
+        record_metric(
+            run_log,
+            "qualification_count",
+            len(argument_map["qualifications"]),
+        )
+        record_metric(run_log, "example_count", len(argument_map["examples"]))
+        record_metric(
+            run_log,
+            "summary_claim_count",
+            len(argument_map["summary_claims"]),
         )
 
         finish_run_log(run_log, status="success")
