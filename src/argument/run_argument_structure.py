@@ -1,3 +1,5 @@
+from src.argument.anchor_detector import detect_anchor_moments
+from src.argument.chunk_validator import validate_chunks
 from src.argument.chunker import chunk_transcript_segments
 from src.core.config import load_config
 from src.data.json_store import load_json, save_json
@@ -13,10 +15,8 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
     """
     Run the argument structure stage.
 
-    For now, this stage only performs transcript chunking.
-    Later, this same runner will also produce:
-    - argument_map.json
-    - anchor_moments.json
+    Chunking and anchor detection produce chunks.json and anchor_moments.json.
+    Argument mapping will be added later.
 
     Args:
         config_path: Path to the argument structure config file.
@@ -27,7 +27,9 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
     config = load_config(config_path)
 
     input_path = config["input_path"]
-    chunks_path = config["output_paths"]["chunks"]
+    output_paths = config["output_paths"]
+    chunks_path = output_paths["chunks"]
+    anchor_moments_path = output_paths["anchor_moments"]
     chunking_config = config["chunking"]
 
     run_log = create_run_log(
@@ -49,9 +51,25 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
             overlap_segments=chunking_config.get("overlap_segments", 0),
         )
 
+        validate_chunks(chunks)
+
         chunk_dicts = [chunk.to_dict() for chunk in chunks]
 
         save_json(chunk_dicts, chunks_path)
+
+        anchors = detect_anchor_moments(
+            chunks=chunks,
+            allowed_types=config["anchors"]["allowed_types"],
+        )
+
+        anchor_output = {
+            "stage": config["stage"],
+            "input_path": output_paths["chunks"],
+            "anchor_count": len(anchors),
+            "anchors": anchors,
+        }
+
+        save_json(anchor_output, anchor_moments_path)
 
         record_metric(run_log, "input_segment_count", len(segments))
         record_metric(run_log, "chunk_count", len(chunk_dicts))
@@ -73,6 +91,18 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
                 "max_chunk_chars",
                 max(len(chunk["source_text"]) for chunk in chunk_dicts)
             )
+
+        record_metric(run_log, "anchor_moment_count", len(anchors))
+
+        anchor_counts_by_type: dict[str, int] = {}
+        for anchor in anchors:
+            anchor_type = anchor["type"]
+            anchor_counts_by_type[anchor_type] = (
+                anchor_counts_by_type.get(anchor_type, 0) + 1
+            )
+
+        for anchor_type, count in anchor_counts_by_type.items():
+            record_metric(run_log, f"anchor_{anchor_type}_count", count)
         
         finish_run_log(run_log, status="success")
 
