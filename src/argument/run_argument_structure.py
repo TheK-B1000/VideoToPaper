@@ -1,6 +1,7 @@
 from src.argument.anchor_detector import detect_anchor_moments
 from src.argument.anchor_validator import validate_anchors
 from src.argument.argument_map_builder import build_argument_map
+from src.argument.argument_map_validator import validate_argument_map
 from src.argument.chunk_validator import validate_chunks
 from src.argument.chunker import chunk_transcript_segments
 from src.core.config import load_config
@@ -18,7 +19,8 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
     Run the argument structure stage.
 
     Chunking, anchor detection, and heuristic argument mapping produce
-    chunks.json, anchor_moments.json, and argument_map.json.
+    chunks.json, anchor_moments.json, and argument_map.json (including embedded
+    validation metrics).
 
     Args:
         config_path: Path to the argument structure config file.
@@ -76,6 +78,11 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
             anchors=anchors,
         )
 
+        argument_map_validation_metrics = validate_argument_map(
+            argument_map=argument_map,
+            anchors=anchors,
+        )
+
         anchor_output = {
             "stage": config["stage"],
             "input_path": output_paths["chunks"],
@@ -88,6 +95,7 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
         argument_map_output = {
             "stage": config["stage"],
             "input_path": output_paths["anchor_moments"],
+            "validation": argument_map_validation_metrics,
             "argument_map": argument_map,
         }
 
@@ -184,6 +192,17 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
             "summary_claim_count",
             len(argument_map["summary_claims"]),
         )
+
+        for metric_name, metric_value in argument_map_validation_metrics.items():
+            if metric_name != "invalid_argument_items":
+                record_metric(run_log, metric_name, metric_value)
+
+        if argument_map_validation_metrics["invalid_argument_items"]:
+            record_metric(
+                run_log,
+                "invalid_argument_items",
+                argument_map_validation_metrics["invalid_argument_items"],
+            )
 
         finish_run_log(run_log, status="success")
 
