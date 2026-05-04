@@ -1,15 +1,28 @@
 ---
-description: All LLM usage must go through the ops gateway (cost_guard → safe_llm_call), never raw SDK calls.
+description: All LLM usage goes through safe_llm_call → cost_guard before API; no raw vendor calls outside llm_client.
 alwaysApply: true
 ---
 
-# LLM calls: single gate
+# LLM calls: single gate (no bypass)
 
-- **Do not** call vendor APIs directly from feature modules (no `client.responses.create(...)`, `chat.completions.create`, raw `httpx` to model endpoints, etc.).
-- **Do** route every LLM request through **`safe_llm_call`** (or the single wrapper once `src/ops/llm_client.py` exists).
+**Required architecture:**
 
-**Target pipeline:** `cost_guard` → `safe_llm_call` → API.
+```text
+pipeline / feature code
+   → safe_llm_call()          # src/ops/llm_client.py — only approved doorway
+   → assert_llm_call_allowed()   # BEFORE any network I/O (budget / dry-run / caps)
+   → vendor API call           # OpenAI / Anthropic / … ONLY inside llm_client
+   → record_llm_usage()        # AFTER response — prefer API-reported tokens & cost
+```
 
-**Why:** One place for budgets, logging, retries, and provider swaps.
+**Forbidden:**
 
-When adding new LLM usage: extend `src/ops/` (e.g. `llm_client.py`) and wire `cost_guard.assert_llm_call_allowed` (or equivalent) **before** any network call.
+```text
+pipeline code → vendor SDK directly
+```
+
+If any file can reach the API without going through `safe_llm_call`, it can bypass the guard.
+
+**Policy:** No raw vendor calls anywhere except inside the approved `llm_client` wrapper.
+
+**Estimates vs reality:** `estimate_tokens()` in `cost_guard` is a coarse heuristic (chars÷4) for pre-flight budgets. Stronger protection later uses the **tokenizer for the target model**. After each real call, **`record_llm_usage`** must be fed **actual** input/output tokens and **actual** billed cost from the API when available—not estimates alone.

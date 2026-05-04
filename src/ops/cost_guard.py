@@ -14,10 +14,14 @@ class CostGuardState:
 
 def estimate_tokens(text: str) -> int:
     """
-    Estimate token count from text.
+    Estimate token count from text for pre-flight budget checks only.
 
-    This is intentionally conservative. A rough common estimate is
-    1 token ≈ 4 characters for English text.
+    Uses a rough heuristic (≈ 4 characters per token). Good enough for an
+    early safety net; for tighter limits, prefer the tokenizer for the actual
+    deployment model and use those counts in ``assert_llm_call_allowed``.
+
+    Post-call accounting should use usage reported by the API via
+    ``record_llm_usage``, not this estimate alone.
     """
     if not isinstance(text, str):
         raise TypeError("text must be a string")
@@ -173,6 +177,11 @@ def record_llm_usage(
 ) -> CostGuardState:
     """
     Update cost guard state after a successful LLM call.
+
+    Prefer **actual** ``input_tokens``, ``output_tokens``, and cost (USD) from
+    the vendor response when available. The parameter name ``estimated_cost_usd``
+    is historical; real integrations should pass billed or usage-derived cost
+    here—not pre-call guesses alone.
     """
     if not isinstance(state, CostGuardState):
         raise TypeError("state must be a CostGuardState")
