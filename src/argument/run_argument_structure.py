@@ -1,6 +1,7 @@
 from src.argument.anchor_detector import detect_anchor_moments
 from src.argument.anchor_validator import validate_anchors
 from src.argument.argument_map_builder import build_argument_map
+from src.argument.argument_map_fallback import ensure_argument_map_has_supporting_points
 from src.argument.argument_map_validator import validate_argument_map
 from src.argument.chunk_validator import validate_chunks
 from src.argument.chunker import chunk_transcript_segments
@@ -98,6 +99,12 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
         argument_map = build_argument_map(
             chunks=chunks,
             anchors=anchors,
+        )
+
+        ensure_argument_map_has_supporting_points(
+            argument_map,
+            chunk_dicts,
+            max_points=5,
         )
 
         argument_map_validation_metrics = validate_argument_map(

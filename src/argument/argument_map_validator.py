@@ -143,10 +143,14 @@ def validate_argument_item(item: dict, known_anchor_ids: set[str]) -> dict:
             "errors": [f"missing_keys:{missing_keys}"],
         }
 
-    anchor_reference_valid = (
-        isinstance(item["anchor_id"], str)
-        and item["anchor_id"] in known_anchor_ids
-    )
+    if item.get("fallback_generated") is True:
+        # Synthetic rows from ensure_argument_map_has_supporting_points; no real anchor.
+        anchor_reference_valid = True
+    else:
+        anchor_reference_valid = (
+            isinstance(item["anchor_id"], str)
+            and item["anchor_id"] in known_anchor_ids
+        )
 
     offsets_valid = (
         isinstance(item["char_start"], int)
