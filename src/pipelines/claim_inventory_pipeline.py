@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -392,3 +393,72 @@ def run_claim_inventory_pipeline(
     save_run_log(run_log, str(Path(logs_dir)))
 
     return output_path_p
+
+
+def main(argv: list[str] | None = None) -> int:
+    """
+    CLI entrypoint for Week 3 (``python -m src.pipelines.claim_inventory_pipeline``).
+    """
+    parser = argparse.ArgumentParser(
+        description=(
+            "Build claim_inventory.json from transcript chunks and argument_map "
+            "(Week 2 outputs). Paths default from configs/argument_config.json "
+            "when claim_inventory is configured."
+        ),
+    )
+    parser.add_argument(
+        "--config-path",
+        default="configs/argument_config.json",
+        help="Argument-structure JSON containing claim_inventory settings.",
+    )
+    parser.add_argument(
+        "--chunks-path",
+        default=str(DEFAULT_CHUNKS_PATH),
+        help="chunks.json from Week 2.",
+    )
+    parser.add_argument(
+        "--argument-map-path",
+        default=str(DEFAULT_ARGUMENT_MAP_PATH),
+        help="argument_map.json from Week 2.",
+    )
+    parser.add_argument(
+        "--output-path",
+        default=None,
+        help=(
+            "Fallback inventory output path when claim_inventory.output_path "
+            "is absent from config."
+        ),
+    )
+    parser.add_argument(
+        "--logs-dir",
+        default="logs/runs",
+        help="Directory for claim_inventory run logs.",
+    )
+    parser.add_argument(
+        "--embed-base-url",
+        default=None,
+        dest="embed_base_url",
+        help=(
+            "Optional embed base override (after registry and config embed_base_url)."
+        ),
+    )
+
+    args = parser.parse_args(argv)
+
+    output_path = Path(args.output_path) if args.output_path else None
+
+    written = run_claim_inventory_pipeline(
+        embed_base_url=args.embed_base_url,
+        config_path=args.config_path,
+        argument_map_path=args.argument_map_path,
+        chunks_path=args.chunks_path,
+        output_path=output_path,
+        logs_dir=args.logs_dir,
+    )
+
+    print(f"Claim inventory written to: {written}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
