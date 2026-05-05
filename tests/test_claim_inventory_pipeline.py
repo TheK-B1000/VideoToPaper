@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from src.argument.argument_map_builder import build_argument_map
 from src.argument.argument_models import TranscriptChunk
@@ -13,6 +14,25 @@ from src.pipelines.claim_inventory_pipeline import (
 
 def _write_json(path, obj):
     path.write_text(json.dumps(obj), encoding="utf-8")
+
+
+def _write_minimal_argument_config(
+    path: Path,
+    claim_inventory: dict | None = None,
+) -> Path:
+    data = {
+        "stage": "argument_structure",
+        "input_path": "data/x.json",
+        "output_paths": {},
+        "chunking": {},
+        "anchors": {},
+        "llm": {},
+        "safety": {},
+    }
+    if claim_inventory is not None:
+        data["claim_inventory"] = claim_inventory
+    path.write_text(json.dumps(data), encoding="utf-8")
+    return path
 
 
 def test_run_claim_inventory_pipeline_writes_claim_inventory_and_returns_path(tmp_path):
@@ -45,6 +65,8 @@ def test_run_claim_inventory_pipeline_writes_claim_inventory_and_returns_path(tm
     chunks_path = tmp_path / "chunks.json"
     argument_map_path = tmp_path / "argument_map.json"
     output_path = tmp_path / "claim_inventory.json"
+    config_path = tmp_path / "argument_config.json"
+    _write_minimal_argument_config(config_path)
 
     _write_json(
         chunks_path,
@@ -61,11 +83,15 @@ def test_run_claim_inventory_pipeline_writes_claim_inventory_and_returns_path(tm
 
     embed_base = "https://www.youtube-nocookie.com/embed/ABC123"
 
+    logs_dir = tmp_path / "runs"
+
     returned = run_claim_inventory_pipeline(
         embed_base_url=embed_base,
+        config_path=config_path,
         argument_map_path=argument_map_path,
         chunks_path=chunks_path,
         output_path=output_path,
+        logs_dir=logs_dir,
     )
 
     assert returned == output_path

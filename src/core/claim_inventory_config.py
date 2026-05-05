@@ -61,8 +61,8 @@ def parse_claim_inventory_settings(config: dict[str, Any]) -> dict[str, Any] | N
         raise ValueError("claim_inventory.output_path must be a non-empty string")
 
     allowed = section["allowed_claim_types"]
-    if not isinstance(allowed, list) or not allowed:
-        raise ValueError("claim_inventory.allowed_claim_types must be a non-empty list")
+    if not isinstance(allowed, list):
+        raise ValueError("claim_inventory.allowed_claim_types must be a list")
 
     for claim_type in allowed:
         if not isinstance(claim_type, str):

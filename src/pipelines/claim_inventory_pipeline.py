@@ -2,8 +2,24 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.core.claim_inventory import build_claim_inventory, save_claim_inventory
+from src.core.claim_inventory import (
+    build_claim_inventory,
+    save_claim_inventory,
+    summarize_claim_inventory,
+)
+from src.core.claim_inventory_config import (
+    CANONICAL_CLAIM_TYPES,
+    parse_claim_inventory_settings,
+)
+from src.core.config import load_config
 from src.data.json_store import load_json
+from src.ops.run_tracker import (
+    create_run_log,
+    finish_run_log,
+    record_error,
+    record_metric,
+    save_run_log,
+)
 
 DEFAULT_ARGUMENT_MAP_PATH = Path("data/processed/argument_map.json")
 DEFAULT_CHUNKS_PATH = Path("data/processed/chunks.json")
@@ -24,6 +40,41 @@ ITEM_TYPE_TO_CLAIM_TYPE: dict[str, str] = {
     "qualification": "interpretive",
     "summary_claim": "empirical_technical",
 }
+
+
+def _effective_embed_base(*, require_embed_url: bool, embed_base_url: str | None) -> str:
+    if embed_base_url is not None and embed_base_url.strip():
+        return embed_base_url.strip()
+    if require_embed_url:
+        raise ValueError(
+            "embed_base_url is required when claim_inventory.require_embed_url is true"
+        )
+    return "https://www.youtube-nocookie.com/embed/unknown"
+
+
+def _resolved_claim_inventory_settings(
+    config: dict,
+    fallback_output_path: Path,
+) -> dict:
+    parsed = parse_claim_inventory_settings(config)
+    if parsed is not None:
+        return parsed
+
+    return {
+        "enabled": True,
+        "drop_non_verbatim_claims": True,
+        "require_embed_url": True,
+        "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+        "output_path": str(fallback_output_path),
+    }
+
+
+def _filter_candidates_by_claim_types(
+    candidates: list[dict],
+    allowed_claim_types: list[str],
+) -> list[dict]:
+    allowed = frozenset(allowed_claim_types)
+    return [c for c in candidates if c.get("claim_type") in allowed]
 
 
 def load_chunks_payload(chunks_path: str | Path) -> list[dict]:
@@ -163,29 +214,121 @@ def candidate_claims_from_argument_map(
 
 def run_claim_inventory_pipeline(
     *,
-    embed_base_url: str,
+    embed_base_url: str | None = None,
+    config_path: str | Path = Path("configs/argument_config.json"),
     argument_map_path: str | Path = DEFAULT_ARGUMENT_MAP_PATH,
     chunks_path: str | Path = DEFAULT_CHUNKS_PATH,
-    output_path: str | Path = DEFAULT_CLAIM_INVENTORY_PATH,
+    output_path: str | Path | None = None,
+    logs_dir: str | Path = Path("logs/runs"),
 ) -> Path:
     """
     Week 2 → Week 3: load chunks and argument map, build verified claim inventory,
-    persist JSON (including summary), return output path.
+    persist JSON (including summary), write a run log, return output path.
+
+    Reads ``claim_inventory`` from ``argument_config.json`` (or another JSON passed as
+    ``config_path``) via ``load_config``. When that subsection is absent, defaults match
+    the prior behaviour (enabled, all claim types, verbatim drops on).
     """
-    chunks = load_chunks_payload(chunks_path)
-    argument_map = load_argument_map_document(argument_map_path)
-    chunks_by_id = _chunks_by_id(chunks)
-    source_text_by_chunk_id = build_source_text_by_chunk_id(chunks)
+    chunks_path_s = str(Path(chunks_path))
+    argument_map_path_s = str(Path(argument_map_path))
+    config_p = Path(config_path)
 
-    candidate_claims = candidate_claims_from_argument_map(
-        argument_map=argument_map,
-        chunks_by_id=chunks_by_id,
+    full_config = load_config(config_p)
+    fallback_out = (
+        Path(output_path)
+        if output_path is not None
+        else DEFAULT_CLAIM_INVENTORY_PATH
     )
+    ci = _resolved_claim_inventory_settings(full_config, fallback_out)
+    output_path_p = Path(ci["output_path"])
 
-    inventory = build_claim_inventory(
-        candidate_claims=candidate_claims,
-        source_text_by_chunk_id=source_text_by_chunk_id,
-        embed_base_url=embed_base_url,
+    run_log = create_run_log(
+        config_path=str(config_p),
+        input_path=chunks_path_s,
+        output_path=str(output_path_p),
+        pipeline_name="claim_inventory",
     )
+    run_log["input_paths"] = {
+        "chunks": chunks_path_s,
+        "argument_map": argument_map_path_s,
+    }
 
-    return save_claim_inventory(inventory=inventory, output_path=output_path)
+    record_metric(run_log, "claim_inventory_enabled", ci["enabled"])
+
+    try:
+        if not ci["enabled"]:
+            save_claim_inventory(
+                inventory=[],
+                output_path=output_path_p,
+            )
+            record_metric(run_log, "argument_derived_candidate_count", 0)
+            record_metric(run_log, "candidate_claim_count", 0)
+            record_metric(run_log, "accepted_claim_count", 0)
+            record_metric(run_log, "dropped_claim_count", 0)
+            record_metric(run_log, "claim_type_counts", {})
+            record_metric(run_log, "verification_strategy_counts", {})
+            finish_run_log(run_log, status="success")
+            save_run_log(run_log, str(Path(logs_dir)))
+            return output_path_p
+
+        embed_effective = _effective_embed_base(
+            require_embed_url=ci["require_embed_url"],
+            embed_base_url=embed_base_url,
+        )
+
+        chunks = load_chunks_payload(chunks_path)
+        argument_map = load_argument_map_document(argument_map_path)
+        chunks_by_id = _chunks_by_id(chunks)
+        source_text_by_chunk_id = build_source_text_by_chunk_id(chunks)
+
+        raw_candidates = candidate_claims_from_argument_map(
+            argument_map=argument_map,
+            chunks_by_id=chunks_by_id,
+        )
+
+        candidate_claims = _filter_candidates_by_claim_types(
+            raw_candidates,
+            ci["allowed_claim_types"],
+        )
+
+        inventory = build_claim_inventory(
+            candidate_claims=candidate_claims,
+            source_text_by_chunk_id=source_text_by_chunk_id,
+            embed_base_url=embed_effective,
+            drop_non_verbatim_claims=ci["drop_non_verbatim_claims"],
+        )
+
+        summary = summarize_claim_inventory(inventory)
+
+        save_claim_inventory(inventory=inventory, output_path=output_path_p)
+
+        record_metric(
+            run_log,
+            "argument_derived_candidate_count",
+            len(raw_candidates),
+        )
+        record_metric(run_log, "candidate_claim_count", len(candidate_claims))
+        record_metric(run_log, "accepted_claim_count", len(inventory))
+        record_metric(
+            run_log,
+            "dropped_claim_count",
+            len(candidate_claims) - len(inventory),
+        )
+        record_metric(run_log, "claim_type_counts", summary["claim_type_counts"])
+        record_metric(
+            run_log,
+            "verification_strategy_counts",
+            summary["verification_strategy_counts"],
+        )
+
+        finish_run_log(run_log, status="success")
+
+    except Exception as error:
+        record_error(run_log, str(error))
+        finish_run_log(run_log, status="failed")
+        save_run_log(run_log, str(Path(logs_dir)))
+        raise
+
+    save_run_log(run_log, str(Path(logs_dir)))
+
+    return output_path_p

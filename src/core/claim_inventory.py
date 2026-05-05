@@ -111,15 +111,22 @@ def create_claim_record(
     anchor_clip: AnchorClip,
     claim_type: ClaimType,
     embed_base_url: str,
+    *,
+    require_verbatim: bool = True,
 ) -> ClaimRecord | None:
-    is_verbatim = verify_verbatim_quote(
-        source_text=source_text,
-        verbatim_quote=verbatim_quote,
-        char_start=char_offset_start,
-        char_end=char_offset_end,
-    )
-
-    if not is_verbatim:
+    if require_verbatim:
+        if not verify_verbatim_quote(
+            source_text=source_text,
+            verbatim_quote=verbatim_quote,
+            char_start=char_offset_start,
+            char_end=char_offset_end,
+        ):
+            return None
+    elif (
+        char_offset_start < 0
+        or char_offset_end > len(source_text)
+        or char_offset_end <= char_offset_start
+    ):
         return None
 
     verification_strategy = map_claim_type_to_strategy(claim_type)
@@ -145,6 +152,8 @@ def build_claim_inventory(
     candidate_claims: list[dict],
     source_text_by_chunk_id: dict[str, str],
     embed_base_url: str,
+    *,
+    drop_non_verbatim_claims: bool = True,
 ) -> list[ClaimRecord]:
     inventory: list[ClaimRecord] = []
 
@@ -174,6 +183,7 @@ def build_claim_inventory(
             anchor_clip=anchor_clip,
             claim_type=candidate["claim_type"],
             embed_base_url=embed_base_url,
+            require_verbatim=drop_non_verbatim_claims,
         )
 
         if record is not None:

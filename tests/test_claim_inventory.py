@@ -87,6 +87,30 @@ def test_create_claim_record_returns_record_for_valid_verbatim_claim():
     assert "end=15" in record.embed_url
 
 
+def test_create_claim_record_keeps_non_verbatim_when_require_verbatim_disabled():
+    source_text = "The speaker says one thing."
+    span_text = "one thing"
+    start = source_text.index(span_text)
+    end = start + len(span_text)
+    mismatched_quote = "x" * len(span_text)
+
+    record = create_claim_record(
+        claim_id="claim_0002",
+        source_text=source_text,
+        verbatim_quote=mismatched_quote,
+        anchor_chunk="chunk_001",
+        char_offset_start=start,
+        char_offset_end=end,
+        anchor_clip=AnchorClip(start=5.0, end=9.0),
+        claim_type="empirical_technical",
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+        require_verbatim=False,
+    )
+
+    assert record is not None
+    assert record.verbatim_quote == mismatched_quote
+
+
 def test_create_claim_record_drops_non_verbatim_claim():
     source_text = "The speaker says one thing."
     quote = "The speaker says something else."

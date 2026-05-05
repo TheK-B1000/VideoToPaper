@@ -39,6 +39,25 @@ def test_parse_claim_inventory_settings_returns_none_when_absent():
     assert parse_claim_inventory_settings({"stage": "x"}) is None
 
 
+def test_parse_claim_inventory_settings_accepts_empty_allowed_claim_types(tmp_path):
+    section = {
+        "enabled": True,
+        "drop_non_verbatim_claims": True,
+        "require_embed_url": True,
+        "allowed_claim_types": [],
+        "output_path": "data/processed/claim_inventory.json",
+    }
+    config_path = tmp_path / "cfg.json"
+    config_path.write_text(
+        json.dumps({**_minimal_config_shell(), "claim_inventory": section}),
+        encoding="utf-8",
+    )
+    config = load_config(config_path)
+    parsed = parse_claim_inventory_settings(config)
+    assert parsed is not None
+    assert parsed["allowed_claim_types"] == []
+
+
 def test_parse_claim_inventory_settings_rejects_unknown_claim_type(tmp_path):
     base = {
         "enabled": True,
