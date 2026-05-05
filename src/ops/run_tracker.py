@@ -1,3 +1,11 @@
+"""
+Structured **pipeline run** logs (status, metrics, errors) saved as JSON per run.
+
+This is not the LLM **budget ledger** (append-only ``ledger_*.jsonl`` under
+``budget_persistence_dir``). For LLM attempt audit lines and stable fields such as
+``guard_reason_code``, see :mod:`src.ops.budget_ledger`.
+"""
+
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4

@@ -68,6 +68,8 @@ class LlmGuardRefusal(PermissionError):
     """
     Policy refusal from the LLM cost guard with a stable ``reason_code`` for
     ledger rows and alerting (distinct from human-readable ``str(exc)``).
+    Blocked calls record ``reason_code`` as ``guard_reason_code`` in the budget
+    ledger (see :mod:`src.ops.budget_ledger`).
 
     Examples of ``reason_code``: ``no_pricing``, ``model_not_allowed``,
     ``per_call_cost_exceeded``, ``dry_run_enabled``.

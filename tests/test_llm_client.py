@@ -69,6 +69,29 @@ def test_safe_llm_call_returns_response():
     assert response["text"] == "Fake LLM response"
 
 
+def test_safe_llm_call_success_ledger_omits_guard_reason_code(tmp_path):
+    persist = str(tmp_path / "budget")
+    state = CostGuardState()
+    budget_config = make_budget_config(budget_persistence_dir=persist)
+
+    safe_llm_call(
+        prompt_text="Summarize this transcript.",
+        expected_output_tokens=100,
+        budget_config=budget_config,
+        state=state,
+        llm_callable=fake_llm_callable,
+        model="gpt-4o-mini",
+        ledger_context={"pipeline_name": "unit_test"},
+    )
+
+    ledger_paths = sorted(Path(persist).glob("ledger_*.jsonl"))
+    assert len(ledger_paths) == 1
+    lines = ledger_paths[0].read_text(encoding="utf-8").strip().splitlines()
+    row = json.loads(lines[-1])
+    assert row["allowed"] is True
+    assert "guard_reason_code" not in row
+
+
 def test_safe_llm_call_records_actual_usage():
     state = CostGuardState()
     budget_config = make_budget_config()

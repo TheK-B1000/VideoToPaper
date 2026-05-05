@@ -54,6 +54,10 @@ def safe_llm_call(
             model=model,
         )
     except PermissionError as exc:
+        # permission_denied is the fallback bucket: a PermissionError reached the
+        # ledger without a reason_code attached. Post-LlmGuardRefusal refactor this
+        # should be unreachable from assert_llm_call_allowed; if it appears in logs,
+        # investigate why a plain PermissionError is being raised somewhere upstream.
         guard_reason_code = (
             exc.reason_code if isinstance(exc, LlmGuardRefusal) else "permission_denied"
         )
