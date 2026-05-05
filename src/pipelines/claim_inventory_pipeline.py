@@ -129,6 +129,29 @@ def _filter_candidates_by_claim_types(
     return [c for c in candidates if c.get("claim_type") in allowed]
 
 
+def _resolve_week2_input_path(
+    config: dict,
+    *,
+    output_paths_key: str,
+    explicit: str | Path | None,
+    fallback: Path,
+) -> Path:
+    """
+    Use explicit path when provided; otherwise prefer Week 2 paths from config
+    ``output_paths``; finally ``fallback``.
+    """
+    if explicit is not None:
+        return Path(explicit)
+
+    output_paths = config.get("output_paths")
+    if isinstance(output_paths, dict):
+        candidate = output_paths.get(output_paths_key)
+        if isinstance(candidate, str) and candidate.strip():
+            return Path(candidate.strip())
+
+    return fallback
+
+
 def load_chunks_payload(chunks_path: str | Path) -> list[dict]:
     data = load_json(str(chunks_path))
     chunks = data.get("chunks")
@@ -268,8 +291,8 @@ def run_claim_inventory_pipeline(
     *,
     embed_base_url: str | None = None,
     config_path: str | Path = Path("configs/argument_config.json"),
-    argument_map_path: str | Path = DEFAULT_ARGUMENT_MAP_PATH,
-    chunks_path: str | Path = DEFAULT_CHUNKS_PATH,
+    argument_map_path: str | Path | None = None,
+    chunks_path: str | Path | None = None,
     output_path: str | Path | None = None,
     logs_dir: str | Path = Path("logs/runs"),
 ) -> Path:
@@ -284,12 +307,29 @@ def run_claim_inventory_pipeline(
     Embed base URL resolution (first hit wins): Week 1 registry file
     (``source_registry_path`` or ``data/processed/source_registry.json``),
     ``claim_inventory.embed_base_url``, then the ``embed_base_url`` keyword argument.
+
+    When ``chunks_path`` / ``argument_map_path`` are omitted, paths are taken from
+    ``output_paths`` in the same config (Week 2 convention), then ``data/processed/``.
     """
-    chunks_path_s = str(Path(chunks_path))
-    argument_map_path_s = str(Path(argument_map_path))
     config_p = Path(config_path)
 
     full_config = load_config(config_p)
+
+    chunks_resolved = _resolve_week2_input_path(
+        full_config,
+        output_paths_key="chunks",
+        explicit=chunks_path,
+        fallback=DEFAULT_CHUNKS_PATH,
+    )
+    argument_map_resolved = _resolve_week2_input_path(
+        full_config,
+        output_paths_key="argument_map",
+        explicit=argument_map_path,
+        fallback=DEFAULT_ARGUMENT_MAP_PATH,
+    )
+
+    chunks_path_s = str(chunks_resolved)
+    argument_map_path_s = str(argument_map_resolved)
     fallback_out = (
         Path(output_path)
         if output_path is not None
@@ -337,8 +377,8 @@ def run_claim_inventory_pipeline(
         )
         record_metric(run_log, "embed_base_url_source", embed_provenance)
 
-        chunks = load_chunks_payload(chunks_path)
-        argument_map = load_argument_map_document(argument_map_path)
+        chunks = load_chunks_payload(chunks_resolved)
+        argument_map = load_argument_map_document(argument_map_resolved)
         chunks_by_id = _chunks_by_id(chunks)
         source_text_by_chunk_id = build_source_text_by_chunk_id(chunks)
 
@@ -413,13 +453,19 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--chunks-path",
-        default=str(DEFAULT_CHUNKS_PATH),
-        help="chunks.json from Week 2.",
+        default=None,
+        help=(
+            "chunks.json from Week 2. Default: output_paths.chunks in --config-path "
+            f"else {DEFAULT_CHUNKS_PATH}."
+        ),
     )
     parser.add_argument(
         "--argument-map-path",
-        default=str(DEFAULT_ARGUMENT_MAP_PATH),
-        help="argument_map.json from Week 2.",
+        default=None,
+        help=(
+            "argument_map.json from Week 2. Default: output_paths.argument_map in "
+            f"--config-path else {DEFAULT_ARGUMENT_MAP_PATH}."
+        ),
     )
     parser.add_argument(
         "--output-path",
