@@ -65,6 +65,12 @@ def test_claim_inventory_run_log_records_pipeline_metrics(tmp_path):
     logs_dir = tmp_path / "runs"
     config_path = tmp_path / "used_config.json"
 
+    registry_path = tmp_path / "source_registry.json"
+    _write_json(
+        registry_path,
+        {"embed_base_url": "https://www.youtube-nocookie.com/embed/ABC123"},
+    )
+
     _write_minimal_argument_config(
         config_path,
         claim_inventory={
@@ -73,6 +79,8 @@ def test_claim_inventory_run_log_records_pipeline_metrics(tmp_path):
             "require_embed_url": True,
             "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
             "output_path": str(output_path),
+            "embed_base_url": None,
+            "source_registry_path": str(registry_path),
         },
     )
 
@@ -83,7 +91,6 @@ def test_claim_inventory_run_log_records_pipeline_metrics(tmp_path):
     )
 
     run_claim_inventory_pipeline(
-        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
         config_path=config_path,
         argument_map_path=argument_map_path,
         chunks_path=chunks_path,
@@ -115,6 +122,7 @@ def test_claim_inventory_run_log_records_pipeline_metrics(tmp_path):
     assert metrics["dropped_claim_count"] == 0
     assert metrics["claim_type_counts"] == {"empirical_technical": 1}
     assert metrics["verification_strategy_counts"] == {"literature_review": 1}
+    assert metrics["embed_base_url_source"] == "registry"
 
     assert run_log["errors"] == []
 
@@ -125,7 +133,18 @@ def test_claim_inventory_run_log_records_failure(tmp_path):
     missing_chunks = tmp_path / "no_chunks.json"
     argument_map_path = tmp_path / "argument_map.json"
     config_path = tmp_path / "argument_config.json"
-    _write_minimal_argument_config(config_path)
+    _write_minimal_argument_config(
+        config_path,
+        claim_inventory={
+            "enabled": True,
+            "drop_non_verbatim_claims": True,
+            "require_embed_url": True,
+            "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+            "output_path": str(output_path),
+            "embed_base_url": None,
+            "source_registry_path": str(tmp_path / "registry_stub.json"),
+        },
+    )
     _write_json(argument_map_path, {"argument_map": {"map_type": "heuristic_argument_map"}})
 
     with pytest.raises(FileNotFoundError):

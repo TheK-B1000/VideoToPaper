@@ -3,6 +3,7 @@ from pathlib import Path
 
 from src.argument.argument_map_builder import build_argument_map
 from src.argument.argument_models import TranscriptChunk
+from src.core.claim_inventory_config import CANONICAL_CLAIM_TYPES
 from src.pipelines.claim_inventory_pipeline import (
     build_source_text_by_chunk_id,
     candidate_claims_from_argument_map,
@@ -18,6 +19,9 @@ def _write_json(path, obj):
 
 def _write_minimal_argument_config(
     path: Path,
+    *,
+    tmp_path: Path | None = None,
+    output_path: Path | None = None,
     claim_inventory: dict | None = None,
 ) -> Path:
     data = {
@@ -29,8 +33,18 @@ def _write_minimal_argument_config(
         "llm": {},
         "safety": {},
     }
-    if claim_inventory is not None:
-        data["claim_inventory"] = claim_inventory
+    if claim_inventory is None:
+        assert tmp_path is not None and output_path is not None
+        claim_inventory = {
+            "enabled": True,
+            "drop_non_verbatim_claims": True,
+            "require_embed_url": True,
+            "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+            "output_path": str(output_path),
+            "embed_base_url": None,
+            "source_registry_path": str(tmp_path / "registry_stub.json"),
+        }
+    data["claim_inventory"] = claim_inventory
     path.write_text(json.dumps(data), encoding="utf-8")
     return path
 
@@ -66,7 +80,11 @@ def test_run_claim_inventory_pipeline_writes_claim_inventory_and_returns_path(tm
     argument_map_path = tmp_path / "argument_map.json"
     output_path = tmp_path / "claim_inventory.json"
     config_path = tmp_path / "argument_config.json"
-    _write_minimal_argument_config(config_path)
+    _write_minimal_argument_config(
+        config_path,
+        tmp_path=tmp_path,
+        output_path=output_path,
+    )
 
     _write_json(
         chunks_path,

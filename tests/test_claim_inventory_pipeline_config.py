@@ -9,6 +9,17 @@ from src.core.claim_inventory_config import CANONICAL_CLAIM_TYPES
 from src.pipelines.claim_inventory_pipeline import run_claim_inventory_pipeline
 
 
+def _registry_stub_path(tmp_path: Path) -> str:
+    return str(tmp_path / "registry_stub.json")
+
+
+def _ci(core: dict, tmp_path: Path) -> dict:
+    merged = dict(core)
+    merged.setdefault("embed_base_url", None)
+    merged.setdefault("source_registry_path", _registry_stub_path(tmp_path))
+    return merged
+
+
 def _write_json(path: Path, obj) -> None:
     path.write_text(json.dumps(obj), encoding="utf-8")
 
@@ -76,13 +87,16 @@ def test_claim_inventory_output_path_from_config_overrides_kwarg(tmp_path):
 
     _write_minimal_argument_config(
         config_path,
-        claim_inventory={
-            "enabled": True,
-            "drop_non_verbatim_claims": True,
-            "require_embed_url": True,
-            "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
-            "output_path": str(out_from_config),
-        },
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(out_from_config),
+            },
+            tmp_path,
+        ),
     )
 
     returned = run_claim_inventory_pipeline(
@@ -106,13 +120,16 @@ def test_claim_inventory_enabled_false_writes_empty_outputs(tmp_path):
 
     _write_minimal_argument_config(
         config_path,
-        claim_inventory={
-            "enabled": False,
-            "drop_non_verbatim_claims": True,
-            "require_embed_url": True,
-            "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
-            "output_path": str(output_path),
-        },
+        claim_inventory=_ci(
+            {
+                "enabled": False,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(output_path),
+            },
+            tmp_path,
+        ),
     )
 
     returned = run_claim_inventory_pipeline(
@@ -136,13 +153,16 @@ def test_empty_allowed_claim_types_allows_all_canonical_claim_types(tmp_path):
 
     _write_minimal_argument_config(
         config_path,
-        claim_inventory={
-            "enabled": True,
-            "drop_non_verbatim_claims": True,
-            "require_embed_url": True,
-            "allowed_claim_types": [],
-            "output_path": str(output_path),
-        },
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": [],
+                "output_path": str(output_path),
+            },
+            tmp_path,
+        ),
     )
 
     returned = run_claim_inventory_pipeline(
@@ -171,13 +191,16 @@ def test_allowed_claim_types_subset_keeps_only_listed_empirical_types(tmp_path):
 
     _write_minimal_argument_config(
         config_path,
-        claim_inventory={
-            "enabled": True,
-            "drop_non_verbatim_claims": True,
-            "require_embed_url": True,
-            "allowed_claim_types": ["empirical_technical", "empirical_scientific"],
-            "output_path": str(output_path),
-        },
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": ["empirical_technical", "empirical_scientific"],
+                "output_path": str(output_path),
+            },
+            tmp_path,
+        ),
     )
 
     run_claim_inventory_pipeline(
@@ -200,13 +223,16 @@ def test_allowed_claim_types_excludes_non_matching_types(tmp_path):
 
     _write_minimal_argument_config(
         config_path,
-        claim_inventory={
-            "enabled": True,
-            "drop_non_verbatim_claims": True,
-            "require_embed_url": True,
-            "allowed_claim_types": ["interpretive"],
-            "output_path": str(output_path),
-        },
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": ["interpretive"],
+                "output_path": str(output_path),
+            },
+            tmp_path,
+        ),
     )
 
     run_claim_inventory_pipeline(
@@ -228,16 +254,19 @@ def test_require_embed_url_enforces_nonempty_embed_base(tmp_path):
 
     _write_minimal_argument_config(
         config_path,
-        claim_inventory={
-            "enabled": True,
-            "drop_non_verbatim_claims": True,
-            "require_embed_url": True,
-            "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
-            "output_path": str(output_path),
-        },
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(output_path),
+            },
+            tmp_path,
+        ),
     )
 
-    with pytest.raises(ValueError, match="embed_base_url is required"):
+    with pytest.raises(ValueError, match="Could not resolve embed_base_url"):
         run_claim_inventory_pipeline(
             embed_base_url=None,
             config_path=config_path,
@@ -254,13 +283,16 @@ def test_require_embed_url_false_allows_missing_embed_base(tmp_path):
 
     _write_minimal_argument_config(
         config_path,
-        claim_inventory={
-            "enabled": True,
-            "drop_non_verbatim_claims": True,
-            "require_embed_url": False,
-            "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
-            "output_path": str(output_path),
-        },
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": False,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(output_path),
+            },
+            tmp_path,
+        ),
     )
 
     run_claim_inventory_pipeline(
@@ -274,3 +306,166 @@ def test_require_embed_url_false_allows_missing_embed_base(tmp_path):
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["claim_count"] == 1
     assert "unknown" in payload["claims"][0]["embed_url"]
+    log_files = list((tmp_path / "runs").glob("*.json"))
+    run_log = json.loads(log_files[0].read_text(encoding="utf-8"))
+    assert run_log["metrics"]["embed_base_url_source"] == "fallback_unknown"
+
+
+def test_embed_resolution_prefers_registry_over_config_and_manual(tmp_path):
+    chunks_path, argument_map_path = _fixture_outputs(tmp_path)
+    output_path = tmp_path / "claim_inventory.json"
+    config_path = tmp_path / "argument_config.json"
+
+    registry_file = tmp_path / "week1_registry.json"
+    reg_url = "https://www.youtube-nocookie.com/embed/from_registry"
+    cfg_url = "https://www.youtube-nocookie.com/embed/from_config"
+    manual_url = "https://www.youtube-nocookie.com/embed/from_manual"
+    _write_json(registry_file, {"embed_base_url": reg_url})
+
+    _write_minimal_argument_config(
+        config_path,
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(output_path),
+                "embed_base_url": cfg_url,
+                "source_registry_path": str(registry_file),
+            },
+            tmp_path,
+        ),
+    )
+
+    run_claim_inventory_pipeline(
+        embed_base_url=manual_url,
+        config_path=config_path,
+        argument_map_path=argument_map_path,
+        chunks_path=chunks_path,
+        logs_dir=tmp_path / "runs",
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["claims"][0]["embed_url"].startswith(reg_url)
+
+    log_files = list((tmp_path / "runs").glob("*.json"))
+    run_log = json.loads(log_files[0].read_text(encoding="utf-8"))
+    assert run_log["metrics"]["embed_base_url_source"] == "registry"
+
+
+def test_embed_resolution_prefers_config_over_manual_when_registry_missing(tmp_path):
+    chunks_path, argument_map_path = _fixture_outputs(tmp_path)
+    output_path = tmp_path / "claim_inventory.json"
+    config_path = tmp_path / "argument_config.json"
+
+    cfg_url = "https://www.youtube-nocookie.com/embed/from_config"
+    manual_url = "https://www.youtube-nocookie.com/embed/from_manual"
+
+    _write_minimal_argument_config(
+        config_path,
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(output_path),
+                "embed_base_url": cfg_url,
+            },
+            tmp_path,
+        ),
+    )
+
+    run_claim_inventory_pipeline(
+        embed_base_url=manual_url,
+        config_path=config_path,
+        argument_map_path=argument_map_path,
+        chunks_path=chunks_path,
+        logs_dir=tmp_path / "runs",
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["claims"][0]["embed_url"].startswith(cfg_url)
+
+    log_files = list((tmp_path / "runs").glob("*.json"))
+    run_log = json.loads(log_files[0].read_text(encoding="utf-8"))
+    assert run_log["metrics"]["embed_base_url_source"] == "config"
+
+
+def test_embed_resolution_uses_manual_when_registry_and_config_missing(tmp_path):
+    chunks_path, argument_map_path = _fixture_outputs(tmp_path)
+    output_path = tmp_path / "claim_inventory.json"
+    config_path = tmp_path / "argument_config.json"
+
+    manual_url = "https://www.youtube-nocookie.com/embed/from_manual"
+
+    _write_minimal_argument_config(
+        config_path,
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(output_path),
+                "embed_base_url": None,
+            },
+            tmp_path,
+        ),
+    )
+
+    run_claim_inventory_pipeline(
+        embed_base_url=manual_url,
+        config_path=config_path,
+        argument_map_path=argument_map_path,
+        chunks_path=chunks_path,
+        logs_dir=tmp_path / "runs",
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["claims"][0]["embed_url"].startswith(manual_url)
+
+    log_files = list((tmp_path / "runs").glob("*.json"))
+    run_log = json.loads(log_files[0].read_text(encoding="utf-8"))
+    assert run_log["metrics"]["embed_base_url_source"] == "manual"
+
+
+def test_embed_resolution_loads_week1_registry_without_manual_embed(tmp_path):
+    chunks_path, argument_map_path = _fixture_outputs(tmp_path)
+    output_path = tmp_path / "claim_inventory.json"
+    config_path = tmp_path / "argument_config.json"
+
+    registry_file = tmp_path / "source_registry.json"
+    reg_url = "https://www.youtube-nocookie.com/embed/week1_registry_id"
+    _write_json(registry_file, {"embed_base_url": reg_url, "video_id": "week1_registry_id"})
+
+    _write_minimal_argument_config(
+        config_path,
+        claim_inventory=_ci(
+            {
+                "enabled": True,
+                "drop_non_verbatim_claims": True,
+                "require_embed_url": True,
+                "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
+                "output_path": str(output_path),
+                "embed_base_url": None,
+                "source_registry_path": str(registry_file),
+            },
+            tmp_path,
+        ),
+    )
+
+    run_claim_inventory_pipeline(
+        config_path=config_path,
+        argument_map_path=argument_map_path,
+        chunks_path=chunks_path,
+        logs_dir=tmp_path / "runs",
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["claims"][0]["embed_url"].startswith(reg_url)
+
+    log_files = list((tmp_path / "runs").glob("*.json"))
+    run_log = json.loads(log_files[0].read_text(encoding="utf-8"))
+    assert run_log["metrics"]["embed_base_url_source"] == "registry"

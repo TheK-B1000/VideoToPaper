@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from src.core.claim_inventory import (
@@ -24,6 +25,7 @@ from src.ops.run_tracker import (
 DEFAULT_ARGUMENT_MAP_PATH = Path("data/processed/argument_map.json")
 DEFAULT_CHUNKS_PATH = Path("data/processed/chunks.json")
 DEFAULT_CLAIM_INVENTORY_PATH = Path("data/processed/claim_inventory.json")
+DEFAULT_SOURCE_REGISTRY_PATH = Path("data/processed/source_registry.json")
 
 ARGUMENT_MAP_ITEM_SECTIONS = (
     "thesis_candidates",
@@ -42,14 +44,50 @@ ITEM_TYPE_TO_CLAIM_TYPE: dict[str, str] = {
 }
 
 
-def _effective_embed_base(*, require_embed_url: bool, embed_base_url: str | None) -> str:
-    if embed_base_url is not None and embed_base_url.strip():
-        return embed_base_url.strip()
+def _embed_base_from_registry(registry_path: Path) -> str | None:
+    if not registry_path.is_file():
+        return None
+    try:
+        data = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    url = data.get("embed_base_url")
+    if isinstance(url, str) and url.strip():
+        return url.strip()
+    return None
+
+
+def _resolve_claim_inventory_embed_base_url(
+    *,
+    registry_path: Path,
+    config_embed_base_url: str | None,
+    manual_embed_base_url: str | None,
+    require_embed_url: bool,
+) -> tuple[str, str]:
+    """
+    Prefer Week 1 ``embed_base_url`` from registry JSON, then config, then manual kwarg.
+
+    Returns ``(resolved_url, provenance)`` where provenance is ``registry``,
+    ``config``, ``manual``, or ``fallback_unknown``.
+    """
+    registry_embed = _embed_base_from_registry(registry_path)
+    if registry_embed:
+        return registry_embed, "registry"
+
+    if config_embed_base_url:
+        return config_embed_base_url.strip(), "config"
+
+    if manual_embed_base_url and manual_embed_base_url.strip():
+        return manual_embed_base_url.strip(), "manual"
+
     if require_embed_url:
         raise ValueError(
-            "embed_base_url is required when claim_inventory.require_embed_url is true"
+            "Could not resolve embed_base_url: populate Week 1 source_registry.json "
+            "embed_base_url, set claim_inventory.embed_base_url in config, or pass "
+            "embed_base_url= explicitly."
         )
-    return "https://www.youtube-nocookie.com/embed/unknown"
+
+    return "https://www.youtube-nocookie.com/embed/unknown", "fallback_unknown"
 
 
 def _resolved_claim_inventory_settings(
@@ -66,6 +104,8 @@ def _resolved_claim_inventory_settings(
         "require_embed_url": True,
         "allowed_claim_types": sorted(CANONICAL_CLAIM_TYPES),
         "output_path": str(fallback_output_path),
+        "embed_base_url": None,
+        "source_registry_path": None,
     }
 
 
@@ -239,6 +279,10 @@ def run_claim_inventory_pipeline(
     Reads ``claim_inventory`` from ``argument_config.json`` (or another JSON passed as
     ``config_path``) via ``load_config``. When that subsection is absent, defaults match
     the prior behaviour (enabled, all claim types, verbatim drops on).
+
+    Embed base URL resolution (first hit wins): Week 1 registry file
+    (``source_registry_path`` or ``data/processed/source_registry.json``),
+    ``claim_inventory.embed_base_url``, then the ``embed_base_url`` keyword argument.
     """
     chunks_path_s = str(Path(chunks_path))
     argument_map_path_s = str(Path(argument_map_path))
@@ -282,10 +326,15 @@ def run_claim_inventory_pipeline(
             save_run_log(run_log, str(Path(logs_dir)))
             return output_path_p
 
-        embed_effective = _effective_embed_base(
+        registry_file = Path(ci["source_registry_path"] or DEFAULT_SOURCE_REGISTRY_PATH)
+
+        embed_effective, embed_provenance = _resolve_claim_inventory_embed_base_url(
+            registry_path=registry_file,
+            config_embed_base_url=ci.get("embed_base_url"),
+            manual_embed_base_url=embed_base_url,
             require_embed_url=ci["require_embed_url"],
-            embed_base_url=embed_base_url,
         )
+        record_metric(run_log, "embed_base_url_source", embed_provenance)
 
         chunks = load_chunks_payload(chunks_path)
         argument_map = load_argument_map_document(argument_map_path)

@@ -5,7 +5,8 @@ import pytest
 
 from src.core.claim_inventory_config import (
     CANONICAL_CLAIM_TYPES,
-    CLAIM_INVENTORY_KEYS,
+    CLAIM_INVENTORY_ALLOWED_KEYS,
+    CLAIM_INVENTORY_REQUIRED_KEYS,
     parse_claim_inventory_settings,
 )
 from src.core.config import load_config
@@ -24,12 +25,15 @@ def test_repo_argument_config_claim_inventory_matches_expected_contract():
     section = parse_claim_inventory_settings(config)
 
     assert section is not None
-    assert set(section.keys()) == CLAIM_INVENTORY_KEYS
+    assert CLAIM_INVENTORY_REQUIRED_KEYS <= set(section.keys())
+    assert set(section.keys()) <= CLAIM_INVENTORY_ALLOWED_KEYS
 
     assert section["enabled"] is True
     assert section["drop_non_verbatim_claims"] is True
     assert section["require_embed_url"] is True
     assert section["output_path"] == "data/processed/claim_inventory.json"
+    assert section["embed_base_url"] is None
+    assert section["source_registry_path"] == "data/processed/source_registry.json"
 
     allowed = section["allowed_claim_types"]
     assert set(allowed) == CANONICAL_CLAIM_TYPES
@@ -56,6 +60,8 @@ def test_parse_claim_inventory_settings_accepts_empty_allowed_claim_types(tmp_pa
     parsed = parse_claim_inventory_settings(config)
     assert parsed is not None
     assert parsed["allowed_claim_types"] == []
+    assert parsed["embed_base_url"] is None
+    assert parsed["source_registry_path"] is None
 
 
 def test_parse_claim_inventory_settings_rejects_unknown_claim_type(tmp_path):

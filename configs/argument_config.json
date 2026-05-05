@@ -72,6 +72,8 @@
         "anecdotal",
         "predictive"
       ],
-      "output_path": "data/processed/claim_inventory.json"
+      "output_path": "data/processed/claim_inventory.json",
+      "embed_base_url": null,
+      "source_registry_path": "data/processed/source_registry.json"
     }
   }
