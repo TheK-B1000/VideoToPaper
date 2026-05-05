@@ -1265,5 +1265,237 @@ def test_run_speaker_perspective_pipeline_invalid_llm_anchors_fall_back_cleanly(
     assert run_log["metrics"]["fallback_reason"] == "llm_response_validation_failed"
 
 
+def _write_steelman_runner_fixture(
+    *,
+    tmp_path: Path,
+    use_llm: bool,
+) -> tuple[Path, Path, Path]:
+    """Minimal argument_config + Week 2/3 inputs for :func:`run_steelman_pipeline`."""
+    config_path = tmp_path / "argument_config.json"
+    argument_map_path = tmp_path / "argument_map.json"
+    claim_inventory_path = tmp_path / "claim_inventory.json"
+    output_path = tmp_path / "speaker_perspective.json"
+    logs_dir = tmp_path / "logs"
+
+    budget_dir = tmp_path / "budget_persist"
+    budget_dir.mkdir(parents=True, exist_ok=True)
+
+    budget = make_steelman_budget_config(
+        budget_persistence_dir=str(budget_dir),
+        allowed_models=["gemini-2.5-flash-lite"],
+        model_pricing={},
+        max_estimated_cost_usd_per_call=0.0,
+        max_estimated_cost_usd_per_run=0.0,
+        max_estimated_cost_usd_per_day=0.0,
+        max_estimated_cost_usd_per_month=0.0,
+    )
+    budget["mode"] = "free_only"
+    budget["daily_budget_usd"] = 0.0
+    budget["monthly_budget_usd"] = 0.0
+
+    (tmp_path / "chunks_stub.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "reg_stub.json").write_text("{}", encoding="utf-8")
+
+    config_path.write_text(
+        json.dumps(
+            {
+                "stage": "argument_structure",
+                "input_path": "data/x.json",
+                "output_paths": {
+                    "chunks": str(tmp_path / "chunks_stub.json"),
+                    "argument_map": str(argument_map_path.resolve()),
+                },
+                "chunking": {},
+                "anchors": {},
+                "llm": {},
+                "safety": {},
+                "budget": budget,
+                "claim_inventory": {
+                    "enabled": True,
+                    "drop_non_verbatim_claims": True,
+                    "require_embed_url": False,
+                    "allowed_claim_types": [],
+                    "output_path": str(claim_inventory_path.resolve()),
+                    "embed_base_url": None,
+                    "source_registry_path": str(tmp_path / "reg_stub.json"),
+                },
+                "speaker_perspective": {
+                    "enabled": True,
+                    "use_llm": use_llm,
+                    "output_path": str(output_path),
+                    "llm": {
+                        "provider": "gemini",
+                        "model": "gemini-2.5-flash-lite",
+                        "max_output_tokens": 500,
+                        "max_claims_per_call": 6,
+                        "fallback_on_guard_rejection": True,
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    argument_map_path.write_text(
+        json.dumps(
+            {
+                "argument_map": {
+                    "thesis": (
+                        "The speaker argues that multi-agent learning is unstable."
+                    ),
+                    "qualifications": [],
+                    "supporting_points": [],
+                    "thesis_candidates": [],
+                    "examples": [],
+                    "summary_claims": [],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    claim_inventory_path.write_text(
+        json.dumps(
+            {
+                "claims": [
+                    {
+                        "claim_id": "claim_001",
+                        "verbatim_quote": (
+                            "agents change the environment while learning"
+                        ),
+                        "claim_type": "empirical_technical",
+                        "embed_url": (
+                            "https://www.youtube-nocookie.com/embed/ABC123"
+                            "?start=12&end=18"
+                        ),
+                        "anchor_chunk": "chunk_001",
+                        "char_offset_start": 0,
+                        "char_offset_end": 43,
+                        "anchor_clip": {"start": 12.0, "end": 18.0},
+                        "verification_strategy": "literature_review",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    return config_path, output_path, logs_dir
+
+
+def test_run_steelman_pipeline_use_llm_false_never_calls_guarded_llm_adapter(
+    tmp_path,
+):
+    config_path, output_path, logs_dir = _write_steelman_runner_fixture(
+        tmp_path=tmp_path,
+        use_llm=False,
+    )
+
+    with patch(
+        "src.pipelines.run_steelman_pipeline._build_steelman_section_with_guarded_llm"
+    ) as mocked_llm_adapter:
+        run_steelman_pipeline(
+            config_path=config_path,
+            logs_dir=logs_dir,
+        )
+
+    mocked_llm_adapter.assert_not_called()
+    assert output_path.is_file()
+
+    run_log = json.loads(next(logs_dir.glob("*.json")).read_text(encoding="utf-8"))
+
+    assert run_log["metrics"]["llm_mode_attempted"] is False
+    assert run_log["metrics"]["llm_mode_used"] is False
+    assert run_log["metrics"]["fallback_used"] is False
+    assert run_log["metrics"]["fallback_reason"] == ""
+
+
+def test_run_steelman_pipeline_use_llm_true_records_adapter_success(tmp_path):
+    config_path, output_path, logs_dir = _write_steelman_runner_fixture(
+        tmp_path=tmp_path,
+        use_llm=True,
+    )
+
+    mocked_section = {
+        "section_title": "The Speaker's Perspective",
+        "narrative_blocks": [
+            {
+                "text": "LLM drafted but anchored block.",
+                "verbatim_anchors": ["claim_001"],
+                "embedded_clip": "claim_001",
+            }
+        ],
+        "qualifications_preserved": [],
+        "self_recognition_check": "passed",
+    }
+
+    with patch(
+        "src.pipelines.run_steelman_pipeline._build_steelman_section_with_guarded_llm",
+        return_value=(mocked_section, ""),
+    ) as mocked_llm_adapter:
+        run_steelman_pipeline(
+            config_path=config_path,
+            logs_dir=logs_dir,
+        )
+
+    mocked_llm_adapter.assert_called_once()
+    kwargs = mocked_llm_adapter.call_args.kwargs
+
+    assert kwargs["llm_settings"]["provider"] == "gemini"
+    assert kwargs["llm_settings"]["model"] == "gemini-2.5-flash-lite"
+    assert kwargs["budget_config"]["mode"] == "free_only"
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["narrative_blocks"][0]["text"] == "LLM drafted but anchored block."
+
+    run_log = json.loads(next(logs_dir.glob("*.json")).read_text(encoding="utf-8"))
+
+    assert run_log["metrics"]["llm_mode_attempted"] is True
+    assert run_log["metrics"]["llm_mode_used"] is True
+    assert run_log["metrics"]["fallback_used"] is False
+    assert run_log["metrics"]["fallback_reason"] == ""
+
+
+def test_run_steelman_pipeline_use_llm_true_records_adapter_fallback(tmp_path):
+    config_path, output_path, logs_dir = _write_steelman_runner_fixture(
+        tmp_path=tmp_path,
+        use_llm=True,
+    )
+
+    fallback_section = {
+        "section_title": "The Speaker's Perspective",
+        "narrative_blocks": [
+            {
+                "text": (
+                    "The speaker emphasizes the following point: "
+                    "\u201cagents change the environment while learning\u201d"
+                ),
+                "verbatim_anchors": ["claim_001"],
+                "embedded_clip": "claim_001",
+            }
+        ],
+        "qualifications_preserved": [],
+        "self_recognition_check": "passed",
+    }
+
+    with patch(
+        "src.pipelines.run_steelman_pipeline._build_steelman_section_with_guarded_llm",
+        return_value=(fallback_section, "cost_guard_rejected"),
+    ):
+        run_steelman_pipeline(
+            config_path=config_path,
+            logs_dir=logs_dir,
+        )
+
+    assert output_path.is_file()
+
+    run_log = json.loads(next(logs_dir.glob("*.json")).read_text(encoding="utf-8"))
+
+    assert run_log["metrics"]["llm_mode_attempted"] is True
+    assert run_log["metrics"]["llm_mode_used"] is False
+    assert run_log["metrics"]["fallback_used"] is True
+    assert run_log["metrics"]["fallback_reason"] == "cost_guard_rejected"
+
+
 def test_default_output_matches_processed_path():
     assert DEFAULT_SPEAKER_PERSPECTIVE_PATH.name == "speaker_perspective.json"
