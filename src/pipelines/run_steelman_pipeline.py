@@ -21,7 +21,7 @@ from typing import Any, Callable
 
 from src.core.config import load_config
 from src.ops.cost_guard import CostGuardState
-from src.ops.llm_client import safe_llm_call
+from src.ops.llm_client import gemini_rest_llm_callable, safe_llm_call
 from src.ops.run_tracker import (
     create_run_log,
     finish_run_log,
@@ -284,6 +284,29 @@ def _load_claim_inventory_claims(claim_inventory_path: Path) -> list[dict[str, A
     return claims
 
 
+def _resolve_steelman_vendor_callable(
+    sp: dict[str, Any],
+    explicit: Callable[..., dict] | None,
+) -> Callable[..., dict] | None:
+    """
+    Pick a vendor ``llm_callable`` for steelman when not injected (tests pass explicit).
+
+    ``provider: gemini`` uses :func:`src.ops.llm_client.gemini_rest_llm_callable`
+    (requires ``GEMINI_API_KEY`` or ``GOOGLE_API_KEY``).
+    """
+    if explicit is not None:
+        return explicit
+    if not sp.get("use_llm"):
+        return None
+    llm = sp.get("llm")
+    if not isinstance(llm, dict):
+        return None
+    provider = str(llm.get("provider", "")).strip().lower()
+    if provider == "gemini":
+        return gemini_rest_llm_callable
+    return None
+
+
 def run_steelman_pipeline(
     *,
     config_path: str | Path = Path("configs/argument_config.json"),
@@ -386,6 +409,8 @@ def run_steelman_pipeline(
         claims = _load_claim_inventory_claims(claim_resolved)
         argument_inner = load_argument_map_document(argument_resolved)
 
+        resolved_llm_callable = _resolve_steelman_vendor_callable(sp, llm_callable)
+
         if sp["use_llm"]:
             record_metric(run_log, "speaker_perspective_llm_requested", True)
             budget_cfg = full_config.get("budget")
@@ -400,7 +425,7 @@ def run_steelman_pipeline(
                     "run_id": run_log["run_id"],
                     "pipeline_name": run_log["pipeline_name"],
                 },
-                llm_callable=llm_callable,
+                llm_callable=resolved_llm_callable,
             )
             llm_used = fallback_reason == ""
             record_metric(run_log, "speaker_perspective_llm_executed", llm_used)

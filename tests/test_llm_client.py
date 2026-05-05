@@ -219,3 +219,17 @@ def test_safe_llm_call_blocked_writes_guard_reason_code_to_ledger(tmp_path):
     assert row["allowed"] is False
     assert row["guard_reason_code"] == "dry_run_enabled"
     assert row["reason"]
+
+
+def test_gemini_rest_llm_callable_requires_api_key(monkeypatch):
+    from src.ops.llm_client import gemini_rest_llm_callable
+
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+
+    with pytest.raises(RuntimeError, match="GEMINI_API_KEY"):
+        gemini_rest_llm_callable(
+            prompt_text="hi",
+            expected_output_tokens=10,
+            model="gemini-2.5-flash-lite",
+        )

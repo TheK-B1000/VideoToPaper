@@ -10,6 +10,9 @@ htmlcov/
 
 .env
 
+# Local-only overrides (may enable LLM); never commit secrets here
+configs/*.local.json
+
 # Keep layout; ignore generated/large files under these trees
 data/raw/*
 !data/raw/.gitkeep

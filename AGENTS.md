@@ -54,4 +54,12 @@ Before estimation, **`validate_prompt_for_llm`** can reject: prompts over **`max
 
 Pre-flight uses **`estimate_tokens()`** (rough chars÷4). For tighter caps, prefer the **target model’s tokenizer** in call sites that can supply accurate counts. Post-call accounting must use **actual** usage from the API when available.
 
+### Gemini steelman smoke (optional, local)
+
+Shipped **`configs/argument_config.json`** keeps **`speaker_perspective.use_llm`: false**. For a **real** Gemini call through **`safe_llm_call`**, copy **`configs/argument_config.gemini_smoke.example.json`** to **`configs/argument_config.gemini_smoke.local.json`** (pattern **`configs/*.local.json`** is gitignored). Set **`GEMINI_API_KEY`** or **`GOOGLE_API_KEY`**, and **`ALLOW_REAL_LLM_CALLS=true`**. Ensure **`data/outputs/argument_map.json`** and **`data/processed/claim_inventory.json`** exist (Week 2/3 outputs from your usual argument-structure / claim-inventory entrypoints — `main.py` does not expose a separate `--stage argument` switch). Then:
+
+`python main.py --stage steelman --config-path configs/argument_config.gemini_smoke.local.json`
+
+Inspect **`logs/runs`**, **`logs/budget`** ledger lines (**`guard_reason_code`** absent on success, present on guard refusal), and **`data/processed/speaker_perspective.json`**. Do not commit API keys, **`*.local.json`**, or generated logs unless intentional.
+
 Cursor rule: `.cursor/rules/llm-gateway.mdc`.
