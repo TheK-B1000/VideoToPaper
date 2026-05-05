@@ -58,5 +58,20 @@
       "max_llm_retries_per_call": 1,
       "budget_persistence_dir": "logs/budget",
       "fail_closed": true
+    },
+    "claim_inventory": {
+      "enabled": true,
+      "drop_non_verbatim_claims": true,
+      "require_embed_url": true,
+      "allowed_claim_types": [
+        "empirical_technical",
+        "empirical_historical",
+        "empirical_scientific",
+        "interpretive",
+        "normative",
+        "anecdotal",
+        "predictive"
+      ],
+      "output_path": "data/processed/claim_inventory.json"
     }
   }
