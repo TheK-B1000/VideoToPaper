@@ -5,6 +5,7 @@ import pytest
 from src.ops.cost_guard import (
     BUILTIN_MODEL_PRICING,
     CostGuardState,
+    LlmGuardRefusal,
     assert_llm_call_allowed,
     estimate_llm_cost_usd,
     estimate_tokens,
@@ -403,6 +404,11 @@ def test_builtin_model_pricing_includes_gemini_flash_lite_at_zero():
     assert row["output_cost_per_1m_tokens"] == 0.0
 
 
+def test_builtin_model_pricing_does_not_seed_placeholder_openai_rates():
+    """Paid vendor defaults live in config/tests only—never silent 0.15/0.60 builtins."""
+    assert "gpt-4o-mini" not in BUILTIN_MODEL_PRICING
+
+
 def test_merged_model_pricing_keeps_builtin_when_config_empty():
     budget = make_budget_config()
     budget["model_pricing"] = {}
@@ -424,14 +430,18 @@ def test_model_pricing_config_overrides_builtin_gemini_rates():
     assert out == 2.0
 
 
-def test_resolve_model_pricing_unknown_model_raises():
+def test_resolve_model_pricing_unknown_model_raises_permission_error():
     budget = make_budget_config()
-    with pytest.raises(ValueError, match="No pricing configured"):
+    with pytest.raises(LlmGuardRefusal, match="no pricing for model") as excinfo:
         resolve_model_pricing_for_call("unknown-model-xyz", budget)
+    assert excinfo.value.reason_code == "no_pricing"
+    assert "unknown-model-xyz" in str(excinfo.value)
 
 
-def test_assert_llm_call_allowed_value_error_when_allowed_model_lacks_pricing():
+def test_assert_llm_call_allowed_permission_error_when_allowlisted_model_has_no_price():
+    """Operator misconfiguration: model in allowlist but no merged pricing row."""
     state = CostGuardState()
+    assert "custom-mini" not in BUILTIN_MODEL_PRICING
     budget_config = make_budget_config(
         allowed_models=["custom-mini"],
         model_pricing={
@@ -441,8 +451,9 @@ def test_assert_llm_call_allowed_value_error_when_allowed_model_lacks_pricing():
             },
         },
     )
+    assert "custom-mini" not in budget_config["model_pricing"]
 
-    with pytest.raises(ValueError, match="No pricing configured"):
+    with pytest.raises(LlmGuardRefusal, match="no pricing for model") as excinfo:
         assert_llm_call_allowed(
             prompt_text="Short prompt.",
             expected_output_tokens=10,
@@ -450,6 +461,28 @@ def test_assert_llm_call_allowed_value_error_when_allowed_model_lacks_pricing():
             state=state,
             model="custom-mini",
         )
+    assert excinfo.value.reason_code == "no_pricing"
+    assert "custom-mini" in str(excinfo.value)
+
+
+def test_model_pricing_adding_one_model_leaves_other_builtin_rates_unchanged():
+    budget = make_budget_config(
+        model_pricing={
+            "gpt-4o-mini": {
+                "input_cost_per_1m_tokens": 0.15,
+                "output_cost_per_1m_tokens": 0.60,
+            },
+        },
+    )
+    gemini_in, gemini_out = resolve_model_pricing_for_call(
+        "gemini-2.5-flash-lite", budget
+    )
+    assert gemini_in == 0.0
+    assert gemini_out == 0.0
+
+    openai_in, openai_out = resolve_model_pricing_for_call("gpt-4o-mini", budget)
+    assert openai_in == pytest.approx(0.15)
+    assert openai_out == pytest.approx(0.60)
 
 
 def test_model_pricing_entry_must_include_output_rate():

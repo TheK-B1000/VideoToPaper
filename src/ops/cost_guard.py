@@ -64,8 +64,27 @@ def estimate_llm_cost_usd(
     return input_cost + output_cost
 
 
+class LlmGuardRefusal(PermissionError):
+    """
+    Policy refusal from the LLM cost guard with a stable ``reason_code`` for
+    ledger rows and alerting (distinct from human-readable ``str(exc)``).
+
+    Examples of ``reason_code``: ``no_pricing``, ``model_not_allowed``,
+    ``per_call_cost_exceeded``, ``dry_run_enabled``.
+    """
+
+    __slots__ = ("reason_code",)
+
+    def __init__(self, reason_code: str, message: str) -> None:
+        super().__init__(message)
+        self.reason_code = reason_code
+
+
 # Built-in per-model rates (USD per 1M tokens). Merged with ``budget_config["model_pricing"]``;
 # config entries override these for the same model id.
+#
+# Keep vendor-specific *paid* defaults out of here—those belong in ``model_pricing`` so prod
+# rates are explicit and tests can use fixture pricing without inheriting wrong numbers.
 BUILTIN_MODEL_PRICING: dict[str, dict[str, float]] = {
     "gemini-2.5-flash-lite": {
         "input_cost_per_1m_tokens": 0.0,
@@ -98,6 +117,10 @@ def merged_model_pricing_table(budget_config: dict) -> dict[str, dict[str, float
 
     Starts from :data:`BUILTIN_MODEL_PRICING`, then applies ``budget_config["model_pricing"]``
     overrides (full replace per model id).
+
+    Dict insertion order is builtins first, then each config key in JSON/object order.
+    No guard logic depends on iteration order; use only for stable display/logging on
+    supported Python versions (dict order is guaranteed 3.7+).
     """
     raw = budget_config["model_pricing"]
     if not isinstance(raw, dict):
@@ -117,13 +140,21 @@ def merged_model_pricing_table(budget_config: dict) -> dict[str, dict[str, float
 
 
 def resolve_model_pricing_for_call(model: str, budget_config: dict) -> tuple[float, float]:
-    """Resolve input/output per-1M-token USD rates for ``model`` from merged pricing."""
+    """
+    Resolve input/output per-1M-token USD rates for ``model`` from merged pricing.
+
+    Raises:
+        LlmGuardRefusal: ``model`` is absent from the merged table (refuse unpriced calls).
+        ValueError: ``budget_config.model_pricing`` or an entry is malformed.
+    """
     table = merged_model_pricing_table(budget_config)
     key = model.strip()
     if key not in table:
-        raise ValueError(
-            f"No pricing configured for model {key!r}; add it under budget.model_pricing "
-            "or use a model defined in the built-in pricing registry"
+        raise LlmGuardRefusal(
+            "no_pricing",
+            "Refusing LLM call: no pricing for model "
+            f"{key!r}; add budget.model_pricing[{key!r}] or use a model in the "
+            "built-in pricing registry",
         )
     row = table[key]
     return row["input_cost_per_1m_tokens"], row["output_cost_per_1m_tokens"]
@@ -141,8 +172,9 @@ def kill_switch_active(root: Path | None = None) -> bool:
 def assert_real_llm_armed() -> None:
     """Require explicit env arming before real (non-dry-run) LLM calls."""
     if os.getenv("ALLOW_REAL_LLM_CALLS", "").strip().lower() != "true":
-        raise PermissionError(
-            "Real LLM calls are not armed (set environment ALLOW_REAL_LLM_CALLS=true)"
+        raise LlmGuardRefusal(
+            "real_llm_not_armed",
+            "Real LLM calls are not armed (set environment ALLOW_REAL_LLM_CALLS=true)",
         )
 
 
@@ -159,14 +191,16 @@ def validate_prompt_for_llm(prompt_text: str, budget_config: dict) -> None:
         raise ValueError("budget_config.max_prompt_chars must be a positive integer")
 
     if len(prompt_text) > max_chars:
-        raise PermissionError(
-            f"prompt exceeds max_prompt_chars ({max_chars}); refusing LLM call"
+        raise LlmGuardRefusal(
+            "prompt_exceeds_max_chars",
+            f"prompt exceeds max_prompt_chars ({max_chars}); refusing LLM call",
         )
 
     if budget_config.get("reject_prompt_api_key_like_strings", True):
         if re.search(r"sk-[a-zA-Z0-9]{16,}", prompt_text):
-            raise PermissionError(
-                "prompt appears to contain an API-key-like substring; refusing LLM call"
+            raise LlmGuardRefusal(
+                "prompt_contains_api_key_like_string",
+                "prompt appears to contain an API-key-like substring; refusing LLM call",
             )
 
     max_blob = budget_config.get("max_base64_like_line_chars", 4000)
@@ -176,14 +210,16 @@ def validate_prompt_for_llm(prompt_text: str, budget_config: dict) -> None:
             if len(stripped) >= max_blob and re.fullmatch(
                 r"[A-Za-z0-9+/=\s]+", stripped
             ):
-                raise PermissionError(
-                    "prompt contains a very long base64-like line; refusing LLM call"
+                raise LlmGuardRefusal(
+                    "prompt_contains_long_base64_line",
+                    "prompt contains a very long base64-like line; refusing LLM call",
                 )
 
     for needle in budget_config.get("reject_prompt_substrings", []) or []:
         if isinstance(needle, str) and needle and needle in prompt_text:
-            raise PermissionError(
-                f"prompt contains forbidden substring {needle!r}; refusing LLM call"
+            raise LlmGuardRefusal(
+                "prompt_contains_forbidden_substring",
+                f"prompt contains forbidden substring {needle!r}; refusing LLM call",
             )
 
 
@@ -205,7 +241,8 @@ def assert_llm_call_allowed(
     Call **before** any vendor I/O. Requires explicit env arming for real calls.
 
     Raises:
-        PermissionError: Policy / budget / kill-switch / prompt rejection.
+        LlmGuardRefusal: Policy / budget / kill-switch / prompt rejection (subclass of
+            ``PermissionError`` with ``reason_code``).
         ValueError: Invalid configuration or token counts.
     """
     if not isinstance(budget_config, dict):
@@ -242,10 +279,13 @@ def assert_llm_call_allowed(
         raise ValueError("fail_closed must be true for safety")
 
     if kill_switch_active(kill_switch_root):
-        raise PermissionError("LLM kill switch is active (.llm_kill_switch present)")
+        raise LlmGuardRefusal(
+            "kill_switch_active",
+            "LLM kill switch is active (.llm_kill_switch present)",
+        )
 
     if not budget_config["llm_enabled"]:
-        raise PermissionError("LLM calls are disabled by config")
+        raise LlmGuardRefusal("llm_disabled", "LLM calls are disabled by config")
 
     validate_prompt_for_llm(prompt_text, budget_config)
 
@@ -260,19 +300,25 @@ def assert_llm_call_allowed(
 
     allowed_norm = [x.strip() for x in allowed_raw if x.strip()]
     if not allowed_norm:
-        raise PermissionError("allowed_models is empty; no LLM model is permitted")
+        raise LlmGuardRefusal(
+            "allowed_models_empty",
+            "allowed_models is empty; no LLM model is permitted",
+        )
 
     if model is None or not str(model).strip():
-        raise PermissionError("model is required and must be a non-empty string")
+        raise LlmGuardRefusal(
+            "model_required",
+            "model is required and must be a non-empty string",
+        )
 
     model_clean = model.strip()
     if model_clean not in allowed_norm:
-        raise PermissionError(f"Model not allowed: {model_clean}")
+        raise LlmGuardRefusal(
+            "model_not_allowed",
+            f"Model not allowed: {model_clean}",
+        )
 
-    try:
-        in_price, out_price = resolve_model_pricing_for_call(model_clean, budget_config)
-    except ValueError as exc:
-        raise ValueError(str(exc)) from exc
+    in_price, out_price = resolve_model_pricing_for_call(model_clean, budget_config)
 
     input_tokens = estimate_tokens(prompt_text)
     output_tokens = expected_output_tokens
@@ -285,10 +331,11 @@ def assert_llm_call_allowed(
     )
 
     if estimated_call_cost > budget_config["max_estimated_cost_usd_per_call"]:
-        raise PermissionError(
+        raise LlmGuardRefusal(
+            "per_call_cost_exceeded",
             "LLM estimated cost limit exceeded for this call "
             f"({estimated_call_cost:.6f} > "
-            f"{budget_config['max_estimated_cost_usd_per_call']})"
+            f"{budget_config['max_estimated_cost_usd_per_call']})",
         )
 
     persistence_dir = budget_config.get("budget_persistence_dir") or ""
@@ -306,12 +353,14 @@ def assert_llm_call_allowed(
         day_cap = float(budget_config["max_estimated_cost_usd_per_day"])
         month_cap = float(budget_config["max_estimated_cost_usd_per_month"])
         if daily + estimated_call_cost > day_cap:
-            raise PermissionError(
-                "LLM estimated daily cost limit exceeded for this call"
+            raise LlmGuardRefusal(
+                "daily_cost_cap_exceeded",
+                "LLM estimated daily cost limit exceeded for this call",
             )
         if monthly + estimated_call_cost > month_cap:
-            raise PermissionError(
-                "LLM estimated monthly cost limit exceeded for this call"
+            raise LlmGuardRefusal(
+                "monthly_cost_cap_exceeded",
+                "LLM estimated monthly cost limit exceeded for this call",
             )
 
     projected_call_count = state.llm_call_count + 1
@@ -324,22 +373,40 @@ def assert_llm_call_allowed(
     projected_cost = state.total_estimated_cost_usd + estimated_call_cost
 
     if projected_call_count > budget_config["max_llm_calls_per_run"]:
-        raise PermissionError("LLM call limit exceeded for this run")
+        raise LlmGuardRefusal(
+            "max_calls_per_run_exceeded",
+            "LLM call limit exceeded for this run",
+        )
 
     if input_tokens > budget_config["max_input_tokens_per_call"]:
-        raise PermissionError("LLM input token limit exceeded for this call")
+        raise LlmGuardRefusal(
+            "input_tokens_per_call_exceeded",
+            "LLM input token limit exceeded for this call",
+        )
 
     if output_tokens > budget_config["max_output_tokens_per_call"]:
-        raise PermissionError("LLM output token limit exceeded for this call")
+        raise LlmGuardRefusal(
+            "output_tokens_per_call_exceeded",
+            "LLM output token limit exceeded for this call",
+        )
 
     if projected_total_tokens > budget_config["max_total_tokens_per_run"]:
-        raise PermissionError("LLM total token limit exceeded for this run")
+        raise LlmGuardRefusal(
+            "total_tokens_per_run_exceeded",
+            "LLM total token limit exceeded for this run",
+        )
 
     if projected_cost > budget_config["max_estimated_cost_usd_per_run"]:
-        raise PermissionError("LLM estimated cost limit exceeded for this run")
+        raise LlmGuardRefusal(
+            "run_cost_cap_exceeded",
+            "LLM estimated cost limit exceeded for this run",
+        )
 
     if budget_config["dry_run"]:
-        raise PermissionError("LLM dry_run is enabled; refusing real API call")
+        raise LlmGuardRefusal(
+            "dry_run_enabled",
+            "LLM dry_run is enabled; refusing real API call",
+        )
 
     assert_real_llm_armed()
 

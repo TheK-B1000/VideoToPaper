@@ -1,4 +1,6 @@
+import json
 import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -166,3 +168,31 @@ def test_safe_llm_call_falls_back_to_preflight_usage_when_actual_usage_missing()
     assert state.total_input_tokens > 0
     assert state.total_output_tokens == 50
     assert state.total_estimated_cost_usd > 0
+
+
+def test_safe_llm_call_blocked_writes_guard_reason_code_to_ledger(tmp_path):
+    persist = str(tmp_path / "budget")
+    state = CostGuardState()
+    budget_config = make_budget_config(
+        dry_run=True,
+        budget_persistence_dir=persist,
+    )
+
+    with pytest.raises(PermissionError, match="dry_run"):
+        safe_llm_call(
+            prompt_text="x",
+            expected_output_tokens=10,
+            budget_config=budget_config,
+            state=state,
+            llm_callable=lambda **_: {"text": "no"},
+            model="gpt-4o-mini",
+            ledger_context={"pipeline_name": "unit_test"},
+        )
+
+    ledger_paths = sorted(Path(persist).glob("ledger_*.jsonl"))
+    assert len(ledger_paths) == 1
+    lines = ledger_paths[0].read_text(encoding="utf-8").strip().splitlines()
+    row = json.loads(lines[-1])
+    assert row["allowed"] is False
+    assert row["guard_reason_code"] == "dry_run_enabled"
+    assert row["reason"]

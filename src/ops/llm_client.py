@@ -7,6 +7,7 @@ from src.ops.budget_ledger import append_llm_ledger_entry
 from src.ops.budget_persistence import record_spend_usd
 from src.ops.cost_guard import (
     CostGuardState,
+    LlmGuardRefusal,
     assert_llm_call_allowed,
     estimate_tokens,
     record_llm_usage,
@@ -53,6 +54,9 @@ def safe_llm_call(
             model=model,
         )
     except PermissionError as exc:
+        guard_reason_code = (
+            exc.reason_code if isinstance(exc, LlmGuardRefusal) else "permission_denied"
+        )
         if ledger_dir:
             append_llm_ledger_entry(
                 ledger_dir,
@@ -65,6 +69,7 @@ def safe_llm_call(
                     "expected_output_tokens": expected_output_tokens,
                     "estimated_cost_usd": None,
                     "allowed": False,
+                    "guard_reason_code": guard_reason_code,
                     "reason": str(exc),
                     "actual_input_tokens": None,
                     "actual_output_tokens": None,
