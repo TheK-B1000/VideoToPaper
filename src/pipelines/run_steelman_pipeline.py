@@ -5,8 +5,9 @@ Reads ``claim_inventory.json`` and Week 2 ``argument_map.json``, runs
 :func:`build_steelman_section`, writes ``data/processed/speaker_perspective.json``
 (or configured path).
 
-When ``use_llm`` is true, the run logs LLM intent but **does not** call the model yet;
-output stays conservative until ``safe_llm_call`` is wired.
+When ``use_llm`` is true, attempts :func:`src.ops.llm_client.safe_llm_call` with
+``build_steelman_prompt`` / ``parse_steelman_prompt_response`` and falls back to
+conservative output on any failure.
 
 CLI: ``python -m src.pipelines.run_steelman_pipeline``
 """
@@ -16,9 +17,11 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from src.core.config import load_config
+from src.ops.cost_guard import CostGuardState
+from src.ops.llm_client import safe_llm_call
 from src.ops.run_tracker import (
     create_run_log,
     finish_run_log,
@@ -32,6 +35,14 @@ from src.pipelines.claim_inventory_pipeline import (
     _resolve_week2_input_path,
     _resolved_claim_inventory_settings,
     load_argument_map_document,
+)
+from src.pipelines.steelman_llm import (
+    DEFAULT_INPUT_COST_PER_1M_TOKENS,
+    DEFAULT_OUTPUT_COST_PER_1M_TOKENS,
+)
+from src.pipelines.steelman_prompt import (
+    build_steelman_prompt,
+    parse_steelman_prompt_response,
 )
 from src.pipelines.steelman_pipeline import build_steelman_section
 
@@ -142,16 +153,21 @@ def _speaker_perspective_settings(config: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-def _steelman_llm_payload_placeholder(*, use_llm: bool, llm_requested: bool) -> dict[str, Any]:
-    """Artifact mirror of logged LLM posture (execution stays off until wired)."""
+def _steelman_llm_payload_placeholder(
+    *,
+    use_llm: bool,
+    llm_requested: bool,
+    llm_executed: bool,
+) -> dict[str, Any]:
+    """Artifact mirror of logged LLM posture."""
     return {
         "use_llm": use_llm,
         "llm_requested": llm_requested,
-        "llm_executed": False,
+        "llm_executed": llm_executed,
     }
 
 
-def _record_llm_mode_fallback_metrics(
+def _record_llm_fallback_state(
     run_log: dict[str, Any],
     *,
     attempted: bool,
@@ -159,11 +175,88 @@ def _record_llm_mode_fallback_metrics(
     fallback_used: bool,
     fallback_reason: str,
 ) -> None:
-    """Distinguish placeholder LLM / conservative fallback from ``use_llm: false`` in monitors."""
+    """Distinguish LLM success, fallback, and ``use_llm: false`` in monitors."""
     record_metric(run_log, "llm_mode_attempted", attempted)
     record_metric(run_log, "llm_mode_used", used)
     record_metric(run_log, "fallback_used", fallback_used)
     record_metric(run_log, "fallback_reason", fallback_reason)
+
+
+def _steelman_llm_vendor_not_configured(**kwargs: Any) -> dict[str, Any]:
+    raise RuntimeError("Steelman LLM vendor callable is not configured")
+
+
+def _response_text_from_llm_result(response: Any) -> str:
+    if isinstance(response, str):
+        return response
+    if isinstance(response, dict):
+        text = response.get("text")
+        return text if isinstance(text, str) else ""
+    return ""
+
+
+def _build_steelman_section_with_guarded_llm(
+    *,
+    claim_inventory: list[dict[str, Any]],
+    argument_map: dict[str, Any],
+    llm_settings: dict[str, Any],
+    budget_config: dict[str, Any],
+    ledger_context: dict[str, Any],
+    llm_callable: Callable[..., dict] | None,
+) -> tuple[dict[str, Any], str]:
+    """
+    Attempt LLM-assisted steelmanning through :func:`safe_llm_call` only.
+
+    Returns ``(section, fallback_reason)``. ``fallback_reason`` is ``\"\"`` when
+    the LLM path produces a passing section.
+    """
+    conservative = build_steelman_section(
+        claim_inventory=claim_inventory,
+        argument_map=argument_map,
+    )
+
+    if not budget_config:
+        return conservative, "missing_budget_config"
+
+    prompt = build_steelman_prompt(
+        claim_inventory=claim_inventory,
+        argument_map=argument_map,
+        max_claims=llm_settings["max_claims_per_call"],
+    )
+
+    vendor = llm_callable if llm_callable is not None else _steelman_llm_vendor_not_configured
+
+    try:
+        response = safe_llm_call(
+            prompt_text=prompt,
+            expected_output_tokens=int(llm_settings["max_output_tokens"]),
+            budget_config=budget_config,
+            state=CostGuardState(),
+            input_cost_per_1m_tokens=DEFAULT_INPUT_COST_PER_1M_TOKENS,
+            output_cost_per_1m_tokens=DEFAULT_OUTPUT_COST_PER_1M_TOKENS,
+            llm_callable=vendor,
+            model=llm_settings["model"],
+            ledger_context=ledger_context,
+        )
+    except Exception:
+        return conservative, "llm_call_failed"
+
+    response_text = _response_text_from_llm_result(response)
+    try:
+        drafted_blocks = parse_steelman_prompt_response(response_text)
+    except ValueError:
+        return conservative, "llm_response_parse_failed"
+
+    section = build_steelman_section(
+        claim_inventory=claim_inventory,
+        argument_map=argument_map,
+        drafted_blocks=drafted_blocks,
+    )
+
+    if section["self_recognition_check"] != "passed":
+        return conservative, "llm_response_validation_failed"
+
+    return section, ""
 
 
 def _resolve_claim_inventory_input_path(
@@ -195,12 +288,16 @@ def run_steelman_pipeline(
     argument_map_path: str | Path | None = None,
     output_path: str | Path | None = None,
     logs_dir: str | Path = Path("logs/runs"),
+    llm_callable: Callable[..., dict] | None = None,
 ) -> Path:
     """
     Build and save ``speaker_perspective.json``.
 
     Input paths default from the same ``argument_config.json`` as Week 3:
     ``claim_inventory.output_path`` and ``output_paths.argument_map``.
+
+    Optional ``llm_callable`` is passed through to :func:`safe_llm_call` (vendor
+    shim). When omitted, a stub raises unless ``safe_llm_call`` is mocked in tests.
     """
     config_p = Path(config_path)
     full_config = load_config(config_p)
@@ -256,6 +353,7 @@ def run_steelman_pipeline(
                 "steelman_llm": _steelman_llm_payload_placeholder(
                     use_llm=sp["use_llm"],
                     llm_requested=False,
+                    llm_executed=False,
                 ),
                 "section_title": "",
                 "narrative_blocks": [],
@@ -269,7 +367,7 @@ def run_steelman_pipeline(
             )
             record_metric(run_log, "speaker_perspective_llm_requested", False)
             record_metric(run_log, "speaker_perspective_llm_executed", False)
-            _record_llm_mode_fallback_metrics(
+            _record_llm_fallback_state(
                 run_log,
                 attempted=False,
                 used=False,
@@ -287,23 +385,29 @@ def run_steelman_pipeline(
 
         if sp["use_llm"]:
             record_metric(run_log, "speaker_perspective_llm_requested", True)
-            record_metric(run_log, "speaker_perspective_llm_executed", False)
+            budget_cfg = full_config.get("budget")
+            budget_dict = budget_cfg if isinstance(budget_cfg, dict) else {}
 
-            # LLM mode is intentionally not executed yet.
-            # The next implementation step must route through safe_llm_call.
-            # For now, we fall back to conservative steelmanning so the pipeline
-            # remains safe, deterministic, and free.
-            section = build_steelman_section(
+            section, fallback_reason = _build_steelman_section_with_guarded_llm(
                 claim_inventory=claims,
                 argument_map=argument_inner,
+                llm_settings=sp["llm"],
+                budget_config=budget_dict,
+                ledger_context={
+                    "run_id": run_log["run_id"],
+                    "pipeline_name": run_log["pipeline_name"],
+                },
+                llm_callable=llm_callable,
             )
+            llm_used = fallback_reason == ""
+            record_metric(run_log, "speaker_perspective_llm_executed", llm_used)
             llm_requested = True
-            _record_llm_mode_fallback_metrics(
+            _record_llm_fallback_state(
                 run_log,
                 attempted=True,
-                used=False,
-                fallback_used=True,
-                fallback_reason="llm_not_implemented",
+                used=llm_used,
+                fallback_used=fallback_reason != "",
+                fallback_reason=fallback_reason,
             )
         else:
             record_metric(run_log, "speaker_perspective_llm_requested", False)
@@ -314,13 +418,16 @@ def run_steelman_pipeline(
                 argument_map=argument_inner,
             )
             llm_requested = False
-            _record_llm_mode_fallback_metrics(
+            fallback_reason = ""
+            _record_llm_fallback_state(
                 run_log,
                 attempted=False,
                 used=False,
                 fallback_used=False,
                 fallback_reason="",
             )
+
+        llm_executed = bool(sp["use_llm"] and fallback_reason == "")
 
         payload = {
             "stage": "speaker_perspective",
@@ -330,6 +437,7 @@ def run_steelman_pipeline(
             "steelman_llm": _steelman_llm_payload_placeholder(
                 use_llm=sp["use_llm"],
                 llm_requested=llm_requested,
+                llm_executed=llm_executed,
             ),
             **section,
         }
