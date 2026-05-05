@@ -9,6 +9,7 @@ from src.core.claim_inventory import (
     load_claim_inventory_payload,
     map_claim_type_to_strategy,
     save_claim_inventory,
+    summarize_claim_inventory,
     validate_candidate_claim,
     verify_verbatim_quote,
 )
@@ -264,6 +265,89 @@ def test_claim_inventory_to_dicts_converts_records():
 
     assert dicts[0]["claim_id"] == "claim_0001"
     assert dicts[0]["anchor_clip"]["end"] == 3.0
+
+
+def test_summarize_claim_inventory_counts_types_and_strategies():
+    source_text = "Alpha beta gamma delta epsilon."
+    quote_a = "Alpha beta"
+    quote_b = "gamma delta"
+
+    start_a = source_text.index(quote_a)
+    end_a = start_a + len(quote_a)
+    start_b = source_text.index(quote_b)
+    end_b = start_b + len(quote_b)
+
+    empirical = create_claim_record(
+        claim_id="claim_emp",
+        source_text=source_text,
+        verbatim_quote=quote_a,
+        anchor_chunk="chunk_001",
+        char_offset_start=start_a,
+        char_offset_end=end_a,
+        anchor_clip=AnchorClip(start=1.0, end=2.0),
+        claim_type="empirical_technical",
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+    normative = create_claim_record(
+        claim_id="claim_norm",
+        source_text=source_text,
+        verbatim_quote=quote_b,
+        anchor_chunk="chunk_001",
+        char_offset_start=start_b,
+        char_offset_end=end_b,
+        anchor_clip=AnchorClip(start=3.0, end=4.0),
+        claim_type="normative",
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    assert empirical is not None and normative is not None
+
+    summary = summarize_claim_inventory([empirical, normative])
+
+    assert summary == {
+        "claim_count": 2,
+        "claim_type_counts": {"empirical_technical": 1, "normative": 1},
+        "verification_strategy_counts": {
+            "literature_review": 1,
+            "no_external_verification": 1,
+        },
+        "has_empirical_claims": True,
+    }
+
+
+def test_save_claim_inventory_payload_includes_summary(tmp_path):
+    source_text = "Standard single-agent algorithms assume stationarity."
+    quote = "single-agent algorithms assume stationarity"
+
+    start = source_text.index(quote)
+    end = start + len(quote)
+
+    inventory = build_claim_inventory(
+        candidate_claims=[
+            {
+                "claim_id": "claim_0001",
+                "verbatim_quote": quote,
+                "anchor_chunk": "chunk_001",
+                "char_offset_start": start,
+                "char_offset_end": end,
+                "anchor_clip": {"start": 10.0, "end": 15.0},
+                "claim_type": "empirical_technical",
+            }
+        ],
+        source_text_by_chunk_id={"chunk_001": source_text},
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+    )
+
+    output_path = tmp_path / "claim_inventory.json"
+
+    save_claim_inventory(
+        inventory=inventory,
+        output_path=output_path,
+    )
+
+    loaded_payload = load_claim_inventory_payload(output_path)
+
+    assert loaded_payload["summary"] == summarize_claim_inventory(inventory)
 
 
 def test_save_and_load_claim_inventory_payload(tmp_path):

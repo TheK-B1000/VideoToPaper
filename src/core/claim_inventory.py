@@ -21,6 +21,14 @@ VerificationStrategy = Literal[
     "future_tracking",
 ]
 
+EMPIRICAL_CLAIM_TYPES: frozenset[ClaimType] = frozenset(
+    {
+        "empirical_technical",
+        "empirical_historical",
+        "empirical_scientific",
+    }
+)
+
 
 @dataclass(frozen=True)
 class AnchorClip:
@@ -42,13 +50,7 @@ class ClaimRecord:
 
 
 def map_claim_type_to_strategy(claim_type: ClaimType) -> VerificationStrategy:
-    empirical_types = {
-        "empirical_technical",
-        "empirical_historical",
-        "empirical_scientific",
-    }
-
-    if claim_type in empirical_types:
+    if claim_type in EMPIRICAL_CLAIM_TYPES:
         return "literature_review"
 
     if claim_type == "predictive":
@@ -237,6 +239,25 @@ def claim_inventory_to_dicts(inventory: list[ClaimRecord]) -> list[dict]:
     return [claim_record_to_dict(record) for record in inventory]
 
 
+def summarize_claim_inventory(inventory: list[ClaimRecord]) -> dict:
+    claim_type_counts: dict[str, int] = {}
+    verification_strategy_counts: dict[str, int] = {}
+
+    for record in inventory:
+        claim_type_counts[record.claim_type] = claim_type_counts.get(record.claim_type, 0) + 1
+        vs = record.verification_strategy
+        verification_strategy_counts[vs] = verification_strategy_counts.get(vs, 0) + 1
+
+    has_empirical = any(record.claim_type in EMPIRICAL_CLAIM_TYPES for record in inventory)
+
+    return {
+        "claim_count": len(inventory),
+        "claim_type_counts": claim_type_counts,
+        "verification_strategy_counts": verification_strategy_counts,
+        "has_empirical_claims": has_empirical,
+    }
+
+
 def save_claim_inventory(
     inventory: list[ClaimRecord],
     output_path: str | Path,
@@ -247,6 +268,7 @@ def save_claim_inventory(
     payload = {
         "claim_count": len(inventory),
         "claims": claim_inventory_to_dicts(inventory),
+        "summary": summarize_claim_inventory(inventory),
     }
 
     output_path.write_text(
