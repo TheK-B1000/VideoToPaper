@@ -17,6 +17,18 @@ def test_claim_inventory_module_runs_help():
     assert "--chunks-path" in result.stdout
 
 
+def test_speaker_perspective_module_runs_help():
+    result = subprocess.run(
+        [sys.executable, "-m", "src.pipelines.run_steelman_pipeline", "--help"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0
+    assert "--claim-inventory-path" in result.stdout
+
+
 def test_main_py_claim_inventory_stage_runs_help_via_known_args():
     result = subprocess.run(
         [sys.executable, "main.py", "--stage", "claim_inventory", "--help"],

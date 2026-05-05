@@ -78,7 +78,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="VideoToPaper pipeline entrypoints")
     parser.add_argument(
         "--stage",
-        choices=("source_ingestion", "claim_inventory"),
+        choices=("source_ingestion", "claim_inventory", "speaker_perspective"),
         default="source_ingestion",
         help="Pipeline stage (default: Week 1 source ingestion demo).",
     )
@@ -88,6 +88,11 @@ def main() -> None:
         from src.pipelines.claim_inventory_pipeline import main as claim_inventory_main
 
         raise SystemExit(claim_inventory_main(forwarded))
+
+    if args.stage == "speaker_perspective":
+        from src.pipelines.run_steelman_pipeline import main as steelman_main
+
+        raise SystemExit(steelman_main(forwarded))
 
     if forwarded:
         parser.error(
