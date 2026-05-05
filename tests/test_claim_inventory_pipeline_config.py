@@ -129,7 +129,7 @@ def test_claim_inventory_enabled_false_writes_empty_outputs(tmp_path):
     assert payload["claims"] == []
 
 
-def test_empty_allowed_claim_types_filters_all_candidates(tmp_path):
+def test_empty_allowed_claim_types_allows_all_canonical_claim_types(tmp_path):
     chunks_path, argument_map_path = _fixture_outputs(tmp_path)
     output_path = tmp_path / "claim_inventory.json"
     config_path = tmp_path / "argument_config.json"
@@ -155,13 +155,42 @@ def test_empty_allowed_claim_types_filters_all_candidates(tmp_path):
 
     assert returned == output_path
     payload = json.loads(output_path.read_text(encoding="utf-8"))
-    assert payload["claim_count"] == 0
+    assert payload["claim_count"] == 1
 
     log_files = list((tmp_path / "runs").glob("*.json"))
     assert len(log_files) == 1
     run_log = json.loads(log_files[0].read_text(encoding="utf-8"))
     assert run_log["metrics"]["argument_derived_candidate_count"] == 1
-    assert run_log["metrics"]["candidate_claim_count"] == 0
+    assert run_log["metrics"]["candidate_claim_count"] == 1
+
+
+def test_allowed_claim_types_subset_keeps_only_listed_empirical_types(tmp_path):
+    chunks_path, argument_map_path = _fixture_outputs(tmp_path)
+    output_path = tmp_path / "claim_inventory.json"
+    config_path = tmp_path / "argument_config.json"
+
+    _write_minimal_argument_config(
+        config_path,
+        claim_inventory={
+            "enabled": True,
+            "drop_non_verbatim_claims": True,
+            "require_embed_url": True,
+            "allowed_claim_types": ["empirical_technical", "empirical_scientific"],
+            "output_path": str(output_path),
+        },
+    )
+
+    run_claim_inventory_pipeline(
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+        config_path=config_path,
+        argument_map_path=argument_map_path,
+        chunks_path=chunks_path,
+        logs_dir=tmp_path / "runs",
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["claim_count"] == 1
+    assert payload["claims"][0]["claim_type"] == "empirical_technical"
 
 
 def test_allowed_claim_types_excludes_non_matching_types(tmp_path):

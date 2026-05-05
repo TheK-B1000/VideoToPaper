@@ -73,7 +73,18 @@ def _filter_candidates_by_claim_types(
     candidates: list[dict],
     allowed_claim_types: list[str],
 ) -> list[dict]:
-    allowed = frozenset(allowed_claim_types)
+    """
+    Restrict candidates by configured claim types.
+
+    Empty ``allowed_claim_types`` means no restriction: every candidate whose
+    ``claim_type`` is in ``CANONICAL_CLAIM_TYPES`` may proceed (subject to later
+    verbatim/embed checks). A non-empty list keeps only types explicitly listed.
+    """
+    allowed = (
+        CANONICAL_CLAIM_TYPES
+        if not allowed_claim_types
+        else frozenset(allowed_claim_types)
+    )
     return [c for c in candidates if c.get("claim_type") in allowed]
 
 

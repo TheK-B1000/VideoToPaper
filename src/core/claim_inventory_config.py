@@ -64,6 +64,8 @@ def parse_claim_inventory_settings(config: dict[str, Any]) -> dict[str, Any] | N
     if not isinstance(allowed, list):
         raise ValueError("claim_inventory.allowed_claim_types must be a list")
 
+    # Empty list is valid: pipeline treats it as "allow all canonical claim types".
+
     for claim_type in allowed:
         if not isinstance(claim_type, str):
             raise ValueError("claim_inventory.allowed_claim_types entries must be strings")
