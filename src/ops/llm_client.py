@@ -18,8 +18,6 @@ def safe_llm_call(
     expected_output_tokens: int,
     budget_config: dict,
     state: CostGuardState,
-    input_cost_per_1m_tokens: float,
-    output_cost_per_1m_tokens: float,
     llm_callable: Callable[..., dict],
     *,
     model: str,
@@ -52,8 +50,6 @@ def safe_llm_call(
             expected_output_tokens=expected_output_tokens,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=input_cost_per_1m_tokens,
-            output_cost_per_1m_tokens=output_cost_per_1m_tokens,
             model=model,
         )
     except PermissionError as exc:

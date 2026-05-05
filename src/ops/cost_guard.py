@@ -64,6 +64,71 @@ def estimate_llm_cost_usd(
     return input_cost + output_cost
 
 
+# Built-in per-model rates (USD per 1M tokens). Merged with ``budget_config["model_pricing"]``;
+# config entries override these for the same model id.
+BUILTIN_MODEL_PRICING: dict[str, dict[str, float]] = {
+    "gemini-2.5-flash-lite": {
+        "input_cost_per_1m_tokens": 0.0,
+        "output_cost_per_1m_tokens": 0.0,
+    },
+}
+
+
+def _normalize_model_pricing_row(entry: object, *, label: str) -> dict[str, float]:
+    if not isinstance(entry, dict):
+        raise ValueError(f"{label}: pricing entry must be an object")
+
+    out: dict[str, float] = {}
+    for key in ("input_cost_per_1m_tokens", "output_cost_per_1m_tokens"):
+        if key not in entry:
+            raise ValueError(f"{label}: missing {key}")
+        raw = entry[key]
+        if not isinstance(raw, (int, float)):
+            raise ValueError(f"{label}: {key} must be a number")
+        val = float(raw)
+        if val < 0:
+            raise ValueError(f"{label}: {key} cannot be negative")
+        out[key] = val
+    return out
+
+
+def merged_model_pricing_table(budget_config: dict) -> dict[str, dict[str, float]]:
+    """
+    Return effective ``model_id -> {input_cost_per_1m_tokens, output_cost_per_1m_tokens}``.
+
+    Starts from :data:`BUILTIN_MODEL_PRICING`, then applies ``budget_config["model_pricing"]``
+    overrides (full replace per model id).
+    """
+    raw = budget_config["model_pricing"]
+    if not isinstance(raw, dict):
+        raise ValueError("budget_config.model_pricing must be a dictionary")
+
+    merged: dict[str, dict[str, float]] = {
+        name: dict(row) for name, row in BUILTIN_MODEL_PRICING.items()
+    }
+    for name, entry in raw.items():
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("budget_config.model_pricing keys must be non-empty strings")
+        sid = name.strip()
+        merged[sid] = _normalize_model_pricing_row(
+            entry, label=f"budget_config.model_pricing[{sid!r}]"
+        )
+    return merged
+
+
+def resolve_model_pricing_for_call(model: str, budget_config: dict) -> tuple[float, float]:
+    """Resolve input/output per-1M-token USD rates for ``model`` from merged pricing."""
+    table = merged_model_pricing_table(budget_config)
+    key = model.strip()
+    if key not in table:
+        raise ValueError(
+            f"No pricing configured for model {key!r}; add it under budget.model_pricing "
+            "or use a model defined in the built-in pricing registry"
+        )
+    row = table[key]
+    return row["input_cost_per_1m_tokens"], row["output_cost_per_1m_tokens"]
+
+
 LLM_KILL_SWITCH_FILENAME = ".llm_kill_switch"
 
 
@@ -127,14 +192,15 @@ def assert_llm_call_allowed(
     expected_output_tokens: int,
     budget_config: dict,
     state: CostGuardState,
-    input_cost_per_1m_tokens: float,
-    output_cost_per_1m_tokens: float,
     *,
     model: str | None = None,
     kill_switch_root: Path | None = None,
 ) -> dict:
     """
     Validate whether a future LLM call is allowed under run, day, and month budgets.
+
+    Per-token pricing is taken only from ``budget_config["model_pricing"]`` merged with
+    built-in defaults (:data:`BUILTIN_MODEL_PRICING`), keyed by ``model``.
 
     Call **before** any vendor I/O. Requires explicit env arming for real calls.
 
@@ -160,6 +226,7 @@ def assert_llm_call_allowed(
         "max_estimated_cost_usd_per_month",
         "max_estimated_cost_usd_per_call",
         "allowed_models",
+        "model_pricing",
         "max_prompt_chars",
         "max_llm_retries_per_call",
         "budget_persistence_dir",
@@ -185,14 +252,36 @@ def assert_llm_call_allowed(
     if expected_output_tokens <= 0:
         raise ValueError("expected_output_tokens must be greater than zero")
 
+    allowed_raw = budget_config["allowed_models"]
+    if not isinstance(allowed_raw, list) or not all(
+        isinstance(x, str) for x in allowed_raw
+    ):
+        raise ValueError("allowed_models must be a list of strings")
+
+    allowed_norm = [x.strip() for x in allowed_raw if x.strip()]
+    if not allowed_norm:
+        raise PermissionError("allowed_models is empty; no LLM model is permitted")
+
+    if model is None or not str(model).strip():
+        raise PermissionError("model is required and must be a non-empty string")
+
+    model_clean = model.strip()
+    if model_clean not in allowed_norm:
+        raise PermissionError(f"Model not allowed: {model_clean}")
+
+    try:
+        in_price, out_price = resolve_model_pricing_for_call(model_clean, budget_config)
+    except ValueError as exc:
+        raise ValueError(str(exc)) from exc
+
     input_tokens = estimate_tokens(prompt_text)
     output_tokens = expected_output_tokens
 
     estimated_call_cost = estimate_llm_cost_usd(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
-        input_cost_per_1m_tokens=input_cost_per_1m_tokens,
-        output_cost_per_1m_tokens=output_cost_per_1m_tokens,
+        input_cost_per_1m_tokens=in_price,
+        output_cost_per_1m_tokens=out_price,
     )
 
     if estimated_call_cost > budget_config["max_estimated_cost_usd_per_call"]:
@@ -251,23 +340,6 @@ def assert_llm_call_allowed(
 
     if budget_config["dry_run"]:
         raise PermissionError("LLM dry_run is enabled; refusing real API call")
-
-    allowed_raw = budget_config["allowed_models"]
-    if not isinstance(allowed_raw, list) or not all(
-        isinstance(x, str) for x in allowed_raw
-    ):
-        raise ValueError("allowed_models must be a list of strings")
-
-    allowed_norm = [x.strip() for x in allowed_raw if x.strip()]
-    if not allowed_norm:
-        raise PermissionError("allowed_models is empty; no LLM model is permitted")
-
-    if model is None or not str(model).strip():
-        raise PermissionError("model is required and must be a non-empty string")
-
-    model_clean = model.strip()
-    if model_clean not in allowed_norm:
-        raise PermissionError(f"Model not allowed: {model_clean}")
 
     assert_real_llm_armed()
 

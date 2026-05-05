@@ -36,10 +36,6 @@ from src.pipelines.claim_inventory_pipeline import (
     _resolved_claim_inventory_settings,
     load_argument_map_document,
 )
-from src.pipelines.steelman_llm import (
-    DEFAULT_INPUT_COST_PER_1M_TOKENS,
-    DEFAULT_OUTPUT_COST_PER_1M_TOKENS,
-)
 from src.pipelines.steelman_prompt import (
     build_steelman_prompt,
     parse_steelman_prompt_response,
@@ -98,6 +94,7 @@ def _speaker_perspective_settings(config: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("speaker_perspective.llm must be an object")
 
         allowed_llm_keys = {
+            "provider",
             "model",
             "max_output_tokens",
             "max_claims_per_call",
@@ -109,6 +106,14 @@ def _speaker_perspective_settings(config: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(
                 f"speaker_perspective.llm unknown keys: {sorted(extra_llm)}"
             )
+
+        if "provider" in llm_section:
+            provider = llm_section["provider"]
+            if not isinstance(provider, str) or not provider.strip():
+                raise ValueError(
+                    "speaker_perspective.llm.provider must be a non-empty string"
+                )
+            out["llm"]["provider"] = provider.strip()
 
         if "model" in llm_section:
             model = llm_section["model"]
@@ -232,8 +237,6 @@ def _build_steelman_section_with_guarded_llm(
             expected_output_tokens=int(llm_settings["max_output_tokens"]),
             budget_config=budget_config,
             state=CostGuardState(),
-            input_cost_per_1m_tokens=DEFAULT_INPUT_COST_PER_1M_TOKENS,
-            output_cost_per_1m_tokens=DEFAULT_OUTPUT_COST_PER_1M_TOKENS,
             llm_callable=vendor,
             model=llm_settings["model"],
             ledger_context=ledger_context,

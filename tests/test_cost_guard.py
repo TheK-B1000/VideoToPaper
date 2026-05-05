@@ -3,11 +3,14 @@ import tempfile
 import pytest
 
 from src.ops.cost_guard import (
+    BUILTIN_MODEL_PRICING,
     CostGuardState,
     assert_llm_call_allowed,
     estimate_llm_cost_usd,
     estimate_tokens,
+    merged_model_pricing_table,
     record_llm_usage,
+    resolve_model_pricing_for_call,
 )
 
 
@@ -34,6 +37,12 @@ def make_budget_config(
         "max_estimated_cost_usd_per_month": 10_000.0,
         "max_estimated_cost_usd_per_call": 1.0,
         "allowed_models": ["gpt-4o-mini"],
+        "model_pricing": {
+            "gpt-4o-mini": {
+                "input_cost_per_1m_tokens": 0.15,
+                "output_cost_per_1m_tokens": 0.60,
+            },
+        },
         "max_prompt_chars": 500_000,
         "max_llm_retries_per_call": 1,
         "budget_persistence_dir": tempfile.mkdtemp(prefix="vtp_budget_"),
@@ -129,8 +138,6 @@ def test_assert_llm_call_allowed_accepts_safe_call():
         expected_output_tokens=10,
         budget_config=budget_config,
         state=state,
-        input_cost_per_1m_tokens=0.15,
-        output_cost_per_1m_tokens=0.60,
         model="gpt-4o-mini",
     )
 
@@ -152,8 +159,6 @@ def test_assert_llm_call_allowed_blocks_when_llm_disabled():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
         )
 
 
@@ -167,8 +172,7 @@ def test_assert_llm_call_allowed_blocks_dry_run():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
+            model="gpt-4o-mini",
         )
 
 
@@ -182,8 +186,7 @@ def test_assert_llm_call_allowed_blocks_call_count_limit():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
+            model="gpt-4o-mini",
         )
 
 
@@ -197,8 +200,7 @@ def test_assert_llm_call_allowed_blocks_input_token_limit():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
+            model="gpt-4o-mini",
         )
 
 
@@ -212,8 +214,7 @@ def test_assert_llm_call_allowed_blocks_output_token_limit():
             expected_output_tokens=50,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
+            model="gpt-4o-mini",
         )
 
 
@@ -232,8 +233,7 @@ def test_assert_llm_call_allowed_blocks_total_token_limit():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
+            model="gpt-4o-mini",
         )
 
 
@@ -244,6 +244,12 @@ def test_assert_llm_call_allowed_blocks_estimated_cost_limit():
         max_input_tokens_per_call=1_000_000,
         max_output_tokens_per_call=1_000_000,
         max_total_tokens_per_run=2_000_000,
+        model_pricing={
+            "gpt-4o-mini": {
+                "input_cost_per_1m_tokens": 15.0,
+                "output_cost_per_1m_tokens": 60.0,
+            },
+        },
     )
     # Break lines so validate_prompt_for_llm does not treat one giant line as base64-like.
     big_prompt = "\n".join(["a" * 1999 for _ in range(3)])
@@ -254,8 +260,7 @@ def test_assert_llm_call_allowed_blocks_estimated_cost_limit():
             expected_output_tokens=1000,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=15.00,
-            output_cost_per_1m_tokens=60.00,
+            model="gpt-4o-mini",
         )
 
 
@@ -271,8 +276,6 @@ def test_assert_llm_call_allowed_rejects_missing_budget_keys():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
         )
 
 
@@ -286,8 +289,6 @@ def test_assert_llm_call_allowed_rejects_fail_open_config():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
         )
 
 
@@ -300,8 +301,6 @@ def test_assert_llm_call_allowed_rejects_invalid_budget_config_type():
             expected_output_tokens=10,
             budget_config="not a dict",
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
         )
 
 
@@ -314,8 +313,6 @@ def test_assert_llm_call_allowed_rejects_invalid_state_type():
             expected_output_tokens=10,
             budget_config=budget_config,
             state={},
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
         )
 
 
@@ -329,8 +326,6 @@ def test_assert_llm_call_allowed_rejects_negative_expected_output_tokens():
             expected_output_tokens=-1,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
         )
 
 
@@ -345,8 +340,6 @@ def test_assert_llm_call_blocked_without_arm_env(monkeypatch):
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
             model="gpt-4o-mini",
         )
 
@@ -362,8 +355,6 @@ def test_kill_switch_blocks_llm_call(tmp_path):
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
             kill_switch_root=tmp_path,
             model="gpt-4o-mini",
         )
@@ -388,8 +379,6 @@ def test_daily_cost_cap_blocks_when_persistence_high(tmp_path):
             expected_output_tokens=500,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=15.0,
-            output_cost_per_1m_tokens=60.0,
             model="gpt-4o-mini",
         )
 
@@ -404,10 +393,74 @@ def test_model_not_in_allowlist_blocked():
             expected_output_tokens=10,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
             model="gpt-4",
         )
+
+
+def test_builtin_model_pricing_includes_gemini_flash_lite_at_zero():
+    row = BUILTIN_MODEL_PRICING["gemini-2.5-flash-lite"]
+    assert row["input_cost_per_1m_tokens"] == 0.0
+    assert row["output_cost_per_1m_tokens"] == 0.0
+
+
+def test_merged_model_pricing_keeps_builtin_when_config_empty():
+    budget = make_budget_config()
+    budget["model_pricing"] = {}
+    table = merged_model_pricing_table(budget)
+    assert table["gemini-2.5-flash-lite"]["input_cost_per_1m_tokens"] == 0.0
+
+
+def test_model_pricing_config_overrides_builtin_gemini_rates():
+    budget = make_budget_config(
+        model_pricing={
+            "gemini-2.5-flash-lite": {
+                "input_cost_per_1m_tokens": 1.0,
+                "output_cost_per_1m_tokens": 2.0,
+            },
+        },
+    )
+    inp, out = resolve_model_pricing_for_call("gemini-2.5-flash-lite", budget)
+    assert inp == 1.0
+    assert out == 2.0
+
+
+def test_resolve_model_pricing_unknown_model_raises():
+    budget = make_budget_config()
+    with pytest.raises(ValueError, match="No pricing configured"):
+        resolve_model_pricing_for_call("unknown-model-xyz", budget)
+
+
+def test_assert_llm_call_allowed_value_error_when_allowed_model_lacks_pricing():
+    state = CostGuardState()
+    budget_config = make_budget_config(
+        allowed_models=["custom-mini"],
+        model_pricing={
+            "gpt-4o-mini": {
+                "input_cost_per_1m_tokens": 0.15,
+                "output_cost_per_1m_tokens": 0.60,
+            },
+        },
+    )
+
+    with pytest.raises(ValueError, match="No pricing configured"):
+        assert_llm_call_allowed(
+            prompt_text="Short prompt.",
+            expected_output_tokens=10,
+            budget_config=budget_config,
+            state=state,
+            model="custom-mini",
+        )
+
+
+def test_model_pricing_entry_must_include_output_rate():
+    budget = make_budget_config(
+        model_pricing={
+            "gpt-4o-mini": {"input_cost_per_1m_tokens": 0.15},
+        },
+    )
+
+    with pytest.raises(ValueError, match="missing output_cost_per_1m_tokens"):
+        merged_model_pricing_table(budget)
 
 
 def test_record_llm_usage_updates_state():

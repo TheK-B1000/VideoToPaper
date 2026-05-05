@@ -32,6 +32,12 @@ def make_steelman_budget_config(**overrides):
         "max_estimated_cost_usd_per_month": 10_000.0,
         "max_estimated_cost_usd_per_call": 2.0,
         "allowed_models": ["gpt-4o-mini"],
+        "model_pricing": {
+            "gpt-4o-mini": {
+                "input_cost_per_1m_tokens": 0.15,
+                "output_cost_per_1m_tokens": 0.60,
+            },
+        },
         "max_prompt_chars": 500_000,
         "max_llm_retries_per_call": 1,
         "budget_persistence_dir": tempfile.mkdtemp(prefix="vtp_steelman_budget_"),

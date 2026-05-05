@@ -100,6 +100,12 @@ def test_run_argument_structure_creates_outputs(tmp_path):
             "max_estimated_cost_usd_per_month": 30.0,
             "max_estimated_cost_usd_per_call": 0.1,
             "allowed_models": ["gpt-4o-mini"],
+            "model_pricing": {
+                "gpt-4o-mini": {
+                    "input_cost_per_1m_tokens": 0.15,
+                    "output_cost_per_1m_tokens": 0.60,
+                },
+            },
             "max_prompt_chars": 500000,
             "max_llm_retries_per_call": 1,
             "budget_persistence_dir": str(tmp_path / "budget"),

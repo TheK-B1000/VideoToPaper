@@ -24,6 +24,12 @@ def make_budget_config(**overrides):
         "max_estimated_cost_usd_per_month": 10_000.0,
         "max_estimated_cost_usd_per_call": 1.0,
         "allowed_models": ["gpt-4o-mini"],
+        "model_pricing": {
+            "gpt-4o-mini": {
+                "input_cost_per_1m_tokens": 0.15,
+                "output_cost_per_1m_tokens": 0.60,
+            },
+        },
         "max_prompt_chars": 500_000,
         "max_llm_retries_per_call": 1,
         "budget_persistence_dir": tempfile.mkdtemp(prefix="vtp_budget_llm_"),
@@ -54,8 +60,6 @@ def test_safe_llm_call_returns_response():
         expected_output_tokens=100,
         budget_config=budget_config,
         state=state,
-        input_cost_per_1m_tokens=0.15,
-        output_cost_per_1m_tokens=0.60,
         llm_callable=fake_llm_callable,
         model="gpt-4o-mini",
     )
@@ -72,8 +76,6 @@ def test_safe_llm_call_records_actual_usage():
         expected_output_tokens=100,
         budget_config=budget_config,
         state=state,
-        input_cost_per_1m_tokens=0.15,
-        output_cost_per_1m_tokens=0.60,
         llm_callable=fake_llm_callable,
         model="gpt-4o-mini",
     )
@@ -94,8 +96,6 @@ def test_safe_llm_call_rejects_non_positive_output_tokens():
             expected_output_tokens=0,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
             llm_callable=fake_llm_callable,
             model="gpt-4o-mini",
         )
@@ -111,8 +111,6 @@ def test_safe_llm_call_blocks_when_llm_disabled():
             expected_output_tokens=100,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
             llm_callable=fake_llm_callable,
             model="gpt-4o-mini",
         )
@@ -137,8 +135,6 @@ def test_safe_llm_call_does_not_call_vendor_when_blocked():
             expected_output_tokens=100,
             budget_config=budget_config,
             state=state,
-            input_cost_per_1m_tokens=0.15,
-            output_cost_per_1m_tokens=0.60,
             llm_callable=fake_vendor_that_should_not_run,
             model="gpt-4o-mini",
         )
@@ -161,8 +157,6 @@ def test_safe_llm_call_falls_back_to_preflight_usage_when_actual_usage_missing()
         expected_output_tokens=50,
         budget_config=budget_config,
         state=state,
-        input_cost_per_1m_tokens=0.15,
-        output_cost_per_1m_tokens=0.60,
         llm_callable=fake_llm_without_usage,
         model="gpt-4o-mini",
     )

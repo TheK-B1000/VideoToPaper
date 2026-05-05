@@ -13,10 +13,6 @@ from src.ops.cost_guard import CostGuardState
 from src.ops.llm_client import safe_llm_call
 from src.pipelines.steelman_prompt import build_steelman_prompt, parse_steelman_prompt_response
 
-# Pre-flight pricing for gpt-4o-mini scale (USD per 1M tokens); approximate.
-DEFAULT_INPUT_COST_PER_1M_TOKENS = 0.15
-DEFAULT_OUTPUT_COST_PER_1M_TOKENS = 0.60
-
 
 def try_steelman_llm_drafts(
     *,
@@ -27,8 +23,6 @@ def try_steelman_llm_drafts(
     guard_state: CostGuardState,
     ledger_context: dict[str, Any],
     llm_callable: Callable[..., dict] | None,
-    input_cost_per_1m_tokens: float = DEFAULT_INPUT_COST_PER_1M_TOKENS,
-    output_cost_per_1m_tokens: float = DEFAULT_OUTPUT_COST_PER_1M_TOKENS,
 ) -> tuple[list[dict[str, Any]] | None, str | None]:
     """
     Attempt one guarded LLM call and return drafted narrative block dicts.
@@ -62,8 +56,6 @@ def try_steelman_llm_drafts(
             expected_output_tokens=max_out,
             budget_config=budget_config,
             state=guard_state,
-            input_cost_per_1m_tokens=input_cost_per_1m_tokens,
-            output_cost_per_1m_tokens=output_cost_per_1m_tokens,
             llm_callable=llm_callable,
             model=model,
             ledger_context=ledger_context,
