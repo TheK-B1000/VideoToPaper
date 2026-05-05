@@ -27,6 +27,8 @@ Prefer **`llm_enabled`: false** and **`dry_run`: true** in config. **`fail_close
 
 The guard expects a full **`budget`** dict including at least: **`max_estimated_cost_usd_per_day`**, **`max_estimated_cost_usd_per_month`**, **`max_estimated_cost_usd_per_call`**, **`allowed_models`**, **`max_prompt_chars`**, **`max_llm_retries_per_call`**, **`budget_persistence_dir`**, plus the existing run-level caps. Example layout: **`configs/argument_config.json`** → **`budget`**.
 
+**Daily/month caps are global (cost_guard):** **`max_estimated_cost_usd_per_day`** / **`max_estimated_cost_usd_per_month`** apply to all guarded LLM traffic that shares that **`budget`** block and persistence dir. Do **not** duplicate them under **`speaker_perspective`** (or other stage blocks) unless you introduce real per-stage overrides with explicit precedence rules and validation in **`cost_guard`**—until then, stage JSON only carries stage knobs (e.g. **`use_llm`**, **`max_claims_per_call`**) and inherits the top-level **`budget`**.
+
 ### Persistent spend (cross-run)
 
 Under **`budget_persistence_dir`** (default in repo config: **`logs/budget`**):

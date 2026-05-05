@@ -78,6 +78,13 @@
     },
     "speaker_perspective": {
       "enabled": true,
-      "output_path": "data/processed/speaker_perspective.json"
+      "use_llm": false,
+      "output_path": "data/processed/speaker_perspective.json",
+      "llm": {
+        "model": "gpt-4o-mini",
+        "max_output_tokens": 900,
+        "max_claims_per_call": 12,
+        "fallback_on_guard_rejection": true
+      }
     }
   }

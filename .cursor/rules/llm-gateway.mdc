@@ -35,4 +35,6 @@ If any file can reach the API without going through `safe_llm_call`, it can bypa
 
 **Policy:** No raw vendor calls anywhere except inside the approved `llm_client` wrapper. **`safe_llm_call`** requires **`model`** and must enforce a strict output budget (**`expected_output_tokens`**); wire the vendor **`max_tokens`** (or equivalent) to that value in real integrations.
 
+**Steelman (`speaker_perspective`):** Record **`speaker_perspective_use_llm`**, posture (**`speaker_perspective_llm_model`**, token/claim caps), **`speaker_perspective_llm_requested`**, **`speaker_perspective_llm_executed`**, plus **`llm_mode_attempted`**, **`llm_mode_used`**, **`fallback_used`**, and **`fallback_reason`** (empty string when no fallback). Placeholder runs use **`fallback_reason: llm_not_implemented`** when **`use_llm: true`** but the vendor path is not wired yet. After **`safe_llm_call`** integration, reuse **`fallback_reason`** for guard/parse failures so alerting stays consistent.
+
 **Estimates vs reality:** `estimate_tokens()` (chars÷4) is pre-flight only; prefer the target tokenizer when precision matters. **`record_llm_usage`** must receive **actual** usage/cost from the API when available.
