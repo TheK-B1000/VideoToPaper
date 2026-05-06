@@ -94,6 +94,7 @@
       "output_path": "data/processed/evidence_retrieval.json",
       "source": "all",
       "per_query_limit": 3,
-      "dry_run": true
+      "dry_run": true,
+      "fail_on_unbalanced": false
     }
   }

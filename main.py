@@ -146,6 +146,12 @@ def main() -> None:
             "(Week 5). Omit to use evidence_retrieval.dry_run from config."
         ),
     )
+    parser.add_argument(
+        "--fail-on-unbalanced",
+        action="store_true",
+        default=None,
+        help="Fail evidence retrieval when balance audit is not publishable.",
+    )
     args, forwarded = parser.parse_known_args()
 
     if args.stage == "claim_inventory":
@@ -177,6 +183,7 @@ def main() -> None:
             source=args.source,
             per_query_limit=args.per_query_limit,
             dry_run=args.dry_run,
+            fail_on_unbalanced=args.fail_on_unbalanced,
         )
         return
 
@@ -192,11 +199,12 @@ def main() -> None:
         or args.dry_run is not None
         or args.source is not None
         or args.per_query_limit is not None
+        or args.fail_on_unbalanced is not None
     ):
         parser.error(
             "--config-path, --claim-inventory-path, --output-path, --dry-run/--no-dry-run, "
-            "--source, and --per-query-limit are only valid with claim_inventory, "
-            "speaker_perspective, steelman, or evidence_retrieval."
+            "--source, --per-query-limit, and --fail-on-unbalanced are only valid with "
+            "claim_inventory, speaker_perspective, steelman, or evidence_retrieval."
         )
 
     _run_source_ingestion()

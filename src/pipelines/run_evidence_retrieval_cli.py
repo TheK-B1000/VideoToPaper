@@ -227,6 +227,31 @@ def _build_retrieval_summary(
     }
 
 
+def _enforce_retrieval_quality_gate(
+    *,
+    retrieval_summary: dict[str, Any],
+    fail_on_unbalanced: bool,
+) -> None:
+    """
+    Optionally fail the stage when retrieval is not balanced.
+
+    This is the Week 5 guardrail against quietly producing a cherry-picked
+    evidence set.
+    """
+    if not fail_on_unbalanced:
+        return
+
+    if retrieval_summary.get("publishable_for_week5") is True:
+        return
+
+    claims_needing_review = retrieval_summary.get("claims_needing_review", [])
+
+    raise RuntimeError(
+        "Evidence retrieval quality gate failed. "
+        f"Claims needing review: {claims_needing_review}"
+    )
+
+
 def _write_retrieval_run_log(
     *,
     source_claim_inventory: Path,
@@ -234,6 +259,7 @@ def _write_retrieval_run_log(
     dry_run: bool,
     source: str,
     per_query_limit: int,
+    fail_on_unbalanced: bool,
     retrieval_count: int,
     retrieval_summary: dict[str, Any],
     log_dir: str | Path = DEFAULT_EVIDENCE_RUN_LOG_DIR,
@@ -260,6 +286,7 @@ def _write_retrieval_run_log(
         "dry_run": dry_run,
         "source": source,
         "per_query_limit": per_query_limit,
+        "fail_on_unbalanced": fail_on_unbalanced,
         "retrieval_count": retrieval_count,
         "retrieval_summary": retrieval_summary,
     }
@@ -278,6 +305,7 @@ def run_evidence_retrieval_cli(
     source: str | None = None,
     per_query_limit: int | None = None,
     dry_run: bool | None = None,
+    fail_on_unbalanced: bool | None = None,
 ) -> Path:
     """
     Run Week 5 evidence retrieval from the command line.
@@ -333,6 +361,15 @@ def run_evidence_retrieval_cli(
         )
     )
 
+    resolved_fail_on_unbalanced = bool(
+        _resolve_setting(
+            explicit_value=fail_on_unbalanced,
+            config=config,
+            config_key="fail_on_unbalanced",
+            default_value=False,
+        )
+    )
+
     input_path = Path(str(resolved_claim_inventory_path))
     destination = Path(str(resolved_output_path))
 
@@ -362,12 +399,18 @@ def run_evidence_retrieval_cli(
 
     retrieval_summary = _build_retrieval_summary(retrieval_results)
 
+    _enforce_retrieval_quality_gate(
+        retrieval_summary=retrieval_summary,
+        fail_on_unbalanced=resolved_fail_on_unbalanced,
+    )
+
     output_payload = {
         "source_claim_inventory": str(input_path),
         "retrieval_count": len(retrieval_results),
         "dry_run": resolved_dry_run,
         "source": resolved_source,
         "per_query_limit": resolved_per_query_limit,
+        "fail_on_unbalanced": resolved_fail_on_unbalanced,
         "retrieval_exhausted_query_count_total": retrieval_exhausted_query_count_total,
         "retrieval_summary": retrieval_summary,
         "retrieval_results": retrieval_results,
@@ -384,6 +427,7 @@ def run_evidence_retrieval_cli(
         dry_run=resolved_dry_run,
         source=resolved_source,
         per_query_limit=resolved_per_query_limit,
+        fail_on_unbalanced=resolved_fail_on_unbalanced,
         retrieval_count=len(retrieval_results),
         retrieval_summary=retrieval_summary,
     )

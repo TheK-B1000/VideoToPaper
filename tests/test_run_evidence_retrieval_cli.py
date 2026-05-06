@@ -6,6 +6,7 @@ from src.pipelines.run_evidence_retrieval import ClaimForRetrieval
 from src.pipelines.run_evidence_retrieval_cli import (
     _build_dry_run_result,
     _build_retrieval_summary,
+    _enforce_retrieval_quality_gate,
     _extract_claims,
     _load_evidence_retrieval_config,
     _load_json,
@@ -143,7 +144,45 @@ def test_run_evidence_retrieval_cli_writes_output_for_empty_inventory(tmp_path):
     assert payload["retrieval_exhausted_query_count_total"] == 0
     assert payload["retrieval_summary"]["total_claims"] == 0
     assert payload["retrieval_summary"]["publishable_for_week5"] is False
+    assert payload["fail_on_unbalanced"] is False
     assert payload["retrieval_results"] == []
+
+
+def test_quality_gate_passes_when_disabled_even_if_unbalanced():
+    summary = {
+        "publishable_for_week5": False,
+        "claims_needing_review": ["claim_001"],
+    }
+
+    _enforce_retrieval_quality_gate(
+        retrieval_summary=summary,
+        fail_on_unbalanced=False,
+    )
+
+
+def test_quality_gate_passes_when_publishable():
+    summary = {
+        "publishable_for_week5": True,
+        "claims_needing_review": [],
+    }
+
+    _enforce_retrieval_quality_gate(
+        retrieval_summary=summary,
+        fail_on_unbalanced=True,
+    )
+
+
+def test_quality_gate_raises_when_enabled_and_unbalanced():
+    summary = {
+        "publishable_for_week5": False,
+        "claims_needing_review": ["claim_001", "claim_002"],
+    }
+
+    with pytest.raises(RuntimeError, match="quality gate failed"):
+        _enforce_retrieval_quality_gate(
+            retrieval_summary=summary,
+            fail_on_unbalanced=True,
+        )
 
 
 def test_build_retrieval_summary_counts_balanced_and_skewed_results():
@@ -252,6 +291,7 @@ def test_write_retrieval_run_log_creates_audit_file(tmp_path):
         dry_run=True,
         source="all",
         per_query_limit=3,
+        fail_on_unbalanced=True,
         retrieval_count=1,
         retrieval_summary=retrieval_summary,
         log_dir=log_dir,
@@ -270,6 +310,7 @@ def test_write_retrieval_run_log_creates_audit_file(tmp_path):
     assert payload["dry_run"] is True
     assert payload["source"] == "all"
     assert payload["per_query_limit"] == 3
+    assert payload["fail_on_unbalanced"] is True
     assert payload["retrieval_count"] == 1
     assert payload["retrieval_summary"]["publishable_for_week5"] is True
     assert "run_id" in payload
@@ -344,6 +385,7 @@ def test_run_evidence_retrieval_cli_dry_run_writes_fake_evidence(tmp_path):
     payload = json.loads(output_path.read_text(encoding="utf-8"))
 
     assert payload["dry_run"] is True
+    assert payload["fail_on_unbalanced"] is False
     assert payload["source"] == "all"
     assert payload["per_query_limit"] == 3
     assert payload["retrieval_count"] == 1
@@ -357,6 +399,39 @@ def test_run_evidence_retrieval_cli_dry_run_writes_fake_evidence(tmp_path):
     assert result["claim_id"] == "claim_001"
     assert result["balance_score"] == "balanced"
     assert len(result["evidence_records"]) == 2
+
+
+def test_run_evidence_retrieval_cli_writes_quality_gate_setting(tmp_path):
+    input_path = tmp_path / "claim_inventory.json"
+    output_path = tmp_path / "evidence_retrieval.json"
+
+    input_path.write_text(
+        json.dumps(
+            {
+                "claims": [
+                    {
+                        "claim_id": "claim_001",
+                        "verbatim_quote": "Multi-agent environments are non-stationary.",
+                        "claim_type": "empirical_technical",
+                        "verification_strategy": "literature_review",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    run_evidence_retrieval_cli(
+        claim_inventory_path=str(input_path),
+        output_path=str(output_path),
+        dry_run=True,
+        fail_on_unbalanced=True,
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert payload["fail_on_unbalanced"] is True
+    assert payload["retrieval_summary"]["publishable_for_week5"] is True
 
 
 def test_run_evidence_retrieval_cli_uses_config_values(tmp_path):
@@ -402,6 +477,7 @@ def test_run_evidence_retrieval_cli_uses_config_values(tmp_path):
     payload = json.loads(output_path.read_text(encoding="utf-8"))
 
     assert payload["dry_run"] is True
+    assert payload["fail_on_unbalanced"] is False
     assert payload["source"] == "semantic_scholar"
     assert payload["per_query_limit"] == 2
     assert payload["retrieval_count"] == 1
@@ -466,4 +542,5 @@ def test_run_evidence_retrieval_cli_explicit_args_override_config(tmp_path):
 
     assert payload["source"] == "all"
     assert payload["per_query_limit"] == 4
+    assert payload["fail_on_unbalanced"] is False
     assert payload["retrieval_count"] == 1
