@@ -165,6 +165,65 @@ def _build_dry_run_result(claim: ClaimForRetrieval) -> EvidenceRetrievalResult:
     )
 
 
+def _build_retrieval_summary(
+    retrieval_results: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """
+    Build a stage-level audit summary for Week 5 retrieval quality.
+
+    This makes balance visible at the run level instead of burying it inside
+    each individual claim result.
+    """
+    total_claims = len(retrieval_results)
+
+    balance_counts = {
+        "balanced": 0,
+        "supportive_skewed": 0,
+        "contrary_skewed": 0,
+        "insufficient": 0,
+    }
+
+    claims_needing_review: list[str] = []
+    total_evidence_records = 0
+    sources_seen: set[str] = set()
+
+    for result in retrieval_results:
+        balance_score = result.get("balance_score", "insufficient")
+
+        if balance_score not in balance_counts:
+            balance_score = "insufficient"
+
+        balance_counts[balance_score] += 1
+
+        if balance_score != "balanced":
+            claims_needing_review.append(str(result.get("claim_id", "")))
+
+        evidence_records = result.get("evidence_records", [])
+        total_evidence_records += len(evidence_records)
+
+        for record in evidence_records:
+            source = record.get("source")
+
+            if source:
+                sources_seen.add(str(source))
+
+    balanced_claims = balance_counts["balanced"]
+
+    balance_rate = 0.0
+    if total_claims > 0:
+        balance_rate = balanced_claims / total_claims
+
+    return {
+        "total_claims": total_claims,
+        "total_evidence_records": total_evidence_records,
+        "balance_counts": balance_counts,
+        "balance_rate": balance_rate,
+        "claims_needing_review": claims_needing_review,
+        "sources_seen": sorted(sources_seen),
+        "publishable_for_week5": total_claims > 0 and len(claims_needing_review) == 0,
+    }
+
+
 def run_evidence_retrieval_cli(
     *,
     config_path: str | None = None,
@@ -255,6 +314,8 @@ def run_evidence_retrieval_cli(
 
     destination.parent.mkdir(parents=True, exist_ok=True)
 
+    retrieval_summary = _build_retrieval_summary(retrieval_results)
+
     output_payload = {
         "source_claim_inventory": str(input_path),
         "retrieval_count": len(retrieval_results),
@@ -262,6 +323,7 @@ def run_evidence_retrieval_cli(
         "source": resolved_source,
         "per_query_limit": resolved_per_query_limit,
         "retrieval_exhausted_query_count_total": retrieval_exhausted_query_count_total,
+        "retrieval_summary": retrieval_summary,
         "retrieval_results": retrieval_results,
     }
 

@@ -5,6 +5,7 @@ import pytest
 from src.pipelines.run_evidence_retrieval import ClaimForRetrieval
 from src.pipelines.run_evidence_retrieval_cli import (
     _build_dry_run_result,
+    _build_retrieval_summary,
     _extract_claims,
     _load_evidence_retrieval_config,
     _load_json,
@@ -139,7 +140,86 @@ def test_run_evidence_retrieval_cli_writes_output_for_empty_inventory(tmp_path):
     assert payload["source"] == "all"
     assert payload["per_query_limit"] == 3
     assert payload["retrieval_exhausted_query_count_total"] == 0
+    assert payload["retrieval_summary"]["total_claims"] == 0
+    assert payload["retrieval_summary"]["publishable_for_week5"] is False
     assert payload["retrieval_results"] == []
+
+
+def test_build_retrieval_summary_counts_balanced_and_skewed_results():
+    retrieval_results = [
+        {
+            "claim_id": "claim_001",
+            "balance_score": "balanced",
+            "evidence_records": [
+                {"source": "OpenAlex"},
+                {"source": "Semantic Scholar"},
+            ],
+        },
+        {
+            "claim_id": "claim_002",
+            "balance_score": "supportive_skewed",
+            "evidence_records": [
+                {"source": "OpenAlex"},
+            ],
+        },
+        {
+            "claim_id": "claim_003",
+            "balance_score": "insufficient",
+            "evidence_records": [],
+        },
+    ]
+
+    summary = _build_retrieval_summary(retrieval_results)
+
+    assert summary["total_claims"] == 3
+    assert summary["total_evidence_records"] == 3
+    assert summary["balance_counts"]["balanced"] == 1
+    assert summary["balance_counts"]["supportive_skewed"] == 1
+    assert summary["balance_counts"]["contrary_skewed"] == 0
+    assert summary["balance_counts"]["insufficient"] == 1
+    assert summary["balance_rate"] == 1 / 3
+    assert summary["claims_needing_review"] == ["claim_002", "claim_003"]
+    assert summary["sources_seen"] == ["OpenAlex", "Semantic Scholar"]
+    assert summary["publishable_for_week5"] is False
+
+
+def test_build_retrieval_summary_marks_all_balanced_claims_publishable():
+    retrieval_results = [
+        {
+            "claim_id": "claim_001",
+            "balance_score": "balanced",
+            "evidence_records": [
+                {"source": "OpenAlex"},
+                {"source": "Semantic Scholar"},
+            ],
+        },
+        {
+            "claim_id": "claim_002",
+            "balance_score": "balanced",
+            "evidence_records": [
+                {"source": "OpenAlex"},
+            ],
+        },
+    ]
+
+    summary = _build_retrieval_summary(retrieval_results)
+
+    assert summary["total_claims"] == 2
+    assert summary["balance_counts"]["balanced"] == 2
+    assert summary["claims_needing_review"] == []
+    assert summary["balance_rate"] == 1.0
+    assert summary["publishable_for_week5"] is True
+
+
+def test_build_retrieval_summary_empty_run_is_not_publishable():
+    summary = _build_retrieval_summary([])
+
+    assert summary["total_claims"] == 0
+    assert summary["total_evidence_records"] == 0
+    assert summary["balance_rate"] == 0.0
+    assert summary["claims_needing_review"] == []
+    assert summary["sources_seen"] == []
+    assert summary["publishable_for_week5"] is False
 
 
 def test_dry_run_result_returns_balanced_fake_evidence():
@@ -212,6 +292,10 @@ def test_run_evidence_retrieval_cli_dry_run_writes_fake_evidence(tmp_path):
     assert payload["source"] == "all"
     assert payload["per_query_limit"] == 3
     assert payload["retrieval_count"] == 1
+    assert payload["retrieval_summary"]["total_claims"] == 1
+    assert payload["retrieval_summary"]["balance_counts"]["balanced"] == 1
+    assert payload["retrieval_summary"]["publishable_for_week5"] is True
+    assert payload["retrieval_summary"]["sources_seen"] == ["DryRun"]
 
     result = payload["retrieval_results"][0]
 
