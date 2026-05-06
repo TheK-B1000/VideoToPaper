@@ -111,8 +111,8 @@ def main() -> None:
         "--config-path",
         default=None,
         help=(
-            "Path to argument-structure JSON (Week 2–4). Also used as a convenience "
-            "flag for evidence_retrieval."
+            "Path to argument-structure JSON (Week 2–5). Supplies paths and knobs "
+            "including the evidence_retrieval section when running that stage."
         ),
     )
     parser.add_argument(
@@ -126,9 +126,25 @@ def main() -> None:
         help="Path where the stage output JSON should be written when applicable.",
     )
     parser.add_argument(
+        "--source",
+        default=None,
+        choices=("all", "openalex", "semantic_scholar"),
+        help="Evidence retrieval source to use.",
+    )
+    parser.add_argument(
+        "--per-query-limit",
+        type=int,
+        default=None,
+        help="Maximum number of records to retrieve per query per source.",
+    )
+    parser.add_argument(
         "--dry-run",
-        action="store_true",
-        help="Run the selected stage without live external calls where supported.",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help=(
+            "Run the selected stage without live external calls where supported "
+            "(Week 5). Omit to use evidence_retrieval.dry_run from config."
+        ),
     )
     args, forwarded = parser.parse_known_args()
 
@@ -158,6 +174,8 @@ def main() -> None:
             config_path=args.config_path,
             claim_inventory_path=args.claim_inventory_path,
             output_path=args.output_path,
+            source=args.source,
+            per_query_limit=args.per_query_limit,
             dry_run=args.dry_run,
         )
         return
@@ -171,12 +189,14 @@ def main() -> None:
         args.config_path is not None
         or args.claim_inventory_path is not None
         or args.output_path is not None
-        or args.dry_run
+        or args.dry_run is not None
+        or args.source is not None
+        or args.per_query_limit is not None
     ):
         parser.error(
-            "--config-path, --claim-inventory-path, --output-path, and --dry-run are "
-            "only valid with claim_inventory, speaker_perspective, steelman, or "
-            "evidence_retrieval."
+            "--config-path, --claim-inventory-path, --output-path, --dry-run/--no-dry-run, "
+            "--source, and --per-query-limit are only valid with claim_inventory, "
+            "speaker_perspective, steelman, or evidence_retrieval."
         )
 
     _run_source_ingestion()

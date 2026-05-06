@@ -6,7 +6,9 @@ from src.pipelines.run_evidence_retrieval import ClaimForRetrieval
 from src.pipelines.run_evidence_retrieval_cli import (
     _build_dry_run_result,
     _extract_claims,
+    _load_evidence_retrieval_config,
     _load_json,
+    _validate_source,
     run_evidence_retrieval_cli,
 )
 
@@ -64,6 +66,54 @@ def test_extract_claims_returns_empty_list_when_no_claims_exist():
     assert claims == []
 
 
+def test_load_evidence_retrieval_config_reads_section(tmp_path):
+    config_path = tmp_path / "argument_config.json"
+
+    config_path.write_text(
+        json.dumps(
+            {
+                "evidence_retrieval": {
+                    "claim_inventory_path": "data/processed/claims.json",
+                    "output_path": "data/processed/evidence.json",
+                    "source": "openalex",
+                    "per_query_limit": 2,
+                    "dry_run": True,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    config = _load_evidence_retrieval_config(str(config_path))
+
+    assert config["source"] == "openalex"
+    assert config["per_query_limit"] == 2
+    assert config["dry_run"] is True
+
+
+def test_load_evidence_retrieval_config_rejects_non_object_section(tmp_path):
+    config_path = tmp_path / "argument_config.json"
+
+    config_path.write_text(
+        json.dumps({"evidence_retrieval": []}),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="must be an object"):
+        _load_evidence_retrieval_config(str(config_path))
+
+
+def test_validate_source_accepts_known_sources():
+    assert _validate_source("all") == "all"
+    assert _validate_source("openalex") == "openalex"
+    assert _validate_source("semantic_scholar") == "semantic_scholar"
+
+
+def test_validate_source_rejects_unknown_source():
+    with pytest.raises(ValueError, match="source must be one of"):
+        _validate_source("google-scholar")
+
+
 def test_run_evidence_retrieval_cli_writes_output_for_empty_inventory(tmp_path):
     input_path = tmp_path / "claim_inventory.json"
     output_path = tmp_path / "evidence_retrieval.json"
@@ -86,6 +136,8 @@ def test_run_evidence_retrieval_cli_writes_output_for_empty_inventory(tmp_path):
     assert payload["source_claim_inventory"] == str(input_path)
     assert payload["retrieval_count"] == 0
     assert payload["dry_run"] is False
+    assert payload["source"] == "all"
+    assert payload["per_query_limit"] == 3
     assert payload["retrieval_exhausted_query_count_total"] == 0
     assert payload["retrieval_results"] == []
 
@@ -157,6 +209,8 @@ def test_run_evidence_retrieval_cli_dry_run_writes_fake_evidence(tmp_path):
     payload = json.loads(output_path.read_text(encoding="utf-8"))
 
     assert payload["dry_run"] is True
+    assert payload["source"] == "all"
+    assert payload["per_query_limit"] == 3
     assert payload["retrieval_count"] == 1
 
     result = payload["retrieval_results"][0]
@@ -164,3 +218,113 @@ def test_run_evidence_retrieval_cli_dry_run_writes_fake_evidence(tmp_path):
     assert result["claim_id"] == "claim_001"
     assert result["balance_score"] == "balanced"
     assert len(result["evidence_records"]) == 2
+
+
+def test_run_evidence_retrieval_cli_uses_config_values(tmp_path):
+    claim_inventory_path = tmp_path / "claims.json"
+    output_path = tmp_path / "evidence.json"
+    config_path = tmp_path / "argument_config.json"
+
+    claim_inventory_path.write_text(
+        json.dumps(
+            {
+                "claims": [
+                    {
+                        "claim_id": "claim_001",
+                        "verbatim_quote": "Multi-agent environments are non-stationary.",
+                        "claim_type": "empirical_technical",
+                        "verification_strategy": "literature_review",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    config_path.write_text(
+        json.dumps(
+            {
+                "evidence_retrieval": {
+                    "claim_inventory_path": str(claim_inventory_path),
+                    "output_path": str(output_path),
+                    "source": "semantic_scholar",
+                    "per_query_limit": 2,
+                    "dry_run": True,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result_path = run_evidence_retrieval_cli(config_path=str(config_path))
+
+    assert result_path == output_path
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert payload["dry_run"] is True
+    assert payload["source"] == "semantic_scholar"
+    assert payload["per_query_limit"] == 2
+    assert payload["retrieval_count"] == 1
+
+
+def test_run_evidence_retrieval_cli_explicit_args_override_config(tmp_path):
+    config_claims_path = tmp_path / "config_claims.json"
+    explicit_claims_path = tmp_path / "explicit_claims.json"
+    config_output_path = tmp_path / "config_output.json"
+    explicit_output_path = tmp_path / "explicit_output.json"
+    config_path = tmp_path / "argument_config.json"
+
+    config_claims_path.write_text(
+        json.dumps({"claims": []}),
+        encoding="utf-8",
+    )
+
+    explicit_claims_path.write_text(
+        json.dumps(
+            {
+                "claims": [
+                    {
+                        "claim_id": "claim_override",
+                        "verbatim_quote": "Explicit arguments should win.",
+                        "claim_type": "empirical_technical",
+                        "verification_strategy": "literature_review",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    config_path.write_text(
+        json.dumps(
+            {
+                "evidence_retrieval": {
+                    "claim_inventory_path": str(config_claims_path),
+                    "output_path": str(config_output_path),
+                    "source": "openalex",
+                    "per_query_limit": 1,
+                    "dry_run": True,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result_path = run_evidence_retrieval_cli(
+        config_path=str(config_path),
+        claim_inventory_path=str(explicit_claims_path),
+        output_path=str(explicit_output_path),
+        source="all",
+        per_query_limit=4,
+        dry_run=True,
+    )
+
+    assert result_path == explicit_output_path
+    assert not config_output_path.exists()
+
+    payload = json.loads(explicit_output_path.read_text(encoding="utf-8"))
+
+    assert payload["source"] == "all"
+    assert payload["per_query_limit"] == 4
+    assert payload["retrieval_count"] == 1

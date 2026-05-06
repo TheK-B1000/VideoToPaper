@@ -12,6 +12,7 @@ from src.core.evidence_retrieval import (
 from src.pipelines.run_evidence_retrieval import (
     ClaimForRetrieval,
     EvidenceRetrievalPipeline,
+    RetrievalSource,
 )
 
 
@@ -26,6 +27,35 @@ def _load_json(path: str | Path) -> dict[str, Any]:
         raise FileNotFoundError(f"JSON file not found: {resolved_path}")
 
     return json.loads(resolved_path.read_text(encoding="utf-8"))
+
+
+def _load_evidence_retrieval_config(config_path: str | None) -> dict[str, Any]:
+    if not config_path:
+        return {}
+
+    payload = _load_json(config_path)
+    section = payload.get("evidence_retrieval", {})
+
+    if not isinstance(section, dict):
+        raise ValueError("evidence_retrieval config section must be an object.")
+
+    return section
+
+
+def _resolve_setting(
+    *,
+    explicit_value: Any,
+    config: dict[str, Any],
+    config_key: str,
+    default_value: Any,
+) -> Any:
+    if explicit_value is not None:
+        return explicit_value
+
+    if config_key in config:
+        return config[config_key]
+
+    return default_value
 
 
 def _extract_claims(payload: dict[str, Any]) -> list[ClaimForRetrieval]:
@@ -65,6 +95,15 @@ def _extract_claims(payload: dict[str, Any]) -> list[ClaimForRetrieval]:
         )
 
     return claims
+
+
+def _validate_source(source: str) -> RetrievalSource:
+    if source not in ("all", "openalex", "semantic_scholar"):
+        raise ValueError(
+            "source must be one of: all, openalex, semantic_scholar"
+        )
+
+    return source  # type: ignore[return-value]
 
 
 def _build_dry_run_result(claim: ClaimForRetrieval) -> EvidenceRetrievalResult:
@@ -131,18 +170,66 @@ def run_evidence_retrieval_cli(
     config_path: str | None = None,
     claim_inventory_path: str | None = None,
     output_path: str | None = None,
-    dry_run: bool = False,
+    source: str | None = None,
+    per_query_limit: int | None = None,
+    dry_run: bool | None = None,
 ) -> Path:
     """
     Run Week 5 evidence retrieval from the command line.
 
-    dry_run=True writes deterministic fake evidence so the stage can be tested
-    without live API calls.
+    Values can come from explicit CLI args or the ``evidence_retrieval`` section
+    inside ``configs/argument_config.json``.
     """
-    _ = config_path
+    config = _load_evidence_retrieval_config(config_path)
 
-    input_path = Path(claim_inventory_path) if claim_inventory_path else DEFAULT_CLAIM_INVENTORY_PATH
-    destination = Path(output_path) if output_path else DEFAULT_EVIDENCE_OUTPUT_PATH
+    resolved_claim_inventory_path = _resolve_setting(
+        explicit_value=claim_inventory_path,
+        config=config,
+        config_key="claim_inventory_path",
+        default_value=str(DEFAULT_CLAIM_INVENTORY_PATH),
+    )
+
+    resolved_output_path = _resolve_setting(
+        explicit_value=output_path,
+        config=config,
+        config_key="output_path",
+        default_value=str(DEFAULT_EVIDENCE_OUTPUT_PATH),
+    )
+
+    resolved_source = _validate_source(
+        str(
+            _resolve_setting(
+                explicit_value=source,
+                config=config,
+                config_key="source",
+                default_value="all",
+            )
+        )
+    )
+
+    resolved_per_query_limit = int(
+        _resolve_setting(
+            explicit_value=per_query_limit,
+            config=config,
+            config_key="per_query_limit",
+            default_value=3,
+        )
+    )
+
+    if resolved_per_query_limit <= 0:
+        raise ValueError("per_query_limit must be positive.")
+
+    resolved_dry_run = bool(
+        _resolve_setting(
+            explicit_value=dry_run,
+            config=config,
+            config_key="dry_run",
+            default_value=False,
+        )
+    )
+
+    input_path = Path(str(resolved_claim_inventory_path))
+    destination = Path(str(resolved_output_path))
 
     payload = _load_json(input_path)
     claims = _extract_claims(payload)
@@ -150,7 +237,7 @@ def run_evidence_retrieval_cli(
     retrieval_results = []
     retrieval_exhausted_query_count_total = 0
 
-    if dry_run:
+    if resolved_dry_run:
         for claim in claims:
             result = _build_dry_run_result(claim)
             retrieval_exhausted_query_count_total += result.retrieval_exhausted_query_count
@@ -158,7 +245,11 @@ def run_evidence_retrieval_cli(
     else:
         pipeline = EvidenceRetrievalPipeline()
         for claim in claims:
-            result = pipeline.retrieve_for_claim(claim)
+            result = pipeline.retrieve_for_claim(
+                claim,
+                source=resolved_source,
+                per_query_limit=resolved_per_query_limit,
+            )
             retrieval_exhausted_query_count_total += result.retrieval_exhausted_query_count
             retrieval_results.append(result.to_dict())
 
@@ -167,7 +258,9 @@ def run_evidence_retrieval_cli(
     output_payload = {
         "source_claim_inventory": str(input_path),
         "retrieval_count": len(retrieval_results),
-        "dry_run": dry_run,
+        "dry_run": resolved_dry_run,
+        "source": resolved_source,
+        "per_query_limit": resolved_per_query_limit,
         "retrieval_exhausted_query_count_total": retrieval_exhausted_query_count_total,
         "retrieval_results": retrieval_results,
     }
