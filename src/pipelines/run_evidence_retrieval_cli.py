@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from src.core.evidence_retrieval import (
     EvidenceRecord,
@@ -18,6 +20,7 @@ from src.pipelines.run_evidence_retrieval import (
 
 DEFAULT_CLAIM_INVENTORY_PATH = Path("data/processed/claim_inventory.json")
 DEFAULT_EVIDENCE_OUTPUT_PATH = Path("data/processed/evidence_retrieval.json")
+DEFAULT_EVIDENCE_RUN_LOG_DIR = Path("logs/runs")
 
 
 def _load_json(path: str | Path) -> dict[str, Any]:
@@ -224,6 +227,49 @@ def _build_retrieval_summary(
     }
 
 
+def _write_retrieval_run_log(
+    *,
+    source_claim_inventory: Path,
+    output_path: Path,
+    dry_run: bool,
+    source: str,
+    per_query_limit: int,
+    retrieval_count: int,
+    retrieval_summary: dict[str, Any],
+    log_dir: str | Path = DEFAULT_EVIDENCE_RUN_LOG_DIR,
+) -> Path:
+    """
+    Write a small audit log for the evidence retrieval stage.
+
+    The paper output answers: what evidence did we retrieve?
+    The run log answers: how did this run execute?
+    """
+    resolved_log_dir = Path(log_dir)
+    resolved_log_dir.mkdir(parents=True, exist_ok=True)
+
+    run_id = str(uuid4())
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    log_payload = {
+        "run_id": run_id,
+        "stage": "evidence_retrieval",
+        "started_at": timestamp,
+        "finished_at": timestamp,
+        "source_claim_inventory": str(source_claim_inventory),
+        "output_path": str(output_path),
+        "dry_run": dry_run,
+        "source": source,
+        "per_query_limit": per_query_limit,
+        "retrieval_count": retrieval_count,
+        "retrieval_summary": retrieval_summary,
+    }
+
+    log_path = resolved_log_dir / f"evidence_retrieval_{run_id}.json"
+    log_path.write_text(json.dumps(log_payload, indent=2), encoding="utf-8")
+
+    return log_path
+
+
 def run_evidence_retrieval_cli(
     *,
     config_path: str | None = None,
@@ -332,6 +378,17 @@ def run_evidence_retrieval_cli(
         encoding="utf-8",
     )
 
+    run_log_path = _write_retrieval_run_log(
+        source_claim_inventory=input_path,
+        output_path=destination,
+        dry_run=resolved_dry_run,
+        source=resolved_source,
+        per_query_limit=resolved_per_query_limit,
+        retrieval_count=len(retrieval_results),
+        retrieval_summary=retrieval_summary,
+    )
+
     print(f"Evidence retrieval written to: {destination}")
+    print(f"Evidence retrieval run log written to: {run_log_path}")
 
     return destination

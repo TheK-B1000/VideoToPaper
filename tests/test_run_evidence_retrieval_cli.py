@@ -10,6 +10,7 @@ from src.pipelines.run_evidence_retrieval_cli import (
     _load_evidence_retrieval_config,
     _load_json,
     _validate_source,
+    _write_retrieval_run_log,
     run_evidence_retrieval_cli,
 )
 
@@ -220,6 +221,60 @@ def test_build_retrieval_summary_empty_run_is_not_publishable():
     assert summary["claims_needing_review"] == []
     assert summary["sources_seen"] == []
     assert summary["publishable_for_week5"] is False
+
+
+def test_write_retrieval_run_log_creates_audit_file(tmp_path):
+    claim_inventory_path = tmp_path / "claim_inventory.json"
+    output_path = tmp_path / "evidence_retrieval.json"
+    log_dir = tmp_path / "logs"
+
+    claim_inventory_path.write_text("{}", encoding="utf-8")
+    output_path.write_text("{}", encoding="utf-8")
+
+    retrieval_summary = {
+        "total_claims": 1,
+        "total_evidence_records": 2,
+        "balance_counts": {
+            "balanced": 1,
+            "supportive_skewed": 0,
+            "contrary_skewed": 0,
+            "insufficient": 0,
+        },
+        "balance_rate": 1.0,
+        "claims_needing_review": [],
+        "sources_seen": ["DryRun"],
+        "publishable_for_week5": True,
+    }
+
+    log_path = _write_retrieval_run_log(
+        source_claim_inventory=claim_inventory_path,
+        output_path=output_path,
+        dry_run=True,
+        source="all",
+        per_query_limit=3,
+        retrieval_count=1,
+        retrieval_summary=retrieval_summary,
+        log_dir=log_dir,
+    )
+
+    assert log_path.exists()
+    assert log_path.parent == log_dir
+    assert log_path.name.startswith("evidence_retrieval_")
+    assert log_path.suffix == ".json"
+
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+
+    assert payload["stage"] == "evidence_retrieval"
+    assert payload["source_claim_inventory"] == str(claim_inventory_path)
+    assert payload["output_path"] == str(output_path)
+    assert payload["dry_run"] is True
+    assert payload["source"] == "all"
+    assert payload["per_query_limit"] == 3
+    assert payload["retrieval_count"] == 1
+    assert payload["retrieval_summary"]["publishable_for_week5"] is True
+    assert "run_id" in payload
+    assert "started_at" in payload
+    assert "finished_at" in payload
 
 
 def test_dry_run_result_returns_balanced_fake_evidence():
