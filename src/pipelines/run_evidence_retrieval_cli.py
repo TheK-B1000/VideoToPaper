@@ -11,6 +11,7 @@ from src.core.evidence_retrieval import (
     EvidenceRetrievalResult,
     generate_balanced_queries,
 )
+from src.core.evidence_retrieval_output import validate_evidence_retrieval_output
 from src.pipelines.run_evidence_retrieval import (
     ClaimForRetrieval,
     EvidenceRetrievalPipeline,
@@ -415,6 +416,8 @@ def run_evidence_retrieval_cli(
         "retrieval_summary": retrieval_summary,
         "retrieval_results": retrieval_results,
     }
+
+    validate_evidence_retrieval_output(output_payload)
 
     destination.write_text(
         json.dumps(output_payload, indent=2),
