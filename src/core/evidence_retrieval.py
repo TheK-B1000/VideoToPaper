@@ -11,6 +11,12 @@ EvidenceStance = Literal["supports", "contradicts", "complicates", "qualifies"]
 EvidenceTier = Literal[1, 2, 3]
 BalanceScore = Literal["balanced", "supportive_skewed", "contrary_skewed", "insufficient"]
 
+SOURCE_TIER_DEFINITIONS = {
+    1: "peer_reviewed_or_academic_index",
+    2: "government_institutional_or_primary_data",
+    3: "established_secondary_source",
+}
+
 
 @dataclass(frozen=True)
 class EvidenceRecord:
@@ -35,7 +41,7 @@ class EvidenceRecord:
         if not self.source.strip():
             raise ValueError("EvidenceRecord requires source.")
 
-        if self.tier not in (1, 2, 3):
+        if self.tier not in SOURCE_TIER_DEFINITIONS:
             raise ValueError(f"Invalid evidence tier: {self.tier}")
 
         if self.stance not in ("supports", "contradicts", "complicates", "qualifies"):
@@ -44,8 +50,17 @@ class EvidenceRecord:
         if not self.identifier.strip():
             raise ValueError("EvidenceRecord requires a resolvable identifier.")
 
-        if not (self.url or self.doi or self.identifier):
-            raise ValueError("EvidenceRecord must include url, doi, or identifier.")
+        if self.tier == 1 and not (
+            self.doi
+            or self.identifier.startswith("https://openalex.org/")
+            or self.identifier.startswith("semantic_scholar:")
+        ):
+            raise ValueError(
+                "Tier 1 evidence requires a DOI, OpenAlex ID, or Semantic Scholar identifier."
+            )
+
+        if self.tier in (2, 3) and not (self.url or self.doi):
+            raise ValueError("Tier 2 and Tier 3 evidence require a URL or DOI.")
 
 
 @dataclass(frozen=True)
