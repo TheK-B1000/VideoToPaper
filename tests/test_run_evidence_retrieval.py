@@ -1,4 +1,7 @@
+from io import BytesIO
+
 import pytest
+import urllib.error
 
 from src.core.openalex_client import OpenAlexWork
 from src.core.semantic_scholar_client import SemanticScholarPaper
@@ -21,7 +24,7 @@ class FakeOpenAlexClient:
                 url="https://example.com/openalex",
                 abstract="A test abstract.",
             )
-        ]
+        ], "ok"
 
 
 class FakeSemanticScholarClient:
@@ -36,7 +39,7 @@ class FakeSemanticScholarClient:
                 doi=f"10.5678/{abs(hash(query))}",
                 citation_count=12,
             )
-        ]
+        ], "ok"
 
 
 def test_infer_stance_from_query_supports():
@@ -94,6 +97,61 @@ def test_pipeline_returns_insufficient_for_non_literature_review_claim():
     assert result.queries_executed == []
     assert result.evidence_records == []
     assert result.balance_score == "insufficient"
+
+
+def test_pipeline_records_query_traces_and_zero_exhaustion_when_ok():
+    pipeline = EvidenceRetrievalPipeline(
+        openalex_client=FakeOpenAlexClient(),
+        semantic_scholar_client=FakeSemanticScholarClient(),
+    )
+
+    claim = ClaimForRetrieval(
+        claim_id="claim_001",
+        claim_text="multi-agent systems require coordination",
+        claim_type="empirical_technical",
+        verification_strategy="literature_review",
+    )
+
+    result = pipeline.retrieve_for_claim(claim, source="all", per_query_limit=1)
+
+    assert len(result.query_traces) == 4
+    assert result.retrieval_exhausted_query_count == 0
+    for trace in result.query_traces:
+        assert trace["openalex_status"] == "ok"
+        assert trace["semantic_scholar_status"] == "ok"
+
+
+class Http500OpenAlexClient:
+    def search_works(self, query: str, *, per_page: int = 3):
+        raise urllib.error.HTTPError(
+            "https://api.openalex.org/works",
+            500,
+            "Internal Server Error",
+            {},
+            BytesIO(),
+        )
+
+
+def test_pipeline_survives_openalex_http_error_and_keeps_semantic_scholar_rows():
+    pipeline = EvidenceRetrievalPipeline(
+        openalex_client=Http500OpenAlexClient(),
+        semantic_scholar_client=FakeSemanticScholarClient(),
+    )
+
+    claim = ClaimForRetrieval(
+        claim_id="claim_001",
+        claim_text="multi-agent systems require coordination",
+        claim_type="empirical_technical",
+        verification_strategy="literature_review",
+    )
+
+    result = pipeline.retrieve_for_claim(claim, source="all", per_query_limit=1)
+
+    assert len(result.evidence_records) == 4
+    assert all(record.source == "Semantic Scholar" for record in result.evidence_records)
+    assert result.retrieval_exhausted_query_count == 4
+    assert all(t["openalex_status"] == "error" for t in result.query_traces)
+    assert all(t["semantic_scholar_status"] == "ok" for t in result.query_traces)
 
 
 def test_pipeline_retrieves_from_both_sources_and_scores_balance():

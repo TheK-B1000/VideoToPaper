@@ -1,15 +1,25 @@
 from __future__ import annotations
 
 import json
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 from src.core.evidence_retrieval import EvidenceRecord, RetrievalCache
+from src.core.retrieval_http_retry import (
+    ExhaustedReason,
+    JsonFetchOutcome,
+    retrieval_provider_status_from_outcome,
+    retry_after_sleep_seconds,
+)
 
 
 OPENALEX_BASE_URL = "https://api.openalex.org/works"
+
+_RETRYABLE_HTTP_CODES = frozenset({429, 502, 503, 504})
 
 
 @dataclass(frozen=True)
@@ -107,10 +117,78 @@ class OpenAlexClient:
         cache: RetrievalCache | None = None,
         base_url: str = OPENALEX_BASE_URL,
         timeout_seconds: int = 15,
+        *,
+        max_retries: int = 4,
+        retry_initial_sleep_seconds: float = 2.0,
     ) -> None:
         self.cache = cache or RetrievalCache()
         self.base_url = base_url
         self.timeout_seconds = timeout_seconds
+        self.max_retries = max_retries
+        self.retry_initial_sleep_seconds = retry_initial_sleep_seconds
+
+    def _fetch_works_payload(self, url: str) -> JsonFetchOutcome:
+        sleep_s = self.retry_initial_sleep_seconds
+
+        for attempt in range(self.max_retries + 1):
+            try:
+                with urllib.request.urlopen(
+                    url,
+                    timeout=self.timeout_seconds,
+                ) as response:
+                    raw = response.read().decode("utf-8")
+                    try:
+                        parsed = json.loads(raw)
+                    except json.JSONDecodeError:
+                        if attempt >= self.max_retries:
+                            return JsonFetchOutcome(
+                                {"results": []},
+                                cacheable=False,
+                                exhausted_reason="json_error",
+                            )
+                        time.sleep(sleep_s)
+                        sleep_s = min(sleep_s * 2.0, 60.0)
+                        continue
+                    if not isinstance(parsed, dict):
+                        if attempt >= self.max_retries:
+                            return JsonFetchOutcome(
+                                {"results": []},
+                                cacheable=False,
+                                exhausted_reason="json_error",
+                            )
+                        time.sleep(sleep_s)
+                        sleep_s = min(sleep_s * 2.0, 60.0)
+                        continue
+                    return JsonFetchOutcome(parsed, cacheable=True)
+            except urllib.error.HTTPError as exc:
+                if (
+                    exc.code in _RETRYABLE_HTTP_CODES
+                    and attempt < self.max_retries
+                ):
+                    wait = retry_after_sleep_seconds(
+                        exc.headers.get("Retry-After"),
+                        fallback_seconds=sleep_s,
+                        cap_seconds=120.0,
+                    )
+                    time.sleep(wait)
+                    sleep_s = min(sleep_s * 2.0, 60.0)
+                    continue
+                if exc.code in _RETRYABLE_HTTP_CODES:
+                    exhausted: ExhaustedReason
+                    exhausted = "429" if exc.code == 429 else "transient_http"
+                    return JsonFetchOutcome({"results": []}, False, exhausted)
+                raise
+            except urllib.error.URLError:
+                if attempt >= self.max_retries:
+                    return JsonFetchOutcome(
+                        {"results": []},
+                        cacheable=False,
+                        exhausted_reason="url_error",
+                    )
+                time.sleep(sleep_s)
+                sleep_s = min(sleep_s * 2.0, 60.0)
+
+        return JsonFetchOutcome({"results": []}, False, "url_error")
 
     def search_works(
         self,
@@ -118,7 +196,7 @@ class OpenAlexClient:
         *,
         per_page: int = 5,
         use_cache: bool = True,
-    ) -> list[OpenAlexWork]:
+    ) -> tuple[list[OpenAlexWork], Literal["ok", "rate_limited", "error"]]:
         clean_query = " ".join(query.split())
 
         if not clean_query:
@@ -132,7 +210,9 @@ class OpenAlexClient:
         if use_cache:
             cached = self.cache.get(cache_key)
             if cached is not None:
-                return [parse_openalex_work(item) for item in cached["results"]]
+                return [
+                    parse_openalex_work(item) for item in cached["results"]
+                ], "ok"
 
         params = urllib.parse.urlencode(
             {
@@ -143,12 +223,15 @@ class OpenAlexClient:
 
         url = f"{self.base_url}?{params}"
 
-        with urllib.request.urlopen(url, timeout=self.timeout_seconds) as response:
-            payload = json.loads(response.read().decode("utf-8"))
+        outcome = self._fetch_works_payload(url)
 
-        results = payload.get("results", [])
+        results = outcome.payload.get("results", [])
+        if not isinstance(results, list):
+            results = []
 
-        if use_cache:
+        if use_cache and outcome.cacheable:
             self.cache.set(cache_key, {"results": results})
 
-        return [parse_openalex_work(item) for item in results]
+        works = [parse_openalex_work(item) for item in results]
+        status = retrieval_provider_status_from_outcome(outcome)
+        return works, status

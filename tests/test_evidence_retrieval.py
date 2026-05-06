@@ -160,5 +160,7 @@ def test_build_evidence_result_serializes_records():
     assert result_dict["balance_score"] == "balanced"
     assert len(result_dict["queries_executed"]) == 4
     assert len(result_dict["evidence_records"]) == 2
+    assert result_dict["query_traces"] == []
+    assert result_dict["retrieval_exhausted_query_count"] == 0
 
     json.dumps(result_dict)

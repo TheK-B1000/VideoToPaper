@@ -1,0 +1,2495 @@
+{
+  "results": [
+    {
+      "id": "https://openalex.org/W4400574461",
+      "doi": "https://doi.org/10.26686/wgtn.26283655",
+      "title": "What\u2019s Stopping You? Absconding from Community Remand Homes in Aotearoa",
+      "display_name": "What\u2019s Stopping You? Absconding from Community Remand Homes in Aotearoa",
+      "relevance_score": 1.1609778,
+      "publication_year": 2024,
+      "publication_date": "2024-07-12",
+      "ids": {
+        "openalex": "https://openalex.org/W4400574461",
+        "doi": "https://doi.org/10.26686/wgtn.26283655"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "doi:10.26686/wgtn.26283655",
+        "is_oa": true,
+        "landing_page_url": "http://dx.doi.org/10.26686/wgtn.26283655",
+        "pdf_url": "https://openaccess.wgtn.ac.nz/articles/thesis/What_s_Stopping_You_Absconding_from_Community_Remand_Homes_in_Aotearoa/26283655/1/files/47648932.pdf",
+        "source": null,
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Open Access Te Herenga Waka-Victoria University of Wellington",
+        "raw_type": "dissertation"
+      },
+      "type": "dissertation",
+      "indexed_in": [
+        "crossref"
+      ],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "gold",
+        "oa_url": "https://openaccess.wgtn.ac.nz/articles/thesis/What_s_Stopping_You_Absconding_from_Community_Remand_Homes_in_Aotearoa/26283655/1/files/47648932.pdf",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5113286093",
+            "display_name": "Lily Murray",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": true,
+          "raw_author_name": "Murray, Lily",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 0,
+      "institutions_distinct_count": 1,
+      "corresponding_author_ids": [
+        "https://openalex.org/A5113286093"
+      ],
+      "corresponding_institution_ids": [],
+      "apc_list": null,
+      "apc_paid": null,
+      "fwci": null,
+      "has_fulltext": true,
+      "cited_by_count": 0,
+      "citation_normalized_percentile": null,
+      "cited_by_percentile_year": null,
+      "biblio": {
+        "volume": null,
+        "issue": null,
+        "first_page": null,
+        "last_page": null
+      },
+      "is_retracted": false,
+      "is_paratext": false,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10574",
+        "display_name": "Crime Patterns and Interventions",
+        "score": 0.8277000188827515,
+        "subfield": {
+          "id": "https://openalex.org/subfields/3312",
+          "display_name": "Sociology and Political Science"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/33",
+          "display_name": "Social Sciences"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/2",
+          "display_name": "Social Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10574",
+          "display_name": "Crime Patterns and Interventions",
+          "score": 0.8277000188827515,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3312",
+            "display_name": "Sociology and Political Science"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T10426",
+          "display_name": "Child Abuse and Trauma",
+          "score": 0.7791000008583069,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3203",
+            "display_name": "Clinical Psychology"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/32",
+            "display_name": "Psychology"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T12519",
+          "display_name": "Cybercrime and Law Enforcement Studies",
+          "score": 0.7394999861717224,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1710",
+            "display_name": "Information Systems"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/17",
+            "display_name": "Computer Science"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/3",
+            "display_name": "Physical Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/aotearoa",
+          "display_name": "Aotearoa",
+          "score": 0.8791122436523438
+        },
+        {
+          "id": "https://openalex.org/keywords/remand",
+          "display_name": "Remand (court procedure)",
+          "score": 0.7774350643157959
+        },
+        {
+          "id": "https://openalex.org/keywords/context",
+          "display_name": "Context (archaeology)",
+          "score": 0.5931400656700134
+        },
+        {
+          "id": "https://openalex.org/keywords/thematic-analysis",
+          "display_name": "Thematic analysis",
+          "score": 0.5419635772705078
+        },
+        {
+          "id": "https://openalex.org/keywords/best-practice",
+          "display_name": "Best practice",
+          "score": 0.41936880350112915
+        },
+        {
+          "id": "https://openalex.org/keywords/psychology",
+          "display_name": "Psychology",
+          "score": 0.40388137102127075
+        },
+        {
+          "id": "https://openalex.org/keywords/qualitative-research",
+          "display_name": "Qualitative research",
+          "score": 0.3952255845069885
+        },
+        {
+          "id": "https://openalex.org/keywords/criminology",
+          "display_name": "Criminology",
+          "score": 0.33995795249938965
+        },
+        {
+          "id": "https://openalex.org/keywords/medicine",
+          "display_name": "Medicine",
+          "score": 0.33601653575897217
+        },
+        {
+          "id": "https://openalex.org/keywords/social-psychology",
+          "display_name": "Social psychology",
+          "score": 0.3310008645057678
+        },
+        {
+          "id": "https://openalex.org/keywords/political-science",
+          "display_name": "Political science",
+          "score": 0.25455784797668457
+        },
+        {
+          "id": "https://openalex.org/keywords/sociology",
+          "display_name": "Sociology",
+          "score": 0.24919754266738892
+        },
+        {
+          "id": "https://openalex.org/keywords/geography",
+          "display_name": "Geography",
+          "score": 0.12333077192306519
+        },
+        {
+          "id": "https://openalex.org/keywords/gender-studies",
+          "display_name": "Gender studies",
+          "score": 0.11406034231185913
+        },
+        {
+          "id": "https://openalex.org/keywords/law",
+          "display_name": "Law",
+          "score": 0.09455510973930359
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C2781227721",
+          "wikidata": "https://www.wikidata.org/wiki/Q153785",
+          "display_name": "Aotearoa",
+          "level": 2,
+          "score": 0.8791122436523438
+        },
+        {
+          "id": "https://openalex.org/C66487177",
+          "wikidata": "https://www.wikidata.org/wiki/Q7311531",
+          "display_name": "Remand (court procedure)",
+          "level": 3,
+          "score": 0.7774350643157959
+        },
+        {
+          "id": "https://openalex.org/C2779343474",
+          "wikidata": "https://www.wikidata.org/wiki/Q3109175",
+          "display_name": "Context (archaeology)",
+          "level": 2,
+          "score": 0.5931400656700134
+        },
+        {
+          "id": "https://openalex.org/C74196892",
+          "wikidata": "https://www.wikidata.org/wiki/Q7781188",
+          "display_name": "Thematic analysis",
+          "level": 3,
+          "score": 0.5419635772705078
+        },
+        {
+          "id": "https://openalex.org/C184356942",
+          "wikidata": "https://www.wikidata.org/wiki/Q830382",
+          "display_name": "Best practice",
+          "level": 2,
+          "score": 0.41936880350112915
+        },
+        {
+          "id": "https://openalex.org/C15744967",
+          "wikidata": "https://www.wikidata.org/wiki/Q9418",
+          "display_name": "Psychology",
+          "level": 0,
+          "score": 0.40388137102127075
+        },
+        {
+          "id": "https://openalex.org/C190248442",
+          "wikidata": "https://www.wikidata.org/wiki/Q839486",
+          "display_name": "Qualitative research",
+          "level": 2,
+          "score": 0.3952255845069885
+        },
+        {
+          "id": "https://openalex.org/C73484699",
+          "wikidata": "https://www.wikidata.org/wiki/Q161733",
+          "display_name": "Criminology",
+          "level": 1,
+          "score": 0.33995795249938965
+        },
+        {
+          "id": "https://openalex.org/C71924100",
+          "wikidata": "https://www.wikidata.org/wiki/Q11190",
+          "display_name": "Medicine",
+          "level": 0,
+          "score": 0.33601653575897217
+        },
+        {
+          "id": "https://openalex.org/C77805123",
+          "wikidata": "https://www.wikidata.org/wiki/Q161272",
+          "display_name": "Social psychology",
+          "level": 1,
+          "score": 0.3310008645057678
+        },
+        {
+          "id": "https://openalex.org/C17744445",
+          "wikidata": "https://www.wikidata.org/wiki/Q36442",
+          "display_name": "Political science",
+          "level": 0,
+          "score": 0.25455784797668457
+        },
+        {
+          "id": "https://openalex.org/C144024400",
+          "wikidata": "https://www.wikidata.org/wiki/Q21201",
+          "display_name": "Sociology",
+          "level": 0,
+          "score": 0.24919754266738892
+        },
+        {
+          "id": "https://openalex.org/C205649164",
+          "wikidata": "https://www.wikidata.org/wiki/Q1071",
+          "display_name": "Geography",
+          "level": 0,
+          "score": 0.12333077192306519
+        },
+        {
+          "id": "https://openalex.org/C107993555",
+          "wikidata": "https://www.wikidata.org/wiki/Q1662673",
+          "display_name": "Gender studies",
+          "level": 1,
+          "score": 0.11406034231185913
+        },
+        {
+          "id": "https://openalex.org/C199539241",
+          "wikidata": "https://www.wikidata.org/wiki/Q7748",
+          "display_name": "Law",
+          "level": 1,
+          "score": 0.09455510973930359
+        },
+        {
+          "id": "https://openalex.org/C36289849",
+          "wikidata": "https://www.wikidata.org/wiki/Q34749",
+          "display_name": "Social science",
+          "level": 1,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C166957645",
+          "wikidata": "https://www.wikidata.org/wiki/Q23498",
+          "display_name": "Archaeology",
+          "level": 1,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C2778272461",
+          "wikidata": "https://www.wikidata.org/wiki/Q190752",
+          "display_name": "Supreme court",
+          "level": 2,
+          "score": 0.0
+        }
+      ],
+      "mesh": [],
+      "locations_count": 2,
+      "locations": [
+        {
+          "id": "doi:10.26686/wgtn.26283655",
+          "is_oa": true,
+          "landing_page_url": "http://dx.doi.org/10.26686/wgtn.26283655",
+          "pdf_url": "https://openaccess.wgtn.ac.nz/articles/thesis/What_s_Stopping_You_Absconding_from_Community_Remand_Homes_in_Aotearoa/26283655/1/files/47648932.pdf",
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Open Access Te Herenga Waka-Victoria University of Wellington",
+          "raw_type": "dissertation"
+        },
+        {
+          "id": "pmh:oai:figshare.com:article/26283655",
+          "is_oa": true,
+          "landing_page_url": "https://figshare.com/articles/thesis/What_s_Stopping_You_Absconding_from_Community_Remand_Homes_in_Aotearoa/26283655",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4377196282",
+            "display_name": "Figshare",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "host_organization": "https://openalex.org/I4210132348",
+            "host_organization_name": "Figshare (United Kingdom)",
+            "host_organization_lineage": [
+              "https://openalex.org/I4210132348"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": "cc-by",
+          "license_id": "https://openalex.org/licenses/cc-by",
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "",
+          "raw_type": "Text"
+        }
+      ],
+      "best_oa_location": {
+        "id": "doi:10.26686/wgtn.26283655",
+        "is_oa": true,
+        "landing_page_url": "http://dx.doi.org/10.26686/wgtn.26283655",
+        "pdf_url": "https://openaccess.wgtn.ac.nz/articles/thesis/What_s_Stopping_You_Absconding_from_Community_Remand_Homes_in_Aotearoa/26283655/1/files/47648932.pdf",
+        "source": null,
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Open Access Te Herenga Waka-Victoria University of Wellington",
+        "raw_type": "dissertation"
+      },
+      "sustainable_development_goals": [
+        {
+          "display_name": "Peace, Justice and strong institutions",
+          "score": 0.5299999713897705,
+          "id": "https://metadata.un.org/sdg/16"
+        }
+      ],
+      "awards": [],
+      "funders": [
+        {
+          "id": "https://openalex.org/F4320320802",
+          "display_name": "Victoria University of Wellington",
+          "ror": "https://ror.org/0040r6f76"
+        },
+        {
+          "id": "https://openalex.org/F4320320976",
+          "display_name": "Victoria University",
+          "ror": "https://ror.org/04j757h98"
+        },
+        {
+          "id": "https://openalex.org/F4320335068",
+          "display_name": "Faculty of Education, Victoria University of Wellington",
+          "ror": "https://ror.org/0040r6f76"
+        }
+      ],
+      "has_content": {
+        "grobid_xml": true,
+        "pdf": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W4400574461.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W4400574461.grobid-xml"
+      },
+      "referenced_works_count": 0,
+      "referenced_works": [],
+      "related_works": [
+        "https://openalex.org/W2888381460",
+        "https://openalex.org/W2486726723",
+        "https://openalex.org/W2056570750",
+        "https://openalex.org/W2504760971",
+        "https://openalex.org/W2189066593",
+        "https://openalex.org/W4253399107",
+        "https://openalex.org/W4294219126",
+        "https://openalex.org/W4399567913",
+        "https://openalex.org/W4213078042",
+        "https://openalex.org/W2996002916"
+      ],
+      "abstract_inverted_index": {
+        "&lt;p&gt;&lt;strong&gt;The": [
+          0
+        ],
+        "issue": [
+          1
+        ],
+        "of": [
+          2,
+          39,
+          97,
+          102,
+          110,
+          115,
+          135,
+          145,
+          156,
+          193
+        ],
+        "youth": [
+          3,
+          21,
+          81,
+          116,
+          236
+        ],
+        "absconding": [
+          4,
+          42,
+          54,
+          82,
+          157,
+          205,
+          241
+        ],
+        "from": [
+          5,
+          43,
+          55,
+          83,
+          94,
+          118,
+          130
+        ],
+        "community-based": [
+          6,
+          84
+        ],
+        "remand": [
+          7,
+          46,
+          85
+        ],
+        "homes": [
+          8,
+          86
+        ],
+        "poses": [
+          9
+        ],
+        "a": [
+          10,
+          37,
+          100,
+          133,
+          142,
+          165
+        ],
+        "multifaceted": [
+          11
+        ],
+        "risk,": [
+          12
+        ],
+        "not": [
+          13
+        ],
+        "just": [
+          14
+        ],
+        "for": [
+          15,
+          209,
+          213
+        ],
+        "rangatahi": [
+          16,
+          127,
+          174
+        ],
+        "(young": [
+          17
+        ],
+        "people)": [
+          18
+        ],
+        "involved": [
+          19
+        ],
+        "in": [
+          20,
+          88,
+          158,
+          184
+        ],
+        "justice,": [
+          22
+        ],
+        "but": [
+          23
+        ],
+        "also": [
+          24,
+          218
+        ],
+        "Oranga": [
+          25,
+          111,
+          136
+        ],
+        "Tamariki": [
+          26,
+          112,
+          137
+        ],
+        "staff": [
+          27
+        ],
+        "and": [
+          28,
+          76,
+          104,
+          120,
+          132,
+          150,
+          171,
+          175,
+          196,
+          238
+        ],
+        "the": [
+          29,
+          74,
+          146,
+          154,
+          182,
+          191,
+          204,
+          222,
+          232
+        ],
+        "wider": [
+          30
+        ],
+        "community.": [
+          31
+        ],
+        "Despite": [
+          32
+        ],
+        "its": [
+          33
+        ],
+        "importance,": [
+          34
+        ],
+        "there": [
+          35
+        ],
+        "exists": [
+          36
+        ],
+        "dearth": [
+          38
+        ],
+        "research": [
+          40,
+          64
+        ],
+        "into": [
+          41,
+          181
+        ],
+        "these": [
+          44
+        ],
+        "community": [
+          45
+        ],
+        "settings,": [
+          47
+        ],
+        "with": [
+          48,
+          80,
+          125,
+          173
+        ],
+        "existing": [
+          49,
+          240
+        ],
+        "literature": [
+          50,
+          166
+        ],
+        "predominantly": [
+          51
+        ],
+        "focusing": [
+          52
+        ],
+        "on": [
+          53,
+          73,
+          164
+        ],
+        "other": [
+          56
+        ],
+        "settings": [
+          57
+        ],
+        "such": [
+          58
+        ],
+        "as": [
+          59
+        ],
+        "secure": [
+          60
+        ],
+        "residences.": [
+          61
+        ],
+        "Recognising": [
+          62
+        ],
+        "this": [
+          63,
+          140,
+          159,
+          185
+        ],
+        "gap,": [
+          65
+        ],
+        "our": [
+          66
+        ],
+        "qualitative": [
+          67
+        ],
+        "project": [
+          68,
+          92
+        ],
+        "endeavoured": [
+          69
+        ],
+        "to": [
+          70,
+          202,
+          227,
+          231,
+          239
+        ],
+        "shed": [
+          71
+        ],
+        "light": [
+          72
+        ],
+        "risk": [
+          75,
+          195
+        ],
+        "protective": [
+          77,
+          151,
+          197
+        ],
+        "factors": [
+          78,
+          152
+        ],
+        "associated": [
+          79
+        ],
+        "(CBRH)": [
+          87
+        ],
+        "Aotearoa": [
+          89
+        ],
+        "New": [
+          90
+        ],
+        "Zealand.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;This": [
+          91
+        ],
+        "drew": [
+          93
+        ],
+        "three": [
+          95
+        ],
+        "sources": [
+          96
+        ],
+        "data:": [
+          98
+        ],
+        "1)": [
+          99
+        ],
+        "review": [
+          101
+        ],
+        "national": [
+          103
+        ],
+        "international": [
+          105
+        ],
+        "literature,": [
+          106
+        ],
+        "2)": [
+          107
+        ],
+        "an": [
+          108
+        ],
+        "examination": [
+          109
+        ],
+        "case": [
+          113,
+          168
+        ],
+        "files": [
+          114
+        ],
+        "absconders": [
+          117
+        ],
+        "CBRH,": [
+          119
+        ],
+        "3)": [
+          121
+        ],
+        "semi-structured": [
+          122
+        ],
+        "interviews": [
+          123,
+          172
+        ],
+        "conducted": [
+          124
+        ],
+        "both": [
+          126
+        ],
+        "who": [
+          128
+        ],
+        "absconded": [
+          129
+        ],
+        "CBRH": [
+          131
+        ],
+        "range": [
+          134
+        ],
+        "staff.": [
+          138
+        ],
+        "Through": [
+          139
+        ],
+        "approach,": [
+          141
+        ],
+        "nuanced": [
+          143
+        ],
+        "understanding": [
+          144
+        ],
+        "individual,": [
+          147
+        ],
+        "contextual,": [
+          148
+        ],
+        "relational,": [
+          149
+        ],
+        "influencing": [
+          153
+        ],
+        "likelihood": [
+          155
+        ],
+        "unique": [
+          160,
+          186
+        ],
+        "context": [
+          161
+        ],
+        "was": [
+          162
+        ],
+        "achieved.&lt;/p&gt;&lt;p&gt;Drawing": [
+          163
+        ],
+        "review,": [
+          167
+        ],
+        "file": [
+          169
+        ],
+        "analysis,": [
+          170
+        ],
+        "staff,": [
+          176
+        ],
+        "we": [
+          177,
+          225
+        ],
+        "contribute": [
+          178,
+          228
+        ],
+        "new": [
+          179
+        ],
+        "insights": [
+          180,
+          230
+        ],
+        "phenomenon": [
+          183
+        ],
+        "context.": [
+          187
+        ],
+        "Our": [
+          188
+        ],
+        "findings": [
+          189
+        ],
+        "highlight": [
+          190
+        ],
+        "interplay": [
+          192
+        ],
+        "potential": [
+          194
+        ],
+        "factors,": [
+          198,
+          224
+        ],
+        "which": [
+          199
+        ],
+        "are": [
+          200,
+          217
+        ],
+        "likely": [
+          201
+        ],
+        "shape": [
+          203
+        ],
+        "pathway": [
+          206
+        ],
+        "or": [
+          207
+        ],
+        "narrative": [
+          208
+        ],
+        "rangatahi.": [
+          210
+        ],
+        "The": [
+          211
+        ],
+        "implications": [
+          212
+        ],
+        "informing": [
+          214
+        ],
+        "best": [
+          215
+        ],
+        "practice": [
+          216
+        ],
+        "considered.": [
+          219
+        ],
+        "By": [
+          220
+        ],
+        "addressing": [
+          221
+        ],
+        "identified": [
+          223
+        ],
+        "aim": [
+          226
+        ],
+        "valuable": [
+          229
+        ],
+        "ongoing": [
+          233
+        ],
+        "discourse": [
+          234
+        ],
+        "surrounding": [
+          235
+        ],
+        "justice": [
+          237
+        ],
+        "knowledge.&lt;/p&gt;": [
+          242
+        ]
+      },
+      "counts_by_year": [],
+      "updated_date": "2026-03-25T13:04:00.132906",
+      "created_date": "2024-07-13T00:00:00"
+    },
+    {
+      "id": "https://openalex.org/W4200150568",
+      "doi": "https://doi.org/10.26686/wgtn.17143367",
+      "title": "\u2018Having It All\u2019? : Pre-Teen Girls Negotiate Successful Femininity",
+      "display_name": "\u2018Having It All\u2019? : Pre-Teen Girls Negotiate Successful Femininity",
+      "relevance_score": 1.022617,
+      "publication_year": 2015,
+      "publication_date": "2015-01-01",
+      "ids": {
+        "openalex": "https://openalex.org/W4200150568",
+        "doi": "https://doi.org/10.26686/wgtn.17143367"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "doi:10.26686/wgtn.17143367",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.26686/wgtn.17143367",
+        "pdf_url": "https://openaccess.wgtn.ac.nz/articles/thesis/_Having_It_All_Pre-Teen_Girls_Negotiate_Successful_Femininity/17143367/1/files/31699295.pdf",
+        "source": null,
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Open Access Te Herenga Waka-Victoria University of Wellington",
+        "raw_type": "dissertation"
+      },
+      "type": "dissertation",
+      "indexed_in": [
+        "crossref"
+      ],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "gold",
+        "oa_url": "https://openaccess.wgtn.ac.nz/articles/thesis/_Having_It_All_Pre-Teen_Girls_Negotiate_Successful_Femininity/17143367/1/files/31699295.pdf",
+        "any_repository_has_fulltext": null
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5023597742",
+            "display_name": "Sophie Cossens",
+            "orcid": null
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I143685665",
+              "display_name": "Master's College",
+              "ror": "https://ror.org/04fn4g645",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I143685665"
+              ]
+            },
+            {
+              "id": "https://openalex.org/I41156924",
+              "display_name": "Victoria University of Wellington",
+              "ror": "https://ror.org/0040r6f76",
+              "country_code": "NZ",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I41156924"
+              ]
+            }
+          ],
+          "countries": [
+            "NZ",
+            "US"
+          ],
+          "is_corresponding": true,
+          "raw_author_name": "Cossens, Sophie",
+          "raw_affiliation_strings": [
+            "Master of Science in Psychology",
+            "Victoria University of Wellington 2015"
+          ],
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Master of Science in Psychology",
+              "institution_ids": [
+                "https://openalex.org/I143685665"
+              ]
+            },
+            {
+              "raw_affiliation_string": "Victoria University of Wellington 2015",
+              "institution_ids": [
+                "https://openalex.org/I41156924"
+              ]
+            }
+          ]
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 2,
+      "institutions_distinct_count": 1,
+      "corresponding_author_ids": [
+        "https://openalex.org/A5023597742"
+      ],
+      "corresponding_institution_ids": [
+        "https://openalex.org/I143685665",
+        "https://openalex.org/I41156924"
+      ],
+      "apc_list": null,
+      "apc_paid": null,
+      "fwci": null,
+      "has_fulltext": true,
+      "cited_by_count": 0,
+      "citation_normalized_percentile": null,
+      "cited_by_percentile_year": null,
+      "biblio": {
+        "volume": null,
+        "issue": null,
+        "first_page": null,
+        "last_page": null
+      },
+      "is_retracted": false,
+      "is_paratext": false,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T12714",
+        "display_name": "Youth Education and Societal Dynamics",
+        "score": 0.9962999820709229,
+        "subfield": {
+          "id": "https://openalex.org/subfields/3312",
+          "display_name": "Sociology and Political Science"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/33",
+          "display_name": "Social Sciences"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/2",
+          "display_name": "Social Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T12714",
+          "display_name": "Youth Education and Societal Dynamics",
+          "score": 0.9962999820709229,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3312",
+            "display_name": "Sociology and Political Science"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11540",
+          "display_name": "Gender, Feminism, and Media",
+          "score": 0.9887999892234802,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3318",
+            "display_name": "Gender Studies"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11888",
+          "display_name": "Gender Roles and Identity Studies",
+          "score": 0.9803000092506409,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3318",
+            "display_name": "Gender Studies"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/femininity",
+          "display_name": "Femininity",
+          "score": 0.9744046330451965
+        },
+        {
+          "id": "https://openalex.org/keywords/gender-studies",
+          "display_name": "Gender studies",
+          "score": 0.7091935873031616
+        },
+        {
+          "id": "https://openalex.org/keywords/girl",
+          "display_name": "Girl",
+          "score": 0.6337565183639526
+        },
+        {
+          "id": "https://openalex.org/keywords/ethnic-group",
+          "display_name": "Ethnic group",
+          "score": 0.5289449691772461
+        },
+        {
+          "id": "https://openalex.org/keywords/narrative",
+          "display_name": "Narrative",
+          "score": 0.5224375128746033
+        },
+        {
+          "id": "https://openalex.org/keywords/negotiation",
+          "display_name": "Negotiation",
+          "score": 0.5078843235969543
+        },
+        {
+          "id": "https://openalex.org/keywords/thematic-analysis",
+          "display_name": "Thematic analysis",
+          "score": 0.4958125054836273
+        },
+        {
+          "id": "https://openalex.org/keywords/sociology",
+          "display_name": "Sociology",
+          "score": 0.3901351988315582
+        },
+        {
+          "id": "https://openalex.org/keywords/psychology",
+          "display_name": "Psychology",
+          "score": 0.3846530020236969
+        },
+        {
+          "id": "https://openalex.org/keywords/qualitative-research",
+          "display_name": "Qualitative research",
+          "score": 0.2524641752243042
+        },
+        {
+          "id": "https://openalex.org/keywords/developmental-psychology",
+          "display_name": "Developmental psychology",
+          "score": 0.225949227809906
+        },
+        {
+          "id": "https://openalex.org/keywords/art",
+          "display_name": "Art",
+          "score": 0.13139930367469788
+        },
+        {
+          "id": "https://openalex.org/keywords/social-science",
+          "display_name": "Social science",
+          "score": 0.1274028718471527
+        },
+        {
+          "id": "https://openalex.org/keywords/literature",
+          "display_name": "Literature",
+          "score": 0.10915222764015198
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C2778868352",
+          "wikidata": "https://www.wikidata.org/wiki/Q866081",
+          "display_name": "Femininity",
+          "level": 2,
+          "score": 0.9744046330451965
+        },
+        {
+          "id": "https://openalex.org/C107993555",
+          "wikidata": "https://www.wikidata.org/wiki/Q1662673",
+          "display_name": "Gender studies",
+          "level": 1,
+          "score": 0.7091935873031616
+        },
+        {
+          "id": "https://openalex.org/C2778047097",
+          "wikidata": "https://www.wikidata.org/wiki/Q3031",
+          "display_name": "Girl",
+          "level": 2,
+          "score": 0.6337565183639526
+        },
+        {
+          "id": "https://openalex.org/C137403100",
+          "wikidata": "https://www.wikidata.org/wiki/Q41710",
+          "display_name": "Ethnic group",
+          "level": 2,
+          "score": 0.5289449691772461
+        },
+        {
+          "id": "https://openalex.org/C199033989",
+          "wikidata": "https://www.wikidata.org/wiki/Q1318295",
+          "display_name": "Narrative",
+          "level": 2,
+          "score": 0.5224375128746033
+        },
+        {
+          "id": "https://openalex.org/C199776023",
+          "wikidata": "https://www.wikidata.org/wiki/Q202875",
+          "display_name": "Negotiation",
+          "level": 2,
+          "score": 0.5078843235969543
+        },
+        {
+          "id": "https://openalex.org/C74196892",
+          "wikidata": "https://www.wikidata.org/wiki/Q7781188",
+          "display_name": "Thematic analysis",
+          "level": 3,
+          "score": 0.4958125054836273
+        },
+        {
+          "id": "https://openalex.org/C144024400",
+          "wikidata": "https://www.wikidata.org/wiki/Q21201",
+          "display_name": "Sociology",
+          "level": 0,
+          "score": 0.3901351988315582
+        },
+        {
+          "id": "https://openalex.org/C15744967",
+          "wikidata": "https://www.wikidata.org/wiki/Q9418",
+          "display_name": "Psychology",
+          "level": 0,
+          "score": 0.3846530020236969
+        },
+        {
+          "id": "https://openalex.org/C190248442",
+          "wikidata": "https://www.wikidata.org/wiki/Q839486",
+          "display_name": "Qualitative research",
+          "level": 2,
+          "score": 0.2524641752243042
+        },
+        {
+          "id": "https://openalex.org/C138496976",
+          "wikidata": "https://www.wikidata.org/wiki/Q175002",
+          "display_name": "Developmental psychology",
+          "level": 1,
+          "score": 0.225949227809906
+        },
+        {
+          "id": "https://openalex.org/C142362112",
+          "wikidata": "https://www.wikidata.org/wiki/Q735",
+          "display_name": "Art",
+          "level": 0,
+          "score": 0.13139930367469788
+        },
+        {
+          "id": "https://openalex.org/C36289849",
+          "wikidata": "https://www.wikidata.org/wiki/Q34749",
+          "display_name": "Social science",
+          "level": 1,
+          "score": 0.1274028718471527
+        },
+        {
+          "id": "https://openalex.org/C124952713",
+          "wikidata": "https://www.wikidata.org/wiki/Q8242",
+          "display_name": "Literature",
+          "level": 1,
+          "score": 0.10915222764015198
+        },
+        {
+          "id": "https://openalex.org/C19165224",
+          "wikidata": "https://www.wikidata.org/wiki/Q23404",
+          "display_name": "Anthropology",
+          "level": 1,
+          "score": 0.0
+        }
+      ],
+      "mesh": [],
+      "locations_count": 1,
+      "locations": [
+        {
+          "id": "doi:10.26686/wgtn.17143367",
+          "is_oa": true,
+          "landing_page_url": "https://doi.org/10.26686/wgtn.17143367",
+          "pdf_url": "https://openaccess.wgtn.ac.nz/articles/thesis/_Having_It_All_Pre-Teen_Girls_Negotiate_Successful_Femininity/17143367/1/files/31699295.pdf",
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Open Access Te Herenga Waka-Victoria University of Wellington",
+          "raw_type": "dissertation"
+        }
+      ],
+      "best_oa_location": {
+        "id": "doi:10.26686/wgtn.17143367",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.26686/wgtn.17143367",
+        "pdf_url": "https://openaccess.wgtn.ac.nz/articles/thesis/_Having_It_All_Pre-Teen_Girls_Negotiate_Successful_Femininity/17143367/1/files/31699295.pdf",
+        "source": null,
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Open Access Te Herenga Waka-Victoria University of Wellington",
+        "raw_type": "dissertation"
+      },
+      "sustainable_development_goals": [],
+      "awards": [],
+      "funders": [],
+      "has_content": {
+        "grobid_xml": true,
+        "pdf": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W4200150568.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W4200150568.grobid-xml"
+      },
+      "referenced_works_count": 78,
+      "referenced_works": [
+        "https://openalex.org/W115027937",
+        "https://openalex.org/W155159504",
+        "https://openalex.org/W608867269",
+        "https://openalex.org/W611742081",
+        "https://openalex.org/W655785433",
+        "https://openalex.org/W1483822235",
+        "https://openalex.org/W1486074360",
+        "https://openalex.org/W1496717478",
+        "https://openalex.org/W1497567550",
+        "https://openalex.org/W1500879133",
+        "https://openalex.org/W1508028293",
+        "https://openalex.org/W1523365017",
+        "https://openalex.org/W1586438779",
+        "https://openalex.org/W1588352880",
+        "https://openalex.org/W1791460259",
+        "https://openalex.org/W1928768762",
+        "https://openalex.org/W1973006325",
+        "https://openalex.org/W1976005246",
+        "https://openalex.org/W1979290264",
+        "https://openalex.org/W1993007694",
+        "https://openalex.org/W1995785636",
+        "https://openalex.org/W1997311920",
+        "https://openalex.org/W1999457811",
+        "https://openalex.org/W2001360596",
+        "https://openalex.org/W2012241240",
+        "https://openalex.org/W2017943185",
+        "https://openalex.org/W2021155482",
+        "https://openalex.org/W2027174600",
+        "https://openalex.org/W2028247442",
+        "https://openalex.org/W2036683384",
+        "https://openalex.org/W2043605085",
+        "https://openalex.org/W2045370858",
+        "https://openalex.org/W2050632060",
+        "https://openalex.org/W2055912085",
+        "https://openalex.org/W2058939175",
+        "https://openalex.org/W2062826578",
+        "https://openalex.org/W2083810869",
+        "https://openalex.org/W2089362138",
+        "https://openalex.org/W2090427644",
+        "https://openalex.org/W2094898679",
+        "https://openalex.org/W2115076700",
+        "https://openalex.org/W2119306578",
+        "https://openalex.org/W2120748946",
+        "https://openalex.org/W2123828761",
+        "https://openalex.org/W2126091387",
+        "https://openalex.org/W2128264632",
+        "https://openalex.org/W2133811628",
+        "https://openalex.org/W2135585144",
+        "https://openalex.org/W2136253601",
+        "https://openalex.org/W2137357547",
+        "https://openalex.org/W2139158842",
+        "https://openalex.org/W2141172193",
+        "https://openalex.org/W2144358722",
+        "https://openalex.org/W2145462634",
+        "https://openalex.org/W2147739751",
+        "https://openalex.org/W2150702344",
+        "https://openalex.org/W2152476471",
+        "https://openalex.org/W2158584129",
+        "https://openalex.org/W2163958274",
+        "https://openalex.org/W2166503661",
+        "https://openalex.org/W2170236685",
+        "https://openalex.org/W2170586945",
+        "https://openalex.org/W2292454763",
+        "https://openalex.org/W2340020000",
+        "https://openalex.org/W2438052764",
+        "https://openalex.org/W2573413618",
+        "https://openalex.org/W2946847961",
+        "https://openalex.org/W4231154057",
+        "https://openalex.org/W4231737715",
+        "https://openalex.org/W4241337496",
+        "https://openalex.org/W4247292615",
+        "https://openalex.org/W4248102284",
+        "https://openalex.org/W4249729665",
+        "https://openalex.org/W4250563439",
+        "https://openalex.org/W4252455865",
+        "https://openalex.org/W4299591094",
+        "https://openalex.org/W4322393596",
+        "https://openalex.org/W4386307730"
+      ],
+      "related_works": [
+        "https://openalex.org/W2315389509",
+        "https://openalex.org/W2238695956",
+        "https://openalex.org/W3007347285",
+        "https://openalex.org/W650281876",
+        "https://openalex.org/W4285568912",
+        "https://openalex.org/W4281898966",
+        "https://openalex.org/W4309790067",
+        "https://openalex.org/W138853612",
+        "https://openalex.org/W4390476363",
+        "https://openalex.org/W1997241066"
+      ],
+      "abstract_inverted_index": {
+        "&lt;p&gt;Depictions": [
+          0
+        ],
+        "of": [
+          1,
+          61,
+          72,
+          101,
+          109,
+          137,
+          160,
+          166,
+          208,
+          231,
+          251,
+          272,
+          307,
+          313,
+          324,
+          341,
+          380,
+          386,
+          393,
+          397,
+          410,
+          418,
+          435,
+          438,
+          447,
+          453
+        ],
+        "girls": [
+          2,
+          62,
+          117,
+          152,
+          351
+        ],
+        "and": [
+          3,
+          9,
+          12,
+          20,
+          63,
+          115,
+          142,
+          155,
+          186,
+          189,
+          206,
+          219,
+          222,
+          228,
+          234,
+          258,
+          276,
+          322,
+          330,
+          407,
+          428,
+          430,
+          441,
+          449
+        ],
+        "young": [
+          4,
+          64,
+          317,
+          328,
+          374
+        ],
+        "women": [
+          5,
+          318,
+          329,
+          333,
+          402
+        ],
+        "as": [
+          6,
+          203,
+          241,
+          338
+        ],
+        "powerful,": [
+          7
+        ],
+        "unconstrained": [
+          8
+        ],
+        "outshining": [
+          10
+        ],
+        "boys": [
+          11
+        ],
+        "men": [
+          13
+        ],
+        "characterise": [
+          14
+        ],
+        "the": [
+          15,
+          45,
+          58,
+          68,
+          99,
+          107,
+          123,
+          126,
+          149,
+          195,
+          213,
+          226,
+          248,
+          320,
+          325,
+          339,
+          394,
+          405,
+          432,
+          444
+        ],
+        "modern": [
+          16
+        ],
+        "postfeminist": [
+          17,
+          30,
+          70,
+          218
+        ],
+        "cultural": [
+          18
+        ],
+        "climate": [
+          19
+        ],
+        "imbue": [
+          21
+        ],
+        "femininity": [
+          22,
+          51,
+          74,
+          238,
+          388
+        ],
+        "with": [
+          23,
+          111,
+          116,
+          135,
+          348,
+          423,
+          443
+        ],
+        "wide": [
+          24
+        ],
+        "reaching": [
+          25
+        ],
+        "success.": [
+          26,
+          43
+        ],
+        "However,": [
+          27
+        ],
+        "research": [
+          28,
+          94,
+          110
+        ],
+        "into": [
+          29
+        ],
+        "discourse": [
+          31,
+          191
+        ],
+        "reveals": [
+          32
+        ],
+        "a": [
+          33,
+          182,
+          242,
+          297,
+          353,
+          390,
+          421
+        ],
+        "far": [
+          34
+        ],
+        "more": [
+          35
+        ],
+        "complicated": [
+          36
+        ],
+        "picture": [
+          37
+        ],
+        "than": [
+          38
+        ],
+        "this": [
+          39,
+          112,
+          381
+        ],
+        "straightforward": [
+          40
+        ],
+        "ode": [
+          41
+        ],
+        "to": [
+          42,
+          78,
+          84,
+          89,
+          128,
+          147,
+          193,
+          265,
+          284,
+          295,
+          302,
+          403,
+          420,
+          425
+        ],
+        "Previously": [
+          44
+        ],
+        "focus": [
+          46
+        ],
+        "has": [
+          47,
+          95
+        ],
+        "been": [
+          48
+        ],
+        "on": [
+          49,
+          57,
+          217,
+          247
+        ],
+        "successful": [
+          50,
+          73,
+          138,
+          161,
+          167,
+          279,
+          298,
+          342,
+          387
+        ],
+        "within": [
+          52,
+          176,
+          268
+        ],
+        "education": [
+          53,
+          294
+        ],
+        "or": [
+          54,
+          56,
+          369,
+          375
+        ],
+        "employment,": [
+          55
+        ],
+        "future": [
+          59
+        ],
+        "aspirations": [
+          60
+        ],
+        "women.": [
+          65
+        ],
+        "Yet": [
+          66
+        ],
+        "considering": [
+          67
+        ],
+        "grandiose": [
+          69
+        ],
+        "claims": [
+          71
+        ],
+        "it": [
+          75,
+          412
+        ],
+        "is": [
+          76
+        ],
+        "important": [
+          77
+        ],
+        "examine": [
+          79,
+          129
+        ],
+        "specifically": [
+          80
+        ],
+        "what": [
+          81
+        ],
+        "success": [
+          82,
+          224,
+          267,
+          309,
+          357,
+          398,
+          442
+        ],
+        "means": [
+          83
+        ],
+        "those": [
+          85,
+          360
+        ],
+        "who": [
+          86,
+          334,
+          361,
+          370
+        ],
+        "are": [
+          87
+        ],
+        "expected": [
+          88,
+          283
+        ],
+        "hold": [
+          90
+        ],
+        "it.": [
+          91
+        ],
+        "The": [
+          92,
+          179,
+          278,
+          350,
+          383
+        ],
+        "current": [
+          93
+        ],
+        "done": [
+          96
+        ],
+        "so": [
+          97
+        ],
+        "from": [
+          98,
+          118,
+          172
+        ],
+        "perspective": [
+          100
+        ],
+        "ethnically": [
+          102
+        ],
+        "diverse": [
+          103
+        ],
+        "pre-adolescent": [
+          104
+        ],
+        "girls,": [
+          105
+        ],
+        "addressing": [
+          106
+        ],
+        "lack": [
+          108,
+          417
+        ],
+        "age": [
+          113
+        ],
+        "group": [
+          114
+        ],
+        "minority": [
+          119
+        ],
+        "ethnic": [
+          120,
+          131
+        ],
+        "backgrounds.": [
+          121
+        ],
+        "Incorporating": [
+          122
+        ],
+        "latter": [
+          124
+        ],
+        "enabled": [
+          125
+        ],
+        "thesis": [
+          127
+        ],
+        "how": [
+          130
+        ],
+        "identities": [
+          132
+        ],
+        "may": [
+          133
+        ],
+        "intersect": [
+          134
+        ],
+        "understandings": [
+          136
+        ],
+        "femininity.": [
+          139,
+          168,
+          236
+        ],
+        "Focus": [
+          140
+        ],
+        "groups": [
+          141
+        ],
+        "photo-narrative": [
+          143
+        ],
+        "books": [
+          144
+        ],
+        "were": [
+          145,
+          170,
+          200,
+          263,
+          377
+        ],
+        "used": [
+          146,
+          181
+        ],
+        "explore": [
+          148
+        ],
+        "ways": [
+          150
+        ],
+        "32": [
+          151
+        ],
+        "between": [
+          153,
+          311
+        ],
+        "11-": [
+          154
+        ],
+        "13-years": [
+          156
+        ],
+        "old": [
+          157
+        ],
+        "made": [
+          158
+        ],
+        "sense": [
+          159
+        ],
+        "girl/womanhood,": [
+          162
+        ],
+        "including": [
+          163
+        ],
+        "media": [
+          164
+        ],
+        "representations": [
+          165
+        ],
+        "Participants": [
+          169
+        ],
+        "recruited": [
+          171
+        ],
+        "two": [
+          173
+        ],
+        "urban": [
+          174
+        ],
+        "schools": [
+          175
+        ],
+        "New": [
+          177
+        ],
+        "Zealand.": [
+          178
+        ],
+        "study": [
+          180
+        ],
+        "feminist": [
+          183
+        ],
+        "poststructuralist": [
+          184
+        ],
+        "framework": [
+          185
+        ],
+        "employed": [
+          187
+        ],
+        "thematic": [
+          188
+        ],
+        "Foucauldian": [
+          190
+        ],
+        "analysis": [
+          192
+        ],
+        "analyse": [
+          194
+        ],
+        "data.": [
+          196
+        ],
+        "Two": [
+          197
+        ],
+        "overarching": [
+          198
+        ],
+        "themes": [
+          199,
+          212
+        ],
+        "identified:": [
+          201
+        ],
+        "\u2018Success": [
+          202
+        ],
+        "Individual": [
+          204
+        ],
+        "Qualities\u2019": [
+          205
+        ],
+        "\u2018Spheres": [
+          207
+        ],
+        "Success.\u2019": [
+          209
+        ],
+        "Across": [
+          210
+        ],
+        "these": [
+          211,
+          288
+        ],
+        "girls\u2019": [
+          214,
+          416
+        ],
+        "drew": [
+          215
+        ],
+        "heavily": [
+          216
+        ],
+        "neoliberal": [
+          220
+        ],
+        "discourses": [
+          221,
+          230,
+          437,
+          452
+        ],
+        "constructed": [
+          223,
+          240,
+          352
+        ],
+        "through": [
+          225,
+          287,
+          347,
+          358
+        ],
+        "competing": [
+          227
+        ],
+        "contradictory": [
+          229,
+          406
+        ],
+        "girl": [
+          232
+        ],
+        "power": [
+          233
+        ],
+        "traditional": [
+          235,
+          451
+        ],
+        "Successful": [
+          237
+        ],
+        "was": [
+          239,
+          282,
+          344
+        ],
+        "highly": [
+          243
+        ],
+        "individualised": [
+          244
+        ],
+        "endeavour,": [
+          245
+        ],
+        "predicated": [
+          246
+        ],
+        "individual": [
+          249
+        ],
+        "qualities": [
+          250,
+          262
+        ],
+        "hard": [
+          252
+        ],
+        "work,": [
+          253
+        ],
+        "constant": [
+          254
+        ],
+        "striving": [
+          255
+        ],
+        "towards": [
+          256
+        ],
+        "goals": [
+          257
+        ],
+        "overcoming": [
+          259
+        ],
+        "adversity.": [
+          260
+        ],
+        "These": [
+          261
+        ],
+        "required": [
+          264,
+          389
+        ],
+        "accomplishing": [
+          266
+        ],
+        "three": [
+          269,
+          289,
+          395
+        ],
+        "mandatory": [
+          270
+        ],
+        "spheres": [
+          271,
+          396
+        ],
+        "success;": [
+          273
+        ],
+        "education,": [
+          274
+        ],
+        "employment": [
+          275,
+          308
+        ],
+        "motherhood.": [
+          277,
+          305
+        ],
+        "female": [
+          280
+        ],
+        "subject": [
+          281
+        ],
+        "move": [
+          285
+        ],
+        "linearly": [
+          286
+        ],
+        "spheres,": [
+          290
+        ],
+        "engaging": [
+          291
+        ],
+        "in": [
+          292,
+          300,
+          319,
+          399
+        ],
+        "higher": [
+          293
+        ],
+        "earn": [
+          296
+        ],
+        "career": [
+          299
+        ],
+        "order": [
+          301,
+          400
+        ],
+        "financially": [
+          303
+        ],
+        "sustain": [
+          304
+        ],
+        "Discussions": [
+          306
+        ],
+        "oscillated": [
+          310
+        ],
+        "constructions": [
+          312
+        ],
+        "unbounded": [
+          314
+        ],
+        "possibility": [
+          315
+        ],
+        "for": [
+          316,
+          356,
+          401
+        ],
+        "workforce": [
+          321
+        ],
+        "recognition": [
+          323
+        ],
+        "barriers": [
+          326
+        ],
+        "facing": [
+          327
+        ],
+        "especially": [
+          331
+        ],
+        "M\u0101ori": [
+          332
+        ],
+        "work.": [
+          335
+        ],
+        "Motherhood,": [
+          336
+        ],
+        "described": [
+          337
+        ],
+        "apex": [
+          340
+        ],
+        "femininity,": [
+          343
+        ],
+        "also": [
+          345
+        ],
+        "shot": [
+          346
+        ],
+        "complexity.": [
+          349
+        ],
+        "narrow": [
+          354
+        ],
+        "scope": [
+          355
+        ],
+        "motherhood:": [
+          359
+        ],
+        "had": [
+          362,
+          366
+        ],
+        "children": [
+          363,
+          368
+        ],
+        "without": [
+          364
+        ],
+        "planning,": [
+          365
+        ],
+        "many": [
+          367
+        ],
+        "gave": [
+          371
+        ],
+        "birth": [
+          372
+        ],
+        "while": [
+          373
+        ],
+        "single": [
+          376
+        ],
+        "positioned": [
+          378
+        ],
+        "outside": [
+          379
+        ],
+        "successfulness.": [
+          382
+        ],
+        "ultimate": [
+          384
+        ],
+        "form": [
+          385
+        ],
+        "delicate": [
+          391
+        ],
+        "balancing": [
+          392
+        ],
+        "achieve": [
+          404
+        ],
+        "unobtainable": [
+          408
+        ],
+        "task": [
+          409
+        ],
+        "\u2018having": [
+          411
+        ],
+        "all.\u2019": [
+          413
+        ],
+        "Findings": [
+          414
+        ],
+        "demonstrate": [
+          415
+        ],
+        "access": [
+          419
+        ],
+        "language": [
+          422
+        ],
+        "which": [
+          424
+        ],
+        "articulate": [
+          426
+        ],
+        "oppression": [
+          427
+        ],
+        "inequality": [
+          429
+        ],
+        "emphasise": [
+          431
+        ],
+        "problematic": [
+          433
+        ],
+        "entanglement": [
+          434
+        ],
+        "\u2018new\u2019": [
+          436
+        ],
+        "equality,": [
+          439
+        ],
+        "empowerment": [
+          440
+        ],
+        "enduring": [
+          445
+        ],
+        "presence": [
+          446
+        ],
+        "powerful": [
+          448
+        ],
+        "regulatory": [
+          450
+        ],
+        "femininity.&lt;/p&gt;": [
+          454
+        ]
+      },
+      "counts_by_year": [],
+      "updated_date": "2026-03-25T13:04:00.132906",
+      "created_date": "2021-12-31T00:00:00"
+    }
+  ]
+}

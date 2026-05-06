@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
@@ -54,6 +54,8 @@ class EvidenceRetrievalResult:
     queries_executed: list[str]
     evidence_records: list[EvidenceRecord]
     balance_score: BalanceScore
+    query_traces: tuple[dict[str, Any], ...] = field(default_factory=tuple)
+    retrieval_exhausted_query_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -61,6 +63,8 @@ class EvidenceRetrievalResult:
             "queries_executed": self.queries_executed,
             "evidence_records": [asdict(record) for record in self.evidence_records],
             "balance_score": self.balance_score,
+            "query_traces": list(self.query_traces),
+            "retrieval_exhausted_query_count": self.retrieval_exhausted_query_count,
         }
 
 
@@ -159,4 +163,6 @@ def build_evidence_result(
         queries_executed=queries,
         evidence_records=records,
         balance_score=balance_score,
+        query_traces=(),
+        retrieval_exhausted_query_count=0,
     )

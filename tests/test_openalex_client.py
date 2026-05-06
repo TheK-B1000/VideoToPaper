@@ -125,8 +125,9 @@ def test_openalex_client_reads_from_cache_without_network(tmp_path):
 
     client = OpenAlexClient(cache=cache)
 
-    results = client.search_works("multi-agent reinforcement learning", per_page=5)
+    results, status = client.search_works("multi-agent reinforcement learning", per_page=5)
 
+    assert status == "ok"
     assert len(results) == 1
     assert results[0].title == "Cached MARL Paper"
     assert results[0].doi == "10.5555/cached"

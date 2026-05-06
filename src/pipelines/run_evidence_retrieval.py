@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import urllib.error
 from dataclasses import dataclass
 from typing import Literal
 
@@ -99,6 +100,8 @@ class EvidenceRetrievalPipeline:
                 queries_executed=[],
                 evidence_records=[],
                 balance_score="insufficient",
+                query_traces=(),
+                retrieval_exhausted_query_count=0,
             )
 
         if per_query_limit <= 0:
@@ -106,12 +109,22 @@ class EvidenceRetrievalPipeline:
 
         queries = generate_balanced_queries(claim.claim_text)
         records: list[EvidenceRecord] = []
+        query_traces: list[dict[str, object]] = []
+        retrieval_exhausted_query_count = 0
 
         for query in queries:
             stance = _infer_stance_from_query(query)
+            trace: dict[str, object] = {"query": query}
 
             if source in ("openalex", "all"):
-                works = self.openalex_client.search_works(query, per_page=per_query_limit)
+                try:
+                    works, oa_status = self.openalex_client.search_works(
+                        query, per_page=per_query_limit
+                    )
+                except (urllib.error.HTTPError, urllib.error.URLError):
+                    works, oa_status = [], "error"
+
+                trace["openalex_status"] = oa_status
 
                 for work in works:
                     records.append(
@@ -122,12 +135,19 @@ class EvidenceRetrievalPipeline:
                             tier=1,
                         )
                     )
+            else:
+                trace["openalex_status"] = "skipped"
 
             if source in ("semantic_scholar", "all"):
-                papers = self.semantic_scholar_client.search_papers(
-                    query,
-                    limit=per_query_limit,
-                )
+                try:
+                    papers, ss_status = self.semantic_scholar_client.search_papers(
+                        query,
+                        limit=per_query_limit,
+                    )
+                except (urllib.error.HTTPError, urllib.error.URLError):
+                    papers, ss_status = [], "error"
+
+                trace["semantic_scholar_status"] = ss_status
 
                 for paper in papers:
                     records.append(
@@ -138,6 +158,15 @@ class EvidenceRetrievalPipeline:
                             tier=1,
                         )
                     )
+            else:
+                trace["semantic_scholar_status"] = "skipped"
+
+            query_traces.append(trace)
+
+            if trace["openalex_status"] not in ("ok", "skipped"):
+                retrieval_exhausted_query_count += 1
+            elif trace["semantic_scholar_status"] not in ("ok", "skipped"):
+                retrieval_exhausted_query_count += 1
 
         unique_records = _dedupe_records(records)
 
@@ -149,4 +178,6 @@ class EvidenceRetrievalPipeline:
             queries_executed=queries,
             evidence_records=unique_records,
             balance_score=score_evidence_balance(unique_records),
+            query_traces=tuple(query_traces),
+            retrieval_exhausted_query_count=retrieval_exhausted_query_count,
         )

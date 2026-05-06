@@ -11,6 +11,22 @@ from src.ops.run_tracker import (
 from src.source.ingestion import ingest_source
 
 
+def _inject_pipeline_argv(forwarded: list[str], args: argparse.Namespace, *, steelman: bool) -> list[str]:
+    """
+    Prepend flags parsed by main.py so Week 3–5 nested mains still receive them.
+
+    Week 3 claim_inventory does not accept --claim-inventory-path; Week 4 steelman does.
+    """
+    prefix: list[str] = []
+    if args.config_path is not None:
+        prefix.extend(["--config-path", args.config_path])
+    if steelman and args.claim_inventory_path is not None:
+        prefix.extend(["--claim-inventory-path", args.claim_inventory_path])
+    if args.output_path is not None:
+        prefix.extend(["--output-path", args.output_path])
+    return prefix + list(forwarded)
+
+
 def _run_source_ingestion() -> None:
     config_path = "configs/default_config.json"
 
@@ -83,28 +99,76 @@ def main() -> None:
             "claim_inventory",
             "speaker_perspective",
             "steelman",
+            "evidence_retrieval",
         ),
         default="source_ingestion",
         help=(
             "Pipeline stage (default: Week 1 source ingestion demo). "
-            "Week 4: steelman or speaker_perspective."
+            "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval."
         ),
+    )
+    parser.add_argument(
+        "--config-path",
+        default=None,
+        help=(
+            "Path to argument-structure JSON (Week 2–4). Also used as a convenience "
+            "flag for evidence_retrieval."
+        ),
+    )
+    parser.add_argument(
+        "--claim-inventory-path",
+        default=None,
+        help="Path to the claim inventory JSON file.",
+    )
+    parser.add_argument(
+        "--output-path",
+        default=None,
+        help="Path where the stage output JSON should be written when applicable.",
     )
     args, forwarded = parser.parse_known_args()
 
     if args.stage == "claim_inventory":
         from src.pipelines.claim_inventory_pipeline import main as claim_inventory_main
 
-        raise SystemExit(claim_inventory_main(forwarded))
+        merged = _inject_pipeline_argv(forwarded, args, steelman=False)
+        raise SystemExit(claim_inventory_main(merged))
 
     if args.stage in ("speaker_perspective", "steelman"):
         from src.pipelines.run_steelman_pipeline import main as steelman_main
 
-        raise SystemExit(steelman_main(forwarded))
+        merged = _inject_pipeline_argv(forwarded, args, steelman=True)
+        raise SystemExit(steelman_main(merged))
+
+    if args.stage == "evidence_retrieval":
+        from src.pipelines.run_evidence_retrieval_cli import run_evidence_retrieval_cli
+
+        if forwarded:
+            parser.error(
+                "unrecognized arguments for evidence_retrieval: {}".format(
+                    " ".join(forwarded)
+                )
+            )
+
+        run_evidence_retrieval_cli(
+            config_path=args.config_path,
+            claim_inventory_path=args.claim_inventory_path,
+            output_path=args.output_path,
+        )
+        return
 
     if forwarded:
         parser.error(
             "unrecognized arguments for source_ingestion: {}".format(" ".join(forwarded))
+        )
+
+    if (
+        args.config_path is not None
+        or args.claim_inventory_path is not None
+        or args.output_path is not None
+    ):
+        parser.error(
+            "--config-path, --claim-inventory-path, and --output-path are only valid "
+            "with claim_inventory, speaker_perspective, steelman, or evidence_retrieval."
         )
 
     _run_source_ingestion()
