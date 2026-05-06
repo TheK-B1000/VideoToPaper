@@ -543,3 +543,34 @@ def test_semantic_scholar_rate_limit_exhaustion_does_not_write_cache(tmp_path):
             client.search_papers("cache bypass degraded ff66", limit=2)
 
     assert list(tmp_path.glob("*.json")) == []
+
+
+def test_semantic_scholar_client_rate_limit_waits_between_requests():
+    client = SemanticScholarClient(
+        cache=RetrievalCache(),
+        min_request_interval_seconds=1.0,
+    )
+
+    with patch(
+        "src.core.semantic_scholar_client.time.monotonic",
+        side_effect=[20.0, 20.4, 21.0],
+    ):
+        with patch("src.core.semantic_scholar_client.time.sleep") as sleep_mock:
+            client._respect_rate_limit()
+            client._respect_rate_limit()
+
+    sleep_mock.assert_called_once()
+    assert sleep_mock.call_args.args[0] == pytest.approx(0.6)
+
+
+def test_semantic_scholar_client_rate_limit_can_be_disabled():
+    client = SemanticScholarClient(
+        cache=RetrievalCache(),
+        min_request_interval_seconds=0,
+    )
+
+    with patch("src.core.semantic_scholar_client.time.sleep") as sleep_mock:
+        client._respect_rate_limit()
+        client._respect_rate_limit()
+
+    sleep_mock.assert_not_called()

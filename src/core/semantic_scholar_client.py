@@ -96,6 +96,7 @@ class SemanticScholarClient:
         cache: RetrievalCache | None = None,
         base_url: str = SEMANTIC_SCHOLAR_BASE_URL,
         timeout_seconds: int = 15,
+        min_request_interval_seconds: float = 1.0,
         *,
         max_retries: int = 4,
         retry_initial_sleep_seconds: float = 2.0,
@@ -103,8 +104,28 @@ class SemanticScholarClient:
         self.cache = cache or RetrievalCache()
         self.base_url = base_url
         self.timeout_seconds = timeout_seconds
+        self.min_request_interval_seconds = min_request_interval_seconds
+        self._last_request_time: float | None = None
         self.max_retries = max_retries
         self.retry_initial_sleep_seconds = retry_initial_sleep_seconds
+
+    def _respect_rate_limit(self) -> None:
+        if self.min_request_interval_seconds <= 0:
+            return
+
+        now = time.monotonic()
+
+        if self._last_request_time is None:
+            self._last_request_time = now
+            return
+
+        elapsed = now - self._last_request_time
+        wait_seconds = self.min_request_interval_seconds - elapsed
+
+        if wait_seconds > 0:
+            time.sleep(wait_seconds)
+
+        self._last_request_time = time.monotonic()
 
     def _fetch_search_payload(self, url: str) -> JsonFetchOutcome:
         """
@@ -123,6 +144,7 @@ class SemanticScholarClient:
 
         for attempt in range(self.max_retries + 1):
             try:
+                self._respect_rate_limit()
                 with urllib.request.urlopen(
                     request,
                     timeout=self.timeout_seconds,

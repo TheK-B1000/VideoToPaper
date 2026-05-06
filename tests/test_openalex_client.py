@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 import pytest
 
@@ -145,3 +146,30 @@ def test_openalex_client_rejects_non_positive_per_page():
 
     with pytest.raises(ValueError, match="per_page must be positive"):
         client.search_works("multi-agent reinforcement learning", per_page=0)
+
+
+def test_openalex_client_rate_limit_waits_between_requests():
+    client = OpenAlexClient(
+        cache=RetrievalCache(),
+        min_request_interval_seconds=1.0,
+    )
+
+    with patch("src.core.openalex_client.time.monotonic", side_effect=[10.0, 10.25, 11.0]):
+        with patch("src.core.openalex_client.time.sleep") as sleep_mock:
+            client._respect_rate_limit()
+            client._respect_rate_limit()
+
+    sleep_mock.assert_called_once_with(0.75)
+
+
+def test_openalex_client_rate_limit_can_be_disabled():
+    client = OpenAlexClient(
+        cache=RetrievalCache(),
+        min_request_interval_seconds=0,
+    )
+
+    with patch("src.core.openalex_client.time.sleep") as sleep_mock:
+        client._respect_rate_limit()
+        client._respect_rate_limit()
+
+    sleep_mock.assert_not_called()
