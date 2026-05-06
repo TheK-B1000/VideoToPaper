@@ -125,6 +125,11 @@ def main() -> None:
         default=None,
         help="Path where the stage output JSON should be written when applicable.",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Run the selected stage without live external calls where supported.",
+    )
     args, forwarded = parser.parse_known_args()
 
     if args.stage == "claim_inventory":
@@ -153,6 +158,7 @@ def main() -> None:
             config_path=args.config_path,
             claim_inventory_path=args.claim_inventory_path,
             output_path=args.output_path,
+            dry_run=args.dry_run,
         )
         return
 
@@ -165,10 +171,12 @@ def main() -> None:
         args.config_path is not None
         or args.claim_inventory_path is not None
         or args.output_path is not None
+        or args.dry_run
     ):
         parser.error(
-            "--config-path, --claim-inventory-path, and --output-path are only valid "
-            "with claim_inventory, speaker_perspective, steelman, or evidence_retrieval."
+            "--config-path, --claim-inventory-path, --output-path, and --dry-run are "
+            "only valid with claim_inventory, speaker_perspective, steelman, or "
+            "evidence_retrieval."
         )
 
     _run_source_ingestion()
