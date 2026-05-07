@@ -1,2 +1,5 @@
 # VideoToPaper — add pinned dependencies here (Python >= 3.11).
 pydantic>=2.0
+fastapi>=0.100
+httpx>=0.24
+uvicorn[standard]>=0.22
