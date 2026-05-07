@@ -4,7 +4,9 @@ from pathlib import Path
 import pytest
 
 from src.pipelines.run_evidence_integration_pipeline import (
+    build_arg_parser,
     group_evidence_by_claim_id,
+    main,
     normalize_claim_inventory,
     normalize_evidence_records,
     run_evidence_integration_pipeline,
@@ -485,3 +487,99 @@ def test_pipeline_can_use_injected_narrative_client(tmp_path):
 
     assert result["metrics"]["llm_narratives_used"] == 1
     assert result["metrics"]["fallback_narratives_used"] == 0
+
+
+def test_cli_parser_accepts_custom_paths(tmp_path):
+    claim_inventory_path = tmp_path / "claims.json"
+    evidence_records_path = tmp_path / "evidence.json"
+    output_path = tmp_path / "out" / "adjudications.json"
+    run_log_dir = tmp_path / "logs" / "runs"
+
+    parser = build_arg_parser()
+    args = parser.parse_args(
+        [
+            "--claim-inventory-path",
+            str(claim_inventory_path),
+            "--evidence-records-path",
+            str(evidence_records_path),
+            "--output-path",
+            str(output_path),
+            "--run-log-dir",
+            str(run_log_dir),
+            "--allow-skewed-adjudication",
+            "--use-llm-narratives",
+        ]
+    )
+
+    assert args.claim_inventory_path == claim_inventory_path
+    assert args.evidence_records_path == evidence_records_path
+    assert args.output_path == output_path
+    assert args.run_log_dir == run_log_dir
+    assert args.allow_skewed_adjudication is True
+    assert args.use_llm_narratives is True
+
+
+def test_main_runs_pipeline_with_cli_paths(tmp_path):
+    claim_inventory_path = tmp_path / "claim_inventory.json"
+    evidence_records_path = tmp_path / "evidence_records.json"
+    output_path = tmp_path / "adjudications.json"
+    run_log_dir = tmp_path / "logs" / "runs"
+
+    write_json(
+        claim_inventory_path,
+        {
+            "claims": [
+                {
+                    "claim_id": "claim_001",
+                    "verbatim_quote": "Non-stationarity makes multi-agent learning difficult.",
+                    "claim_type": "empirical_technical",
+                    "verification_strategy": "literature_review",
+                }
+            ]
+        },
+    )
+
+    write_json(
+        evidence_records_path,
+        {
+            "evidence_records": [
+                {
+                    "claim_id": "claim_001",
+                    "stance": "supports",
+                    "citation_label": "Foerster 2018",
+                    "title": "Learning with Opponent-Learning Awareness",
+                    "tier": 1,
+                    "identifier": "doi:support",
+                    "key_finding": "Opponent learning can create non-stationary training dynamics.",
+                },
+                {
+                    "claim_id": "claim_001",
+                    "stance": "qualifies",
+                    "citation_label": "Vinyals 2019",
+                    "title": "Grandmaster Level in StarCraft II",
+                    "tier": 1,
+                    "identifier": "doi:qualify",
+                    "key_finding": "Self-play and scale can reduce some instability.",
+                },
+            ]
+        },
+    )
+
+    result = main(
+        [
+            "--claim-inventory-path",
+            str(claim_inventory_path),
+            "--evidence-records-path",
+            str(evidence_records_path),
+            "--output-path",
+            str(output_path),
+            "--run-log-dir",
+            str(run_log_dir),
+        ]
+    )
+
+    assert output_path.exists()
+    assert Path(result["run_log_path"]).exists()
+    assert result["metrics"]["adjudications_written"] == 1
+    assert result["validation"]["is_valid"] is True
+    assert result["cherry_picking_guard"]["publishable_for_week8"] is True

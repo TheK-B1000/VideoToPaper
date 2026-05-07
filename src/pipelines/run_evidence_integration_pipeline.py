@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 from dataclasses import asdict
 from datetime import UTC, datetime
@@ -336,11 +337,91 @@ def run_evidence_integration_pipeline(
         raise
 
 
-if __name__ == "__main__":
-    result = run_evidence_integration_pipeline()
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run Week 7 evidence integration and write adjudications."
+    )
+
+    parser.add_argument(
+        "--claim-inventory-path",
+        type=Path,
+        default=DEFAULT_CLAIM_INVENTORY_PATH,
+        help="Path to the Week 3 claim inventory JSON file.",
+    )
+
+    parser.add_argument(
+        "--evidence-records-path",
+        type=Path,
+        default=DEFAULT_EVIDENCE_RECORDS_PATH,
+        help="Path to the Week 5 evidence records JSON file.",
+    )
+
+    parser.add_argument(
+        "--output-path",
+        type=Path,
+        default=DEFAULT_ADJUDICATIONS_OUTPUT_PATH,
+        help="Path where Week 7 adjudications JSON will be written.",
+    )
+
+    parser.add_argument(
+        "--run-log-dir",
+        type=Path,
+        default=DEFAULT_RUN_LOG_DIR,
+        help="Directory where the Week 7 MLOps run log will be written.",
+    )
+
+    parser.add_argument(
+        "--allow-skewed-adjudication",
+        action="store_true",
+        help=(
+            "Allow adjudication even when retrieval is supportive-skewed or "
+            "contrary-skewed. Default is false."
+        ),
+    )
+
+    parser.add_argument(
+        "--use-llm-narratives",
+        action="store_true",
+        help=(
+            "Enable LLM-backed evidence narratives. Requires a narrative client "
+            "to be wired in by application code. The CLI default path uses fallback narratives."
+        ),
+    )
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> dict[str, Any]:
+    parser = build_arg_parser()
+    args = parser.parse_args(argv)
+
+    result = run_evidence_integration_pipeline(
+        claim_inventory_path=args.claim_inventory_path,
+        evidence_records_path=args.evidence_records_path,
+        output_path=args.output_path,
+        run_log_dir=args.run_log_dir,
+        allow_skewed_adjudication=args.allow_skewed_adjudication,
+        use_llm_narratives=args.use_llm_narratives,
+    )
+
     print(
         "Evidence adjudications written to: "
-        f"{DEFAULT_ADJUDICATIONS_OUTPUT_PATH} "
+        f"{args.output_path} "
         f"({result['metrics']['adjudications_written']} records)"
     )
     print(f"Run log written to: {result['run_log_path']}")
+
+    if not result["validation"]["is_valid"]:
+        print(
+            "Validation warning: "
+            f"{result['validation']['issue_count']} issue(s) found."
+        )
+
+    if not result["cherry_picking_guard"]["publishable_for_week8"]:
+        print("Cherry-picking guard warning: output is not publishable for Week 8 yet.")
+
+    return result
+
+
+if __name__ == "__main__":
+    main()
