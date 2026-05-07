@@ -3,7 +3,13 @@ from pathlib import Path
 from src.backend.db import initialize_sqlite_database
 from src.backend.mlops_schemas import AuditEventCreate, RunRecordCreate
 from src.backend.repository import BackendRepository
-from src.backend.schemas import ClaimCreate, EvidenceRecordCreate, PaperCreate, VideoCreate
+from src.backend.schemas import (
+    ClaimCreate,
+    EvidenceRecordCreate,
+    PaperCreate,
+    SpeakerCreate,
+    VideoCreate,
+)
 
 
 def _repo(tmp_path) -> BackendRepository:
@@ -21,6 +27,20 @@ def _video_payload(title: str = "Repository Video") -> VideoCreate:
         title=title,
         embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
         duration_seconds=180.0,
+    )
+
+
+def _video_payload_with_speaker(title: str = "Video With Speaker") -> VideoCreate:
+    return VideoCreate(
+        url="https://www.youtube.com/watch?v=ABC123",
+        title=title,
+        embed_base_url="https://www.youtube-nocookie.com/embed/ABC123",
+        duration_seconds=180.0,
+        speaker={
+            "name": "Dr. Jane Smith",
+            "credentials": "Professor of Computer Science",
+            "stated_motivations": "Clarifying misconceptions in AI discourse",
+        },
     )
 
 
@@ -64,6 +84,65 @@ def test_repository_lists_empty_videos_when_none_exist(tmp_path):
     repo = _repo(tmp_path)
 
     assert repo.list_videos() == []
+
+
+def test_repository_creates_and_reads_speaker(tmp_path):
+    repo = _repo(tmp_path)
+
+    speaker = repo.create_speaker(
+        SpeakerCreate(
+            name="Dr. Jane Smith",
+            credentials="Professor of Computer Science",
+            stated_motivations="Clarifying misconceptions in AI discourse",
+        )
+    )
+
+    saved = repo.get_speaker(speaker.id)
+
+    assert saved is not None
+    assert saved.id == speaker.id
+    assert saved.name == "Dr. Jane Smith"
+    assert saved.credentials == "Professor of Computer Science"
+
+
+def test_repository_lists_speakers(tmp_path):
+    repo = _repo(tmp_path)
+
+    speaker = repo.create_speaker(
+        SpeakerCreate(
+            name="Dr. Jane Smith",
+            credentials="Professor of Computer Science",
+            stated_motivations="Clarifying misconceptions in AI discourse",
+        )
+    )
+
+    speakers = repo.list_speakers()
+
+    assert len(speakers) == 1
+    assert speakers[0].id == speaker.id
+    assert speakers[0].name == "Dr. Jane Smith"
+
+
+def test_repository_returns_none_for_missing_speaker(tmp_path):
+    repo = _repo(tmp_path)
+
+    assert repo.get_speaker("speaker_missing") is None
+
+
+def test_repository_create_video_persists_nested_speaker_context(tmp_path):
+    repo = _repo(tmp_path)
+
+    video = repo.create_video(_video_payload_with_speaker())
+
+    assert video.speaker_id is not None
+    assert video.speaker_id.startswith("speaker_")
+
+    speaker = repo.get_speaker(video.speaker_id)
+
+    assert speaker is not None
+    assert speaker.name == "Dr. Jane Smith"
+    assert speaker.credentials == "Professor of Computer Science"
+    assert speaker.stated_motivations == "Clarifying misconceptions in AI discourse"
 
 
 def test_repository_creates_and_reads_run_record(tmp_path):

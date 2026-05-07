@@ -19,6 +19,7 @@ from src.backend.schemas import (
     InquiryAuditReport,
     PaperCreate,
     PaperRead,
+    SpeakerRead,
     VideoBackendSummary,
     VideoCreate,
     VideoRead,
@@ -55,6 +56,26 @@ def list_videos() -> list[VideoRead]:
     return repo.list_videos()
 
 
+@app.get("/speakers", response_model=list[SpeakerRead])
+def list_speakers() -> list[SpeakerRead]:
+    repo = get_repository()
+    return repo.list_speakers()
+
+
+@app.get("/speakers/{speaker_id}", response_model=SpeakerRead)
+def get_speaker(speaker_id: str) -> SpeakerRead:
+    repo = get_repository()
+    speaker = repo.get_speaker(speaker_id)
+
+    if speaker is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Speaker not found: {speaker_id}",
+        )
+
+    return speaker
+
+
 @app.post(
     "/videos",
     response_model=VideoRead,
@@ -84,6 +105,8 @@ def register_video(payload: VideoCreate) -> VideoRead:
                 "title": payload.title,
                 "embed_base_url": str(payload.embed_base_url),
                 "duration_seconds": payload.duration_seconds,
+                "speaker_id": video.speaker_id,
+                "has_speaker_context": video.speaker_id is not None,
             },
         )
     )

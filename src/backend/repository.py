@@ -23,6 +23,8 @@ from src.backend.schemas import (
     InquiryAuditReport,
     PaperCreate,
     PaperRead,
+    SpeakerCreate,
+    SpeakerRead,
     VideoBackendSummary,
     VideoCreate,
     VideoRead,
@@ -59,14 +61,85 @@ class BackendRepository:
     def __init__(self, db_path: Path):
         self.db_path = db_path
 
+    def create_speaker(self, payload: SpeakerCreate) -> SpeakerRead:
+        speaker = SpeakerRead(
+            id=_new_id("speaker"),
+            name=payload.name,
+            credentials=payload.credentials,
+            stated_motivations=payload.stated_motivations,
+        )
+
+        with connect_sqlite(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO speakers (
+                    id,
+                    name,
+                    credentials,
+                    stated_motivations
+                )
+                VALUES (?, ?, ?, ?);
+                """,
+                (
+                    speaker.id,
+                    speaker.name,
+                    speaker.credentials,
+                    speaker.stated_motivations,
+                ),
+            )
+
+        return speaker
+
+    def get_speaker(self, speaker_id: str) -> Optional[SpeakerRead]:
+        with connect_sqlite(self.db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    credentials,
+                    stated_motivations
+                FROM speakers
+                WHERE id = ?;
+                """,
+                (speaker_id,),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_speaker(row)
+
+    def list_speakers(self) -> List[SpeakerRead]:
+        with connect_sqlite(self.db_path) as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    credentials,
+                    stated_motivations
+                FROM speakers
+                ORDER BY created_at DESC;
+                """
+            ).fetchall()
+
+        return [self._row_to_speaker(row) for row in rows]
+
     def create_video(self, payload: VideoCreate) -> VideoRead:
+        speaker_id = None
+
+        if payload.speaker is not None:
+            speaker = self.create_speaker(payload.speaker)
+            speaker_id = speaker.id
+
         video = VideoRead(
             id=_new_id("video"),
             url=payload.url,
             title=payload.title,
             embed_base_url=payload.embed_base_url,
             duration_seconds=payload.duration_seconds,
-            speaker_id=None,
+            speaker_id=speaker_id,
         )
 
         with connect_sqlite(self.db_path) as conn:
@@ -712,6 +785,15 @@ class BackendRepository:
             audit_event_count=audit_event_count,
             has_generated_paper=paper_count > 0,
             has_evidence=evidence_count > 0,
+        )
+
+    @staticmethod
+    def _row_to_speaker(row: sqlite3.Row) -> SpeakerRead:
+        return SpeakerRead(
+            id=row["id"],
+            name=row["name"],
+            credentials=row["credentials"],
+            stated_motivations=row["stated_motivations"],
         )
 
     @staticmethod

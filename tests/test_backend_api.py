@@ -39,6 +39,29 @@ def _create_video(client: TestClient, title: str = "Example Inquiry Video") -> d
     return response.json()
 
 
+def _create_video_with_speaker(
+    client: TestClient,
+    title: str = "Video With Speaker",
+) -> dict:
+    response = client.post(
+        "/videos",
+        json={
+            "url": "https://www.youtube.com/watch?v=ABC123",
+            "title": title,
+            "embed_base_url": "https://www.youtube-nocookie.com/embed/ABC123",
+            "duration_seconds": 180.0,
+            "speaker": {
+                "name": "Dr. Jane Smith",
+                "credentials": "Professor of Computer Science",
+                "stated_motivations": "Clarifying misconceptions in AI discourse",
+            },
+        },
+    )
+
+    assert response.status_code == 201
+    return response.json()
+
+
 def _create_claim(client: TestClient, video_id: str) -> dict:
     response = client.post(
         f"/videos/{video_id}/claims",
@@ -138,6 +161,70 @@ def test_register_video_returns_created_video(tmp_path, monkeypatch):
     assert data["title"] == "Example Inquiry Video"
     assert data["duration_seconds"] == 180.0
     assert "youtube-nocookie.com/embed/ABC123" in data["embed_base_url"]
+    assert data.get("speaker_id") is None
+
+
+def test_register_video_with_speaker_persists_speaker_context(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    video = _create_video_with_speaker(client)
+
+    assert video["speaker_id"] is not None
+    assert video["speaker_id"].startswith("speaker_")
+
+    speaker_response = client.get(f"/speakers/{video['speaker_id']}")
+
+    assert speaker_response.status_code == 200
+
+    speaker = speaker_response.json()
+    assert speaker["name"] == "Dr. Jane Smith"
+    assert speaker["credentials"] == "Professor of Computer Science"
+    assert speaker["stated_motivations"] == "Clarifying misconceptions in AI discourse"
+
+
+def test_list_speakers_returns_registered_speakers(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    video = _create_video_with_speaker(client)
+
+    response = client.get("/speakers")
+
+    assert response.status_code == 200
+
+    speakers = response.json()
+    speaker_ids = {speaker["id"] for speaker in speakers}
+
+    assert video["speaker_id"] in speaker_ids
+    assert len(speakers) == 1
+
+
+def test_get_speaker_returns_404_for_unknown_speaker(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.get("/speakers/speaker_missing")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Speaker not found: speaker_missing"
+
+
+def test_video_registration_audit_event_tracks_speaker_context(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    video = _create_video_with_speaker(client, title="Speaker Audit Video")
+
+    events_response = client.get("/audit-events")
+    events = events_response.json()
+
+    matching_events = [
+        event
+        for event in events
+        if event["video_id"] == video["id"]
+        and event["event_type"] == "video_registered"
+    ]
+
+    assert len(matching_events) == 1
+    assert matching_events[0]["metadata"]["speaker_id"] == video["speaker_id"]
+    assert matching_events[0]["metadata"]["has_speaker_context"] is True
 
 
 def test_registered_video_can_be_retrieved(tmp_path, monkeypatch):
@@ -297,6 +384,8 @@ def test_register_video_creates_persistent_audit_event(tmp_path, monkeypatch):
     assert len(matching_events) == 1
     assert matching_events[0]["message"] == "Video registered through FastAPI backend."
     assert matching_events[0]["metadata"]["title"] == "Audit Event Video"
+    assert matching_events[0]["metadata"]["speaker_id"] is None
+    assert matching_events[0]["metadata"]["has_speaker_context"] is False
 
 
 def test_audit_endpoint_records_persistent_audit_requested_event(tmp_path, monkeypatch):
