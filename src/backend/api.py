@@ -1,24 +1,23 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Dict, List
-from uuid import uuid4
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status
 
+from src.backend.db import initialize_sqlite_database
 from src.backend.mlops_schemas import (
     AuditEventCreate,
-    AuditEventRead,
     RunRecordCreate,
     RunRecordRead,
-    new_audit_event_id,
-    new_run_id,
 )
+from src.backend.repository import BackendRepository
 from src.backend.schemas import (
     InquiryAuditReport,
     VideoCreate,
     VideoRead,
 )
+
+DEFAULT_API_DB_PATH = Path("data/inquiry_engine.db")
 
 app = FastAPI(
     title="Inquiry Engine API",
@@ -26,48 +25,16 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Temporary in-memory stores.
-# Week 6 will later replace these with the relational database layer.
-_VIDEO_STORE: Dict[str, VideoRead] = {}
-_RUN_STORE: Dict[str, RunRecordRead] = {}
-_AUDIT_EVENT_STORE: List[AuditEventRead] = []
 
+def get_repository() -> BackendRepository:
+    """
+    Return the backend repository.
 
-def _now_utc() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _create_run_record(payload: RunRecordCreate) -> RunRecordRead:
-    run = RunRecordRead(
-        id=new_run_id(),
-        video_id=payload.video_id,
-        pipeline_name=payload.pipeline_name,
-        status="completed",
-        pipeline_config=payload.pipeline_config,
-        input_artifacts=payload.input_artifacts,
-        output_artifacts={},
-        started_at=_now_utc(),
-        finished_at=_now_utc(),
-        error_message=None,
-    )
-
-    _RUN_STORE[run.id] = run
-    return run
-
-
-def _record_audit_event(payload: AuditEventCreate) -> AuditEventRead:
-    event = AuditEventRead(
-        id=new_audit_event_id(),
-        run_id=payload.run_id,
-        video_id=payload.video_id,
-        event_type=payload.event_type,
-        message=payload.message,
-        metadata=payload.metadata,
-        created_at=_now_utc(),
-    )
-
-    _AUDIT_EVENT_STORE.append(event)
-    return event
+    For Week 6, this uses SQLite persistence.
+    Later, this can switch based on DATABASE_URL to support Neon/Postgres.
+    """
+    initialize_sqlite_database(db_path=DEFAULT_API_DB_PATH)
+    return BackendRepository(db_path=DEFAULT_API_DB_PATH)
 
 
 @app.get("/health")
@@ -81,32 +48,23 @@ def health_check() -> dict[str, str]:
     status_code=status.HTTP_201_CREATED,
 )
 def register_video(payload: VideoCreate) -> VideoRead:
-    video_id = f"video_{uuid4().hex[:12]}"
+    repo = get_repository()
 
-    video = VideoRead(
-        id=video_id,
-        url=payload.url,
-        title=payload.title,
-        embed_base_url=payload.embed_base_url,
-        duration_seconds=payload.duration_seconds,
-        speaker_id=None,
-    )
+    video = repo.create_video(payload)
 
-    _VIDEO_STORE[video_id] = video
-
-    run = _create_run_record(
+    run = repo.create_run_record(
         RunRecordCreate(
-            video_id=video_id,
+            video_id=video.id,
             pipeline_name="week6_video_registration",
             pipeline_config={"source": "fastapi"},
             input_artifacts={"video_url": str(payload.url)},
         )
     )
 
-    _record_audit_event(
+    repo.create_audit_event(
         AuditEventCreate(
             run_id=run.id,
-            video_id=video_id,
+            video_id=video.id,
             event_type="video_registered",
             message="Video registered through FastAPI backend.",
             metadata={
@@ -122,7 +80,8 @@ def register_video(payload: VideoCreate) -> VideoRead:
 
 @app.get("/videos/{video_id}", response_model=VideoRead)
 def get_video(video_id: str) -> VideoRead:
-    video = _VIDEO_STORE.get(video_id)
+    repo = get_repository()
+    video = repo.get_video(video_id)
 
     if video is None:
         raise HTTPException(
@@ -135,13 +94,16 @@ def get_video(video_id: str) -> VideoRead:
 
 @app.get("/videos/{video_id}/audit", response_model=InquiryAuditReport)
 def get_video_audit(video_id: str) -> InquiryAuditReport:
-    if video_id not in _VIDEO_STORE:
+    repo = get_repository()
+    video = repo.get_video(video_id)
+
+    if video is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Video not found: {video_id}",
         )
 
-    _record_audit_event(
+    repo.create_audit_event(
         AuditEventCreate(
             video_id=video_id,
             event_type="audit_requested",
@@ -160,12 +122,14 @@ def get_video_audit(video_id: str) -> InquiryAuditReport:
 
 @app.get("/runs", response_model=list[RunRecordRead])
 def list_runs() -> list[RunRecordRead]:
-    return list(_RUN_STORE.values())
+    repo = get_repository()
+    return repo.list_runs()
 
 
 @app.get("/runs/{run_id}", response_model=RunRecordRead)
 def get_run(run_id: str) -> RunRecordRead:
-    run = _RUN_STORE.get(run_id)
+    repo = get_repository()
+    run = repo.get_run(run_id)
 
     if run is None:
         raise HTTPException(
@@ -176,6 +140,7 @@ def get_run(run_id: str) -> RunRecordRead:
     return run
 
 
-@app.get("/audit-events", response_model=list[AuditEventRead])
-def list_audit_events() -> list[AuditEventRead]:
-    return _AUDIT_EVENT_STORE
+@app.get("/audit-events")
+def list_audit_events():
+    repo = get_repository()
+    return repo.list_audit_events()
