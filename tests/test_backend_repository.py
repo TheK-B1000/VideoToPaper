@@ -3,7 +3,7 @@ from pathlib import Path
 from src.backend.db import initialize_sqlite_database
 from src.backend.mlops_schemas import AuditEventCreate, RunRecordCreate
 from src.backend.repository import BackendRepository
-from src.backend.schemas import ClaimCreate, EvidenceRecordCreate, VideoCreate
+from src.backend.schemas import ClaimCreate, EvidenceRecordCreate, PaperCreate, VideoCreate
 
 
 def _repo(tmp_path) -> BackendRepository:
@@ -256,6 +256,56 @@ def test_repository_returns_none_for_missing_evidence_record(tmp_path):
     repo = _repo(tmp_path)
 
     assert repo.get_evidence_record("evidence_missing") is None
+
+
+def _paper_payload(video_id: str) -> PaperCreate:
+    return PaperCreate(
+        video_id=video_id,
+        section_speaker_perspective="The speaker argues that MARL needs careful handling of non-stationarity.",
+        section_evidence_review="The evidence review discusses support and qualifications from the literature.",
+        section_further_reading="Recommended sources include surveys and foundational MARL papers.",
+        html_render_path="data/outputs/papers/video_001.html",
+    )
+
+
+def test_repository_creates_and_reads_paper(tmp_path):
+    repo = _repo(tmp_path)
+    video = repo.create_video(_video_payload())
+
+    paper = repo.create_paper(_paper_payload(video.id))
+
+    saved = repo.get_paper(paper.id)
+
+    assert saved is not None
+    assert saved.id == paper.id
+    assert saved.video_id == video.id
+    assert "MARL" in saved.section_speaker_perspective
+    assert saved.html_render_path == "data/outputs/papers/video_001.html"
+
+
+def test_repository_lists_papers_for_video(tmp_path):
+    repo = _repo(tmp_path)
+    video = repo.create_video(_video_payload())
+
+    paper = repo.create_paper(_paper_payload(video.id))
+
+    papers = repo.list_papers_for_video(video.id)
+
+    assert len(papers) == 1
+    assert papers[0].id == paper.id
+    assert papers[0].video_id == video.id
+
+
+def test_repository_returns_none_for_missing_paper(tmp_path):
+    repo = _repo(tmp_path)
+
+    assert repo.get_paper("paper_missing") is None
+
+
+def test_repository_returns_empty_papers_for_unknown_video(tmp_path):
+    repo = _repo(tmp_path)
+
+    assert repo.list_papers_for_video("video_missing") == []
 
 
 def test_repository_audit_report_counts_evidence_and_stances(tmp_path):

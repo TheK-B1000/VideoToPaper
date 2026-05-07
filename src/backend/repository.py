@@ -21,6 +21,8 @@ from src.backend.schemas import (
     EvidenceRecordCreate,
     EvidenceRecordRead,
     InquiryAuditReport,
+    PaperCreate,
+    PaperRead,
     VideoCreate,
     VideoRead,
 )
@@ -538,6 +540,83 @@ class BackendRepository:
 
         return [self._row_to_evidence_record(row) for row in rows]
 
+    def create_paper(self, payload: PaperCreate) -> PaperRead:
+        paper = PaperRead(
+            id=_new_id("paper"),
+            video_id=payload.video_id,
+            section_speaker_perspective=payload.section_speaker_perspective,
+            section_evidence_review=payload.section_evidence_review,
+            section_further_reading=payload.section_further_reading,
+            html_render_path=payload.html_render_path,
+        )
+
+        with connect_sqlite(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO papers (
+                    id,
+                    video_id,
+                    section_speaker_perspective,
+                    section_evidence_review,
+                    section_further_reading,
+                    html_render_path
+                )
+                VALUES (?, ?, ?, ?, ?, ?);
+                """,
+                (
+                    paper.id,
+                    paper.video_id,
+                    paper.section_speaker_perspective,
+                    paper.section_evidence_review,
+                    paper.section_further_reading,
+                    paper.html_render_path,
+                ),
+            )
+
+        return paper
+
+    def get_paper(self, paper_id: str) -> Optional[PaperRead]:
+        with connect_sqlite(self.db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    id,
+                    video_id,
+                    section_speaker_perspective,
+                    section_evidence_review,
+                    section_further_reading,
+                    html_render_path
+                FROM papers
+                WHERE id = ?;
+                """,
+                (paper_id,),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_paper(row)
+
+    def list_papers_for_video(self, video_id: str) -> List[PaperRead]:
+        with connect_sqlite(self.db_path) as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    id,
+                    video_id,
+                    section_speaker_perspective,
+                    section_evidence_review,
+                    section_further_reading,
+                    html_render_path
+                FROM papers
+                WHERE video_id = ?
+                ORDER BY created_at DESC;
+                """,
+                (video_id,),
+            ).fetchall()
+
+        return [self._row_to_paper(row) for row in rows]
+
     @staticmethod
     def _row_to_run(row: sqlite3.Row) -> RunRecordRead:
         return RunRecordRead(
@@ -586,6 +665,17 @@ class BackendRepository:
             identifier=row["identifier"],
             abstract_or_summary=row["abstract_or_summary"],
             key_finding=row["key_finding"],
+        )
+
+    @staticmethod
+    def _row_to_paper(row: sqlite3.Row) -> PaperRead:
+        return PaperRead(
+            id=row["id"],
+            video_id=row["video_id"],
+            section_speaker_perspective=row["section_speaker_perspective"],
+            section_evidence_review=row["section_evidence_review"],
+            section_further_reading=row["section_further_reading"],
+            html_render_path=row["html_render_path"],
         )
 
     @staticmethod

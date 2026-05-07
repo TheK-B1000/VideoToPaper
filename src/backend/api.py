@@ -17,6 +17,8 @@ from src.backend.schemas import (
     EvidenceRecordCreate,
     EvidenceRecordRead,
     InquiryAuditReport,
+    PaperCreate,
+    PaperRead,
     VideoCreate,
     VideoRead,
 )
@@ -228,6 +230,81 @@ def list_claims_for_video(video_id: str) -> list[ClaimRead]:
         )
 
     return repo.list_claims_for_video(video_id)
+
+
+@app.post(
+    "/videos/{video_id}/papers",
+    response_model=PaperRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_paper_for_video(video_id: str, payload: PaperCreate) -> PaperRead:
+    repo = get_repository()
+    video = repo.get_video(video_id)
+
+    if video is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Video not found: {video_id}",
+        )
+
+    if payload.video_id != video_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Paper payload video_id must match path video_id",
+        )
+
+    paper = repo.create_paper(payload)
+
+    repo.create_audit_event(
+        AuditEventCreate(
+            video_id=video_id,
+            event_type="paper_created",
+            message="Paper record persisted through FastAPI backend.",
+            metadata={
+                "paper_id": paper.id,
+                "html_render_path": paper.html_render_path,
+                "has_speaker_perspective": bool(
+                    paper.section_speaker_perspective.strip()
+                ),
+                "has_evidence_review": bool(
+                    paper.section_evidence_review.strip()
+                ),
+                "has_further_reading": bool(
+                    paper.section_further_reading.strip()
+                ),
+            },
+        )
+    )
+
+    return paper
+
+
+@app.get("/papers/{paper_id}", response_model=PaperRead)
+def get_paper(paper_id: str) -> PaperRead:
+    repo = get_repository()
+    paper = repo.get_paper(paper_id)
+
+    if paper is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Paper not found: {paper_id}",
+        )
+
+    return paper
+
+
+@app.get("/videos/{video_id}/papers", response_model=list[PaperRead])
+def list_papers_for_video(video_id: str) -> list[PaperRead]:
+    repo = get_repository()
+    video = repo.get_video(video_id)
+
+    if video is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Video not found: {video_id}",
+        )
+
+    return repo.list_papers_for_video(video_id)
 
 
 @app.get("/videos/{video_id}", response_model=VideoRead)

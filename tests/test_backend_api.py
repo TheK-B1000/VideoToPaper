@@ -77,6 +77,22 @@ def _create_evidence(client: TestClient, claim_id: str) -> dict:
     return response.json()
 
 
+def _create_paper(client: TestClient, video_id: str) -> dict:
+    response = client.post(
+        f"/videos/{video_id}/papers",
+        json={
+            "video_id": video_id,
+            "section_speaker_perspective": "The speaker argues that MARL needs careful handling of non-stationarity.",
+            "section_evidence_review": "The evidence review discusses support and qualifications from the literature.",
+            "section_further_reading": "Recommended sources include surveys and foundational MARL papers.",
+            "html_render_path": "data/outputs/papers/video_001.html",
+        },
+    )
+
+    assert response.status_code == 201
+    return response.json()
+
+
 def test_health_check_returns_ok(tmp_path, monkeypatch):
     client = _make_test_client(tmp_path, monkeypatch)
 
@@ -501,3 +517,104 @@ def test_create_evidence_records_audit_event(tmp_path, monkeypatch):
     ]
 
     assert len(matching_events) == 1
+
+
+def test_create_paper_for_video_persists_paper(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Paper Video")
+
+    paper = _create_paper(client, video["id"])
+
+    assert paper["id"].startswith("paper_")
+    assert paper["video_id"] == video["id"]
+    assert "MARL" in paper["section_speaker_perspective"]
+    assert paper["html_render_path"] == "data/outputs/papers/video_001.html"
+
+
+def test_get_paper_returns_persisted_paper(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Get Paper Video")
+    paper = _create_paper(client, video["id"])
+
+    response = client.get(f"/papers/{paper['id']}")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == paper["id"]
+    assert response.json()["video_id"] == video["id"]
+
+
+def test_list_papers_for_video_returns_records(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="List Papers Video")
+    paper = _create_paper(client, video["id"])
+
+    response = client.get(f"/videos/{video['id']}/papers")
+
+    assert response.status_code == 200
+    assert response.json()[0]["id"] == paper["id"]
+
+
+def test_create_paper_rejects_mismatched_video_id(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Mismatch Paper Video")
+
+    response = client.post(
+        f"/videos/{video['id']}/papers",
+        json={
+            "video_id": "video_other",
+            "section_speaker_perspective": "Bad video link.",
+            "section_evidence_review": "",
+            "section_further_reading": "",
+            "html_render_path": "data/outputs/papers/bad.html",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Paper payload video_id must match path video_id"
+
+
+def test_create_paper_returns_404_for_unknown_video(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.post(
+        "/videos/video_missing/papers",
+        json={
+            "video_id": "video_missing",
+            "section_speaker_perspective": "Missing video.",
+            "section_evidence_review": "",
+            "section_further_reading": "",
+            "html_render_path": "data/outputs/papers/missing.html",
+        },
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Video not found: video_missing"
+
+
+def test_get_paper_returns_404_for_unknown_paper(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.get("/papers/paper_missing")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Paper not found: paper_missing"
+
+
+def test_create_paper_records_audit_event(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Paper Audit Event Video")
+    paper = _create_paper(client, video["id"])
+
+    events_response = client.get("/audit-events")
+    events = events_response.json()
+
+    matching_events = [
+        event
+        for event in events
+        if event["video_id"] == video["id"]
+        and event["event_type"] == "paper_created"
+        and event["metadata"]["paper_id"] == paper["id"]
+    ]
+
+    assert len(matching_events) == 1
+    assert matching_events[0]["metadata"]["has_speaker_perspective"] is True
