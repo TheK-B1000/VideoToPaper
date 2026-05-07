@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 from uuid import uuid4
 
 from src.integration.adjudication_builder import build_adjudication_record
+from src.integration.evidence_narrative import generate_evidence_narrative
 
 
 DEFAULT_CLAIM_INVENTORY_PATH = Path("data/processed/claim_inventory.json")
@@ -108,7 +109,7 @@ def write_run_log(
     claim_inventory_path: Path,
     evidence_records_path: Path,
     output_path: Path,
-    allow_skewed_adjudication: bool,
+    settings: Mapping[str, Any],
     metrics: Mapping[str, Any],
     status: str,
     error: str | None = None,
@@ -136,9 +137,7 @@ def write_run_log(
         "output_paths": {
             "adjudications": str(output_path),
         },
-        "settings": {
-            "allow_skewed_adjudication": allow_skewed_adjudication,
-        },
+        "settings": dict(settings),
         "metrics": dict(metrics),
     }
 
@@ -179,6 +178,8 @@ def run_evidence_integration_pipeline(
     output_path: Path = DEFAULT_ADJUDICATIONS_OUTPUT_PATH,
     run_log_dir: Path = DEFAULT_RUN_LOG_DIR,
     allow_skewed_adjudication: bool = False,
+    use_llm_narratives: bool = False,
+    narrative_client: Any | None = None,
 ) -> dict[str, Any]:
     run_id = str(uuid4())
     started_at = utc_now_iso()
@@ -219,7 +220,23 @@ def run_evidence_integration_pipeline(
                 allow_skewed_adjudication=allow_skewed_adjudication,
             )
 
-            adjudications.append(asdict(adjudication))
+            adjudication_payload = asdict(adjudication)
+
+            narrative_result = generate_evidence_narrative(
+                claim=claim,
+                adjudication=adjudication_payload,
+                evidence_records=claim_evidence,
+                narrative_client=narrative_client,
+                use_llm=use_llm_narratives,
+            )
+
+            adjudication_payload["narrative"] = narrative_result.narrative
+            adjudication_payload["narrative_generation"] = {
+                "used_llm": narrative_result.used_llm,
+                "fallback_reason": narrative_result.fallback_reason,
+            }
+
+            adjudications.append(adjudication_payload)
 
         metrics = {
             "claims_loaded": len(claims),
@@ -228,6 +245,16 @@ def run_evidence_integration_pipeline(
             "claims_skipped": len(skipped_claims),
             "guarded_adjudications": sum(
                 1 for record in adjudications if record.get("guard_reason")
+            ),
+            "llm_narratives_used": sum(
+                1
+                for record in adjudications
+                if record.get("narrative_generation", {}).get("used_llm") is True
+            ),
+            "fallback_narratives_used": sum(
+                1
+                for record in adjudications
+                if record.get("narrative_generation", {}).get("used_llm") is False
             ),
         }
 
@@ -250,7 +277,10 @@ def run_evidence_integration_pipeline(
             claim_inventory_path=claim_inventory_path,
             evidence_records_path=evidence_records_path,
             output_path=output_path,
-            allow_skewed_adjudication=allow_skewed_adjudication,
+            settings={
+                "allow_skewed_adjudication": allow_skewed_adjudication,
+                "use_llm_narratives": use_llm_narratives,
+            },
             metrics=metrics,
             status="completed",
         )
@@ -268,6 +298,8 @@ def run_evidence_integration_pipeline(
             "adjudications_written": 0,
             "claims_skipped": 0,
             "guarded_adjudications": 0,
+            "llm_narratives_used": 0,
+            "fallback_narratives_used": 0,
         }
 
         write_run_log(
@@ -278,7 +310,10 @@ def run_evidence_integration_pipeline(
             claim_inventory_path=claim_inventory_path,
             evidence_records_path=evidence_records_path,
             output_path=output_path,
-            allow_skewed_adjudication=allow_skewed_adjudication,
+            settings={
+                "allow_skewed_adjudication": allow_skewed_adjudication,
+                "use_llm_narratives": use_llm_narratives,
+            },
             metrics=error_metrics,
             status="failed",
             error=str(exc),
