@@ -14,7 +14,14 @@ from src.backend.mlops_schemas import (
     RunRecordCreate,
     RunRecordRead,
 )
-from src.backend.schemas import VideoCreate, VideoRead
+from src.backend.schemas import (
+    ClaimAuditSummary,
+    ClaimCreate,
+    ClaimRead,
+    InquiryAuditReport,
+    VideoCreate,
+    VideoRead,
+)
 
 
 def _new_id(prefix: str) -> str:
@@ -289,6 +296,145 @@ class BackendRepository:
 
         return [self._row_to_audit_event(row) for row in rows]
 
+    def create_claim(self, payload: ClaimCreate) -> ClaimRead:
+        claim = ClaimRead(
+            id=_new_id("claim"),
+            video_id=payload.video_id,
+            verbatim_quote=payload.verbatim_quote,
+            claim_type=payload.claim_type,
+            verification_strategy=payload.verification_strategy,
+            char_offset_start=payload.char_offset_start,
+            char_offset_end=payload.char_offset_end,
+            anchor_clip=payload.anchor_clip,
+            embed_url=payload.embed_url,
+        )
+
+        with connect_sqlite(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO claims (
+                    id,
+                    video_id,
+                    verbatim_quote,
+                    claim_type,
+                    verification_strategy,
+                    char_offset_start,
+                    char_offset_end,
+                    anchor_clip_start,
+                    anchor_clip_end,
+                    embed_url
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                """,
+                (
+                    claim.id,
+                    claim.video_id,
+                    claim.verbatim_quote,
+                    claim.claim_type,
+                    claim.verification_strategy,
+                    claim.char_offset_start,
+                    claim.char_offset_end,
+                    claim.anchor_clip.start,
+                    claim.anchor_clip.end,
+                    str(claim.embed_url),
+                ),
+            )
+
+        return claim
+
+    def get_claim(self, claim_id: str) -> Optional[ClaimRead]:
+        with connect_sqlite(self.db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    id,
+                    video_id,
+                    verbatim_quote,
+                    claim_type,
+                    verification_strategy,
+                    char_offset_start,
+                    char_offset_end,
+                    anchor_clip_start,
+                    anchor_clip_end,
+                    embed_url
+                FROM claims
+                WHERE id = ?;
+                """,
+                (claim_id,),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_claim(row)
+
+    def list_claims_for_video(self, video_id: str) -> List[ClaimRead]:
+        with connect_sqlite(self.db_path) as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    id,
+                    video_id,
+                    verbatim_quote,
+                    claim_type,
+                    verification_strategy,
+                    char_offset_start,
+                    char_offset_end,
+                    anchor_clip_start,
+                    anchor_clip_end,
+                    embed_url
+                FROM claims
+                WHERE video_id = ?
+                ORDER BY char_offset_start ASC;
+                """,
+                (video_id,),
+            ).fetchall()
+
+        return [self._row_to_claim(row) for row in rows]
+
+    def build_video_audit_report(self, video_id: str) -> InquiryAuditReport:
+        claims = self.list_claims_for_video(video_id)
+
+        claim_summaries: List[ClaimAuditSummary] = []
+
+        with connect_sqlite(self.db_path) as conn:
+            for claim in claims:
+                evidence_rows = conn.execute(
+                    """
+                    SELECT stance
+                    FROM evidence_records
+                    WHERE claim_id = ?;
+                    """,
+                    (claim.id,),
+                ).fetchall()
+
+                stances_present = sorted({row["stance"] for row in evidence_rows})
+
+                claim_summaries.append(
+                    ClaimAuditSummary(
+                        claim_id=claim.id,
+                        has_verbatim_quote=bool(claim.verbatim_quote.strip()),
+                        has_anchor_clip=(
+                            claim.anchor_clip.start >= 0
+                            and claim.anchor_clip.end > claim.anchor_clip.start
+                        ),
+                        has_embed_url=bool(str(claim.embed_url).strip()),
+                        evidence_count=len(evidence_rows),
+                        stances_present=stances_present,
+                    )
+                )
+
+        total_evidence_count = sum(
+            summary.evidence_count for summary in claim_summaries
+        )
+
+        return InquiryAuditReport(
+            video_id=video_id,
+            claim_count=len(claims),
+            evidence_count=total_evidence_count,
+            claims=claim_summaries,
+        )
+
     @staticmethod
     def _row_to_run(row: sqlite3.Row) -> RunRecordRead:
         return RunRecordRead(
@@ -306,6 +452,23 @@ class BackendRepository:
                 else None
             ),
             error_message=row["error_message"],
+        )
+
+    @staticmethod
+    def _row_to_claim(row: sqlite3.Row) -> ClaimRead:
+        return ClaimRead(
+            id=row["id"],
+            video_id=row["video_id"],
+            verbatim_quote=row["verbatim_quote"],
+            claim_type=row["claim_type"],
+            verification_strategy=row["verification_strategy"],
+            char_offset_start=row["char_offset_start"],
+            char_offset_end=row["char_offset_end"],
+            anchor_clip={
+                "start": row["anchor_clip_start"],
+                "end": row["anchor_clip_end"],
+            },
+            embed_url=row["embed_url"],
         )
 
     @staticmethod

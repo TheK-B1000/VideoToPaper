@@ -12,6 +12,8 @@ from src.backend.mlops_schemas import (
 )
 from src.backend.repository import BackendRepository
 from src.backend.schemas import (
+    ClaimCreate,
+    ClaimRead,
     InquiryAuditReport,
     VideoCreate,
     VideoRead,
@@ -78,6 +80,75 @@ def register_video(payload: VideoCreate) -> VideoRead:
     return video
 
 
+@app.post(
+    "/videos/{video_id}/claims",
+    response_model=ClaimRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_claim_for_video(video_id: str, payload: ClaimCreate) -> ClaimRead:
+    repo = get_repository()
+    video = repo.get_video(video_id)
+
+    if video is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Video not found: {video_id}",
+        )
+
+    if payload.video_id != video_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Claim payload video_id must match path video_id",
+        )
+
+    claim = repo.create_claim(payload)
+
+    repo.create_audit_event(
+        AuditEventCreate(
+            video_id=video_id,
+            event_type="claim_created",
+            message="Claim persisted through FastAPI backend.",
+            metadata={
+                "claim_id": claim.id,
+                "claim_type": claim.claim_type,
+                "verification_strategy": claim.verification_strategy,
+                "anchor_clip_start": claim.anchor_clip.start,
+                "anchor_clip_end": claim.anchor_clip.end,
+            },
+        )
+    )
+
+    return claim
+
+
+@app.get("/claims/{claim_id}", response_model=ClaimRead)
+def get_claim(claim_id: str) -> ClaimRead:
+    repo = get_repository()
+    claim = repo.get_claim(claim_id)
+
+    if claim is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Claim not found: {claim_id}",
+        )
+
+    return claim
+
+
+@app.get("/videos/{video_id}/claims", response_model=list[ClaimRead])
+def list_claims_for_video(video_id: str) -> list[ClaimRead]:
+    repo = get_repository()
+    video = repo.get_video(video_id)
+
+    if video is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Video not found: {video_id}",
+        )
+
+    return repo.list_claims_for_video(video_id)
+
+
 @app.get("/videos/{video_id}", response_model=VideoRead)
 def get_video(video_id: str) -> VideoRead:
     repo = get_repository()
@@ -112,12 +183,7 @@ def get_video_audit(video_id: str) -> InquiryAuditReport:
         )
     )
 
-    return InquiryAuditReport(
-        video_id=video_id,
-        claim_count=0,
-        evidence_count=0,
-        claims=[],
-    )
+    return repo.build_video_audit_report(video_id)
 
 
 @app.get("/runs", response_model=list[RunRecordRead])
