@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+from uuid import uuid4
 
 from src.integration.adjudication_builder import build_adjudication_record
 
@@ -11,6 +13,9 @@ from src.integration.adjudication_builder import build_adjudication_record
 DEFAULT_CLAIM_INVENTORY_PATH = Path("data/processed/claim_inventory.json")
 DEFAULT_EVIDENCE_RECORDS_PATH = Path("data/processed/evidence_records.json")
 DEFAULT_ADJUDICATIONS_OUTPUT_PATH = Path("data/processed/adjudications.json")
+DEFAULT_RUN_LOG_DIR = Path("logs/runs")
+PIPELINE_NAME = "evidence_integration"
+PIPELINE_STAGE = "week7"
 
 
 def load_json_document(path: Path) -> Any:
@@ -90,6 +95,64 @@ def group_evidence_by_claim_id(
     return grouped
 
 
+def utc_now_iso() -> str:
+    return datetime.now(UTC).isoformat()
+
+
+def write_run_log(
+    *,
+    run_log_dir: Path,
+    run_id: str,
+    started_at: str,
+    finished_at: str,
+    claim_inventory_path: Path,
+    evidence_records_path: Path,
+    output_path: Path,
+    allow_skewed_adjudication: bool,
+    metrics: Mapping[str, Any],
+    status: str,
+    error: str | None = None,
+) -> Path:
+    """
+    Write an audit-grade run log for Week 7 evidence integration.
+
+    The adjudications file is the product. The run log is the receipt.
+    It records what inputs were used, what output was written, what settings
+    were active, and whether the stage completed successfully.
+    """
+    run_log_dir.mkdir(parents=True, exist_ok=True)
+
+    payload = {
+        "run_id": run_id,
+        "pipeline_name": PIPELINE_NAME,
+        "stage": PIPELINE_STAGE,
+        "status": status,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "input_paths": {
+            "claim_inventory": str(claim_inventory_path),
+            "evidence_records": str(evidence_records_path),
+        },
+        "output_paths": {
+            "adjudications": str(output_path),
+        },
+        "settings": {
+            "allow_skewed_adjudication": allow_skewed_adjudication,
+        },
+        "metrics": dict(metrics),
+    }
+
+    if error is not None:
+        payload["error"] = error
+
+    log_path = run_log_dir / f"{PIPELINE_NAME}_{run_id}.json"
+
+    with log_path.open("w", encoding="utf-8") as file:
+        json.dump(payload, file, indent=2, ensure_ascii=False)
+
+    return log_path
+
+
 def should_integrate_claim(claim: Mapping[str, Any]) -> bool:
     """
     Only empirical claims should move into evidence integration.
@@ -114,50 +177,51 @@ def run_evidence_integration_pipeline(
     claim_inventory_path: Path = DEFAULT_CLAIM_INVENTORY_PATH,
     evidence_records_path: Path = DEFAULT_EVIDENCE_RECORDS_PATH,
     output_path: Path = DEFAULT_ADJUDICATIONS_OUTPUT_PATH,
+    run_log_dir: Path = DEFAULT_RUN_LOG_DIR,
     allow_skewed_adjudication: bool = False,
 ) -> dict[str, Any]:
-    claim_document = load_json_document(claim_inventory_path)
-    evidence_document = load_json_document(evidence_records_path)
+    run_id = str(uuid4())
+    started_at = utc_now_iso()
 
-    claims = normalize_claim_inventory(claim_document)
-    evidence_records = normalize_evidence_records(evidence_document)
-    evidence_by_claim_id = group_evidence_by_claim_id(evidence_records)
+    try:
+        claim_document = load_json_document(claim_inventory_path)
+        evidence_document = load_json_document(evidence_records_path)
 
-    adjudications = []
-    skipped_claims = []
+        claims = normalize_claim_inventory(claim_document)
+        evidence_records = normalize_evidence_records(evidence_document)
+        evidence_by_claim_id = group_evidence_by_claim_id(evidence_records)
 
-    for claim in claims:
-        claim_id = claim.get("claim_id")
+        adjudications = []
+        skipped_claims = []
 
-        if not isinstance(claim_id, str) or not claim_id.strip():
-            raise ValueError(f"Claim is missing a valid claim_id: {claim!r}")
+        for claim in claims:
+            claim_id = claim.get("claim_id")
 
-        normalized_claim_id = claim_id.strip()
+            if not isinstance(claim_id, str) or not claim_id.strip():
+                raise ValueError(f"Claim is missing a valid claim_id: {claim!r}")
 
-        if not should_integrate_claim(claim):
-            skipped_claims.append(
-                {
-                    "claim_id": normalized_claim_id,
-                    "reason": "Claim is not routed to literature_review.",
-                }
+            normalized_claim_id = claim_id.strip()
+
+            if not should_integrate_claim(claim):
+                skipped_claims.append(
+                    {
+                        "claim_id": normalized_claim_id,
+                        "reason": "Claim is not routed to literature_review.",
+                    }
+                )
+                continue
+
+            claim_evidence = evidence_by_claim_id.get(normalized_claim_id, [])
+
+            adjudication = build_adjudication_record(
+                claim,
+                claim_evidence,
+                allow_skewed_adjudication=allow_skewed_adjudication,
             )
-            continue
 
-        claim_evidence = evidence_by_claim_id.get(normalized_claim_id, [])
+            adjudications.append(asdict(adjudication))
 
-        adjudication = build_adjudication_record(
-            claim,
-            claim_evidence,
-            allow_skewed_adjudication=allow_skewed_adjudication,
-        )
-
-        adjudications.append(asdict(adjudication))
-
-    payload = {
-        "schema_version": "week7.v1",
-        "adjudications": adjudications,
-        "skipped_claims": skipped_claims,
-        "metrics": {
+        metrics = {
             "claims_loaded": len(claims),
             "evidence_records_loaded": len(evidence_records),
             "adjudications_written": len(adjudications),
@@ -165,12 +229,62 @@ def run_evidence_integration_pipeline(
             "guarded_adjudications": sum(
                 1 for record in adjudications if record.get("guard_reason")
             ),
-        },
-    }
+        }
 
-    write_json_document(output_path, payload)
+        payload = {
+            "schema_version": "week7.v1",
+            "run_id": run_id,
+            "adjudications": adjudications,
+            "skipped_claims": skipped_claims,
+            "metrics": metrics,
+        }
 
-    return payload
+        write_json_document(output_path, payload)
+
+        finished_at = utc_now_iso()
+        run_log_path = write_run_log(
+            run_log_dir=run_log_dir,
+            run_id=run_id,
+            started_at=started_at,
+            finished_at=finished_at,
+            claim_inventory_path=claim_inventory_path,
+            evidence_records_path=evidence_records_path,
+            output_path=output_path,
+            allow_skewed_adjudication=allow_skewed_adjudication,
+            metrics=metrics,
+            status="completed",
+        )
+
+        payload["run_log_path"] = str(run_log_path)
+
+        return payload
+
+    except Exception as exc:
+        finished_at = utc_now_iso()
+
+        error_metrics = {
+            "claims_loaded": 0,
+            "evidence_records_loaded": 0,
+            "adjudications_written": 0,
+            "claims_skipped": 0,
+            "guarded_adjudications": 0,
+        }
+
+        write_run_log(
+            run_log_dir=run_log_dir,
+            run_id=run_id,
+            started_at=started_at,
+            finished_at=finished_at,
+            claim_inventory_path=claim_inventory_path,
+            evidence_records_path=evidence_records_path,
+            output_path=output_path,
+            allow_skewed_adjudication=allow_skewed_adjudication,
+            metrics=error_metrics,
+            status="failed",
+            error=str(exc),
+        )
+
+        raise
 
 
 if __name__ == "__main__":
@@ -180,3 +294,4 @@ if __name__ == "__main__":
         f"{DEFAULT_ADJUDICATIONS_OUTPUT_PATH} "
         f"({result['metrics']['adjudications_written']} records)"
     )
+    print(f"Run log written to: {result['run_log_path']}")

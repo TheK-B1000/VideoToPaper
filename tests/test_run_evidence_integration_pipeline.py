@@ -151,6 +151,7 @@ def test_pipeline_writes_adjudications_and_skips_non_empirical_claims(tmp_path):
         claim_inventory_path=claim_inventory_path,
         evidence_records_path=evidence_records_path,
         output_path=output_path,
+        run_log_dir=tmp_path / "logs" / "runs",
     )
 
     assert output_path.exists()
@@ -196,6 +197,7 @@ def test_pipeline_marks_empirical_claim_with_no_evidence_as_insufficient(tmp_pat
         claim_inventory_path=claim_inventory_path,
         evidence_records_path=evidence_records_path,
         output_path=output_path,
+        run_log_dir=tmp_path / "logs" / "runs",
     )
 
     adjudication = result["adjudications"][0]
@@ -217,3 +219,104 @@ def test_pipeline_rejects_evidence_record_without_claim_id():
 
     with pytest.raises(ValueError, match="claim_id"):
         group_evidence_by_claim_id(records)
+
+
+def test_pipeline_writes_mlops_run_log(tmp_path):
+    claim_inventory_path = tmp_path / "claim_inventory.json"
+    evidence_records_path = tmp_path / "evidence_records.json"
+    output_path = tmp_path / "adjudications.json"
+    run_log_dir = tmp_path / "logs" / "runs"
+
+    write_json(
+        claim_inventory_path,
+        {
+            "claims": [
+                {
+                    "claim_id": "claim_001",
+                    "verbatim_quote": "Non-stationarity makes multi-agent learning difficult.",
+                    "claim_type": "empirical_technical",
+                    "verification_strategy": "literature_review",
+                }
+            ]
+        },
+    )
+
+    write_json(
+        evidence_records_path,
+        {
+            "evidence_records": [
+                {
+                    "claim_id": "claim_001",
+                    "stance": "supports",
+                    "citation_label": "Foerster 2018",
+                    "title": "Learning with Opponent-Learning Awareness",
+                    "tier": 1,
+                    "identifier": "doi:support",
+                },
+                {
+                    "claim_id": "claim_001",
+                    "stance": "qualifies",
+                    "citation_label": "Vinyals 2019",
+                    "title": "Grandmaster Level in StarCraft II",
+                    "tier": 1,
+                    "identifier": "doi:qualify",
+                },
+            ]
+        },
+    )
+
+    result = run_evidence_integration_pipeline(
+        claim_inventory_path=claim_inventory_path,
+        evidence_records_path=evidence_records_path,
+        output_path=output_path,
+        run_log_dir=run_log_dir,
+    )
+
+    run_log_path = Path(result["run_log_path"])
+
+    assert run_log_path.exists()
+    assert run_log_path.parent == run_log_dir
+
+    run_log = json.loads(run_log_path.read_text(encoding="utf-8"))
+
+    assert run_log["pipeline_name"] == "evidence_integration"
+    assert run_log["stage"] == "week7"
+    assert run_log["status"] == "completed"
+    assert run_log["run_id"] == result["run_id"]
+
+    assert run_log["input_paths"]["claim_inventory"] == str(claim_inventory_path)
+    assert run_log["input_paths"]["evidence_records"] == str(evidence_records_path)
+    assert run_log["output_paths"]["adjudications"] == str(output_path)
+
+    assert run_log["settings"]["allow_skewed_adjudication"] is False
+    assert run_log["metrics"]["adjudications_written"] == 1
+    assert run_log["metrics"]["guarded_adjudications"] == 0
+
+
+def test_pipeline_writes_failed_run_log_when_input_is_missing(tmp_path):
+    claim_inventory_path = tmp_path / "missing_claim_inventory.json"
+    evidence_records_path = tmp_path / "evidence_records.json"
+    output_path = tmp_path / "adjudications.json"
+    run_log_dir = tmp_path / "logs" / "runs"
+
+    write_json(evidence_records_path, [])
+
+    with pytest.raises(FileNotFoundError):
+        run_evidence_integration_pipeline(
+            claim_inventory_path=claim_inventory_path,
+            evidence_records_path=evidence_records_path,
+            output_path=output_path,
+            run_log_dir=run_log_dir,
+        )
+
+    run_logs = list(run_log_dir.glob("evidence_integration_*.json"))
+
+    assert len(run_logs) == 1
+
+    run_log = json.loads(run_logs[0].read_text(encoding="utf-8"))
+
+    assert run_log["pipeline_name"] == "evidence_integration"
+    assert run_log["stage"] == "week7"
+    assert run_log["status"] == "failed"
+    assert "error" in run_log
+    assert "JSON input file not found" in run_log["error"]
