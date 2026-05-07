@@ -8,7 +8,10 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Environment secrets
 .env
+.env.*
+!.env.example
 
 # Local-only overrides (may enable LLM); never commit secrets here
 configs/*.local.json
