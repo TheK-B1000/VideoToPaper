@@ -308,6 +308,48 @@ def test_repository_returns_empty_papers_for_unknown_video(tmp_path):
     assert repo.list_papers_for_video("video_missing") == []
 
 
+def test_repository_builds_video_backend_summary(tmp_path):
+    repo = _repo(tmp_path)
+    video = repo.create_video(_video_payload(title="Summary Video"))
+    claim = repo.create_claim(_claim_payload(video.id))
+    repo.create_evidence_record(_evidence_payload(claim.id))
+    repo.create_paper(_paper_payload(video.id))
+    repo.create_run_record(
+        RunRecordCreate(
+            video_id=video.id,
+            pipeline_name="week6_summary_test",
+        )
+    )
+    repo.create_audit_event(
+        AuditEventCreate(
+            video_id=video.id,
+            event_type="audit_requested",
+            message="Summary test event.",
+        )
+    )
+
+    summary = repo.build_video_backend_summary(video.id)
+
+    assert summary is not None
+    assert summary.video_id == video.id
+    assert summary.title == "Summary Video"
+    assert summary.claim_count == 1
+    assert summary.evidence_count == 1
+    assert summary.paper_count == 1
+    assert summary.run_count == 1
+    assert summary.audit_event_count == 1
+    assert summary.has_generated_paper is True
+    assert summary.has_evidence is True
+
+
+def test_repository_backend_summary_returns_none_for_missing_video(tmp_path):
+    repo = _repo(tmp_path)
+
+    summary = repo.build_video_backend_summary("video_missing")
+
+    assert summary is None
+
+
 def test_repository_audit_report_counts_evidence_and_stances(tmp_path):
     repo = _repo(tmp_path)
     video = repo.create_video(_video_payload())

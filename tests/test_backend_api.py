@@ -618,3 +618,35 @@ def test_create_paper_records_audit_event(tmp_path, monkeypatch):
 
     assert len(matching_events) == 1
     assert matching_events[0]["metadata"]["has_speaker_perspective"] is True
+
+
+def test_video_summary_reports_backend_counts(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Summary API Video")
+    claim = _create_claim(client, video["id"])
+    _create_evidence(client, claim["id"])
+    _create_paper(client, video["id"])
+
+    response = client.get(f"/videos/{video['id']}/summary")
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["video_id"] == video["id"]
+    assert data["title"] == "Summary API Video"
+    assert data["claim_count"] == 1
+    assert data["evidence_count"] == 1
+    assert data["paper_count"] == 1
+    assert data["run_count"] == 1
+    assert data["audit_event_count"] >= 4
+    assert data["has_generated_paper"] is True
+    assert data["has_evidence"] is True
+
+
+def test_video_summary_returns_404_for_unknown_video(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.get("/videos/video_missing/summary")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Video not found: video_missing"

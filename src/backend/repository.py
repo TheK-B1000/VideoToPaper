@@ -23,6 +23,7 @@ from src.backend.schemas import (
     InquiryAuditReport,
     PaperCreate,
     PaperRead,
+    VideoBackendSummary,
     VideoCreate,
     VideoRead,
 )
@@ -616,6 +617,74 @@ class BackendRepository:
             ).fetchall()
 
         return [self._row_to_paper(row) for row in rows]
+
+    def build_video_backend_summary(
+        self,
+        video_id: str,
+    ) -> Optional[VideoBackendSummary]:
+        video = self.get_video(video_id)
+
+        if video is None:
+            return None
+
+        with connect_sqlite(self.db_path) as conn:
+            claim_count = conn.execute(
+                """
+                SELECT COUNT(*)
+                FROM claims
+                WHERE video_id = ?;
+                """,
+                (video_id,),
+            ).fetchone()[0]
+
+            evidence_count = conn.execute(
+                """
+                SELECT COUNT(*)
+                FROM evidence_records
+                JOIN claims ON evidence_records.claim_id = claims.id
+                WHERE claims.video_id = ?;
+                """,
+                (video_id,),
+            ).fetchone()[0]
+
+            paper_count = conn.execute(
+                """
+                SELECT COUNT(*)
+                FROM papers
+                WHERE video_id = ?;
+                """,
+                (video_id,),
+            ).fetchone()[0]
+
+            run_count = conn.execute(
+                """
+                SELECT COUNT(*)
+                FROM runs
+                WHERE video_id = ?;
+                """,
+                (video_id,),
+            ).fetchone()[0]
+
+            audit_event_count = conn.execute(
+                """
+                SELECT COUNT(*)
+                FROM audit_events
+                WHERE video_id = ?;
+                """,
+                (video_id,),
+            ).fetchone()[0]
+
+        return VideoBackendSummary(
+            video_id=video.id,
+            title=video.title,
+            claim_count=claim_count,
+            evidence_count=evidence_count,
+            paper_count=paper_count,
+            run_count=run_count,
+            audit_event_count=audit_event_count,
+            has_generated_paper=paper_count > 0,
+            has_evidence=evidence_count > 0,
+        )
 
     @staticmethod
     def _row_to_run(row: sqlite3.Row) -> RunRecordRead:

@@ -177,3 +177,15 @@ class InquiryAuditReport(BaseModel):
     claim_count: int = Field(..., ge=0)
     evidence_count: int = Field(..., ge=0)
     claims: List[ClaimAuditSummary] = Field(default_factory=list)
+
+
+class VideoBackendSummary(BaseModel):
+    video_id: str
+    title: str
+    claim_count: int = Field(..., ge=0)
+    evidence_count: int = Field(..., ge=0)
+    paper_count: int = Field(..., ge=0)
+    run_count: int = Field(..., ge=0)
+    audit_event_count: int = Field(..., ge=0)
+    has_generated_paper: bool
+    has_evidence: bool

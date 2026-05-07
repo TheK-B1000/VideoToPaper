@@ -19,6 +19,7 @@ from src.backend.schemas import (
     InquiryAuditReport,
     PaperCreate,
     PaperRead,
+    VideoBackendSummary,
     VideoCreate,
     VideoRead,
 )
@@ -305,6 +306,40 @@ def list_papers_for_video(video_id: str) -> list[PaperRead]:
         )
 
     return repo.list_papers_for_video(video_id)
+
+
+@app.get(
+    "/videos/{video_id}/summary",
+    response_model=VideoBackendSummary,
+)
+def get_video_backend_summary(video_id: str) -> VideoBackendSummary:
+    repo = get_repository()
+    summary = repo.build_video_backend_summary(video_id)
+
+    if summary is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Video not found: {video_id}",
+        )
+
+    repo.create_audit_event(
+        AuditEventCreate(
+            video_id=video_id,
+            event_type="audit_requested",
+            message="Video backend summary requested.",
+            metadata={"endpoint": f"/videos/{video_id}/summary"},
+        )
+    )
+
+    refreshed_summary = repo.build_video_backend_summary(video_id)
+
+    if refreshed_summary is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Video not found: {video_id}",
+        )
+
+    return refreshed_summary
 
 
 @app.get("/videos/{video_id}", response_model=VideoRead)
