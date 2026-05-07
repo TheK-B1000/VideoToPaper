@@ -49,6 +49,12 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/videos", response_model=list[VideoRead])
+def list_videos() -> list[VideoRead]:
+    repo = get_repository()
+    return repo.list_videos()
+
+
 @app.post(
     "/videos",
     response_model=VideoRead,

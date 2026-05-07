@@ -45,6 +45,27 @@ def test_repository_returns_none_for_missing_video(tmp_path):
     assert repo.get_video("video_missing") is None
 
 
+def test_repository_lists_videos(tmp_path):
+    repo = _repo(tmp_path)
+
+    first = repo.create_video(_video_payload(title="First Video"))
+    second = repo.create_video(_video_payload(title="Second Video"))
+
+    videos = repo.list_videos()
+
+    video_ids = {video.id for video in videos}
+
+    assert first.id in video_ids
+    assert second.id in video_ids
+    assert len(videos) == 2
+
+
+def test_repository_lists_empty_videos_when_none_exist(tmp_path):
+    repo = _repo(tmp_path)
+
+    assert repo.list_videos() == []
+
+
 def test_repository_creates_and_reads_run_record(tmp_path):
     repo = _repo(tmp_path)
     video = repo.create_video(_video_payload())

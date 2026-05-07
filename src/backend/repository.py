@@ -123,6 +123,34 @@ class BackendRepository:
             speaker_id=row["speaker_id"],
         )
 
+    def list_videos(self) -> List[VideoRead]:
+        with connect_sqlite(self.db_path) as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    id,
+                    url,
+                    title,
+                    embed_base_url,
+                    duration_seconds,
+                    speaker_id
+                FROM videos
+                ORDER BY created_at DESC;
+                """
+            ).fetchall()
+
+        return [
+            VideoRead(
+                id=row["id"],
+                url=row["url"],
+                title=row["title"],
+                embed_base_url=row["embed_base_url"],
+                duration_seconds=row["duration_seconds"],
+                speaker_id=row["speaker_id"],
+            )
+            for row in rows
+        ]
+
     def create_run_record(self, payload: RunRecordCreate) -> RunRecordRead:
         started_at = _now_iso()
         finished_at = _now_iso()

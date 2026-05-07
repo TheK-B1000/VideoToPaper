@@ -102,6 +102,33 @@ def test_health_check_returns_ok(tmp_path, monkeypatch):
     assert response.json() == {"status": "ok"}
 
 
+def test_list_videos_returns_registered_videos(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    first = _create_video(client, title="First Library Video")
+    second = _create_video(client, title="Second Library Video")
+
+    response = client.get("/videos")
+
+    assert response.status_code == 200
+
+    videos = response.json()
+    video_ids = {video["id"] for video in videos}
+
+    assert first["id"] in video_ids
+    assert second["id"] in video_ids
+    assert len(videos) == 2
+
+
+def test_list_videos_returns_empty_list_when_none_exist(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.get("/videos")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_register_video_returns_created_video(tmp_path, monkeypatch):
     client = _make_test_client(tmp_path, monkeypatch)
 
