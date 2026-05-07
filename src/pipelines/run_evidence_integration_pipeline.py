@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 from uuid import uuid4
 
 from src.integration.adjudication_builder import build_adjudication_record
+from src.integration.adjudication_validator import validate_adjudications_payload
 from src.integration.cherry_picking_guard import build_cherry_picking_guard_report
 from src.integration.evidence_narrative import generate_evidence_narrative
 
@@ -114,6 +115,7 @@ def write_run_log(
     metrics: Mapping[str, Any],
     status: str,
     cherry_picking_guard: Mapping[str, Any] | None = None,
+    validation: Mapping[str, Any] | None = None,
     error: str | None = None,
 ) -> Path:
     """
@@ -142,6 +144,7 @@ def write_run_log(
         "settings": dict(settings),
         "metrics": dict(metrics),
         "cherry_picking_guard": dict(cherry_picking_guard or {}),
+        "validation": dict(validation or {}),
     }
 
     if error is not None:
@@ -272,6 +275,9 @@ def run_evidence_integration_pipeline(
             "cherry_picking_guard": guard_report,
         }
 
+        validation_report = validate_adjudications_payload(payload)
+        payload["validation"] = validation_report
+
         write_json_document(output_path, payload)
 
         finished_at = utc_now_iso()
@@ -290,6 +296,7 @@ def run_evidence_integration_pipeline(
             metrics=metrics,
             status="completed",
             cherry_picking_guard=guard_report,
+            validation=validation_report,
         )
 
         payload["run_log_path"] = str(run_log_path)

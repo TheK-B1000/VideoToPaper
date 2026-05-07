@@ -186,6 +186,9 @@ def test_pipeline_writes_adjudications_and_skips_non_empirical_claims(tmp_path):
     assert result["cherry_picking_guard"]["total_adjudications"] == 1
     assert result["cherry_picking_guard"]["publishable_for_week8"] is True
 
+    assert result["validation"]["is_valid"] is True
+    assert result["validation"]["issue_count"] == 0
+
 
 def test_pipeline_marks_empirical_claim_with_no_evidence_as_insufficient(tmp_path):
     claim_inventory_path = tmp_path / "claim_inventory.json"
@@ -314,6 +317,9 @@ def test_pipeline_writes_mlops_run_log(tmp_path):
 
     assert run_log["cherry_picking_guard"]["total_adjudications"] == 1
     assert run_log["cherry_picking_guard"]["publishable_for_week8"] is True
+
+    assert run_log["validation"]["is_valid"] is True
+    assert run_log["validation"]["issue_count"] == 0
 
 
 def test_pipeline_writes_failed_run_log_when_input_is_missing(tmp_path):
