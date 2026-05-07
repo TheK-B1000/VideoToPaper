@@ -58,6 +58,25 @@ def _create_claim(client: TestClient, video_id: str) -> dict:
     return response.json()
 
 
+def _create_evidence(client: TestClient, claim_id: str) -> dict:
+    response = client.post(
+        f"/claims/{claim_id}/evidence",
+        json={
+            "claim_id": claim_id,
+            "tier": 1,
+            "stance": "supports",
+            "source_title": "A Survey of Multi-Agent Reinforcement Learning",
+            "source_url": "https://example.com/paper",
+            "identifier": "doi:10.0000/example",
+            "abstract_or_summary": "A survey discussing core MARL challenges.",
+            "key_finding": "The paper discusses non-stationarity as a MARL challenge.",
+        },
+    )
+
+    assert response.status_code == 201
+    return response.json()
+
+
 def test_health_check_returns_ok(tmp_path, monkeypatch):
     client = _make_test_client(tmp_path, monkeypatch)
 
@@ -359,6 +378,126 @@ def test_create_claim_records_audit_event(tmp_path, monkeypatch):
         if event["video_id"] == video["id"]
         and event["event_type"] == "claim_created"
         and event["metadata"]["claim_id"] == claim["id"]
+    ]
+
+    assert len(matching_events) == 1
+
+
+def test_create_evidence_for_claim_persists_evidence_record(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Evidence Video")
+    claim = _create_claim(client, video["id"])
+
+    evidence = _create_evidence(client, claim["id"])
+
+    assert evidence["id"].startswith("evidence_")
+    assert evidence["claim_id"] == claim["id"]
+    assert evidence["tier"] == 1
+    assert evidence["stance"] == "supports"
+
+
+def test_get_evidence_record_returns_persisted_record(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Get Evidence Video")
+    claim = _create_claim(client, video["id"])
+    evidence = _create_evidence(client, claim["id"])
+
+    response = client.get(f"/evidence/{evidence['id']}")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == evidence["id"]
+    assert response.json()["claim_id"] == claim["id"]
+
+
+def test_list_evidence_for_claim_returns_records(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="List Evidence Video")
+    claim = _create_claim(client, video["id"])
+    evidence = _create_evidence(client, claim["id"])
+
+    response = client.get(f"/claims/{claim['id']}/evidence")
+
+    assert response.status_code == 200
+    assert response.json()[0]["id"] == evidence["id"]
+
+
+def test_create_evidence_rejects_mismatched_claim_id(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Mismatch Evidence Video")
+    claim = _create_claim(client, video["id"])
+
+    response = client.post(
+        f"/claims/{claim['id']}/evidence",
+        json={
+            "claim_id": "claim_other",
+            "tier": 1,
+            "stance": "supports",
+            "source_title": "Bad Evidence Claim Link",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Evidence payload claim_id must match path claim_id"
+
+
+def test_create_evidence_returns_404_for_unknown_claim(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.post(
+        "/claims/claim_missing/evidence",
+        json={
+            "claim_id": "claim_missing",
+            "tier": 1,
+            "stance": "supports",
+            "source_title": "Missing Claim Evidence",
+        },
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Claim not found: claim_missing"
+
+
+def test_get_evidence_returns_404_for_unknown_evidence(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.get("/evidence/evidence_missing")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Evidence record not found: evidence_missing"
+
+
+def test_video_audit_reports_evidence_count_and_stances(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Evidence Audit Video")
+    claim = _create_claim(client, video["id"])
+    _create_evidence(client, claim["id"])
+
+    audit_response = client.get(f"/videos/{video['id']}/audit")
+
+    assert audit_response.status_code == 200
+
+    data = audit_response.json()
+    assert data["claim_count"] == 1
+    assert data["evidence_count"] == 1
+    assert data["claims"][0]["evidence_count"] == 1
+    assert data["claims"][0]["stances_present"] == ["supports"]
+
+
+def test_create_evidence_records_audit_event(tmp_path, monkeypatch):
+    client = _make_test_client(tmp_path, monkeypatch)
+    video = _create_video(client, title="Evidence Audit Event Video")
+    claim = _create_claim(client, video["id"])
+    evidence = _create_evidence(client, claim["id"])
+
+    events_response = client.get("/audit-events")
+    events = events_response.json()
+
+    matching_events = [
+        event
+        for event in events
+        if event["video_id"] == video["id"]
+        and event["event_type"] == "evidence_created"
+        and event["metadata"]["evidence_id"] == evidence["id"]
     ]
 
     assert len(matching_events) == 1

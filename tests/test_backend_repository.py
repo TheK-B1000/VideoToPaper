@@ -3,7 +3,7 @@ from pathlib import Path
 from src.backend.db import initialize_sqlite_database
 from src.backend.mlops_schemas import AuditEventCreate, RunRecordCreate
 from src.backend.repository import BackendRepository
-from src.backend.schemas import ClaimCreate, VideoCreate
+from src.backend.schemas import ClaimCreate, EvidenceRecordCreate, VideoCreate
 
 
 def _repo(tmp_path) -> BackendRepository:
@@ -205,6 +205,74 @@ def test_repository_returns_none_for_missing_claim(tmp_path):
     repo = _repo(tmp_path)
 
     assert repo.get_claim("claim_missing") is None
+
+
+def _evidence_payload(claim_id: str) -> EvidenceRecordCreate:
+    return EvidenceRecordCreate(
+        claim_id=claim_id,
+        tier=1,
+        stance="supports",
+        source_title="A Survey of Multi-Agent Reinforcement Learning",
+        source_url="https://example.com/paper",
+        identifier="doi:10.0000/example",
+        abstract_or_summary="A survey discussing core MARL challenges.",
+        key_finding="The paper discusses non-stationarity as a MARL challenge.",
+    )
+
+
+def test_repository_creates_and_reads_evidence_record(tmp_path):
+    repo = _repo(tmp_path)
+    video = repo.create_video(_video_payload())
+    claim = repo.create_claim(_claim_payload(video.id))
+
+    evidence = repo.create_evidence_record(_evidence_payload(claim.id))
+
+    saved = repo.get_evidence_record(evidence.id)
+
+    assert saved is not None
+    assert saved.id == evidence.id
+    assert saved.claim_id == claim.id
+    assert saved.tier == 1
+    assert saved.stance == "supports"
+    assert saved.source_title == "A Survey of Multi-Agent Reinforcement Learning"
+    assert saved.identifier == "doi:10.0000/example"
+
+
+def test_repository_lists_evidence_records_for_claim(tmp_path):
+    repo = _repo(tmp_path)
+    video = repo.create_video(_video_payload())
+    claim = repo.create_claim(_claim_payload(video.id))
+
+    repo.create_evidence_record(_evidence_payload(claim.id))
+
+    evidence_records = repo.list_evidence_records_for_claim(claim.id)
+
+    assert len(evidence_records) == 1
+    assert evidence_records[0].claim_id == claim.id
+    assert evidence_records[0].stance == "supports"
+
+
+def test_repository_returns_none_for_missing_evidence_record(tmp_path):
+    repo = _repo(tmp_path)
+
+    assert repo.get_evidence_record("evidence_missing") is None
+
+
+def test_repository_audit_report_counts_evidence_and_stances(tmp_path):
+    repo = _repo(tmp_path)
+    video = repo.create_video(_video_payload())
+    claim = repo.create_claim(_claim_payload(video.id))
+
+    repo.create_evidence_record(_evidence_payload(claim.id))
+
+    report = repo.build_video_audit_report(video.id)
+
+    assert report.video_id == video.id
+    assert report.claim_count == 1
+    assert report.evidence_count == 1
+    assert len(report.claims) == 1
+    assert report.claims[0].evidence_count == 1
+    assert report.claims[0].stances_present == ["supports"]
 
 
 def test_repository_builds_video_audit_report_from_claims(tmp_path):

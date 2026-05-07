@@ -14,6 +14,8 @@ from src.backend.repository import BackendRepository
 from src.backend.schemas import (
     ClaimCreate,
     ClaimRead,
+    EvidenceRecordCreate,
+    EvidenceRecordRead,
     InquiryAuditReport,
     VideoCreate,
     VideoRead,
@@ -119,6 +121,85 @@ def create_claim_for_video(video_id: str, payload: ClaimCreate) -> ClaimRead:
     )
 
     return claim
+
+
+@app.post(
+    "/claims/{claim_id}/evidence",
+    response_model=EvidenceRecordRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_evidence_for_claim(
+    claim_id: str,
+    payload: EvidenceRecordCreate,
+) -> EvidenceRecordRead:
+    repo = get_repository()
+    claim = repo.get_claim(claim_id)
+
+    if claim is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Claim not found: {claim_id}",
+        )
+
+    if payload.claim_id != claim_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Evidence payload claim_id must match path claim_id",
+        )
+
+    evidence = repo.create_evidence_record(payload)
+
+    repo.create_audit_event(
+        AuditEventCreate(
+            video_id=claim.video_id,
+            event_type="evidence_created",
+            message="Evidence record persisted through FastAPI backend.",
+            metadata={
+                "claim_id": claim_id,
+                "evidence_id": evidence.id,
+                "tier": evidence.tier,
+                "stance": evidence.stance,
+                "source_title": evidence.source_title,
+                "identifier": evidence.identifier,
+            },
+        )
+    )
+
+    return evidence
+
+
+@app.get(
+    "/evidence/{evidence_id}",
+    response_model=EvidenceRecordRead,
+)
+def get_evidence_record(evidence_id: str) -> EvidenceRecordRead:
+    repo = get_repository()
+    evidence = repo.get_evidence_record(evidence_id)
+
+    if evidence is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Evidence record not found: {evidence_id}",
+        )
+
+    return evidence
+
+
+@app.get(
+    "/claims/{claim_id}/evidence",
+    response_model=list[EvidenceRecordRead],
+)
+def list_evidence_for_claim(claim_id: str) -> list[EvidenceRecordRead]:
+    repo = get_repository()
+    claim = repo.get_claim(claim_id)
+
+    if claim is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Claim not found: {claim_id}",
+        )
+
+    return repo.list_evidence_records_for_claim(claim_id)
 
 
 @app.get("/claims/{claim_id}", response_model=ClaimRead)

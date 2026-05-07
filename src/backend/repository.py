@@ -18,6 +18,8 @@ from src.backend.schemas import (
     ClaimAuditSummary,
     ClaimCreate,
     ClaimRead,
+    EvidenceRecordCreate,
+    EvidenceRecordRead,
     InquiryAuditReport,
     VideoCreate,
     VideoRead,
@@ -435,6 +437,107 @@ class BackendRepository:
             claims=claim_summaries,
         )
 
+    def create_evidence_record(
+        self,
+        payload: EvidenceRecordCreate,
+    ) -> EvidenceRecordRead:
+        evidence = EvidenceRecordRead(
+            id=_new_id("evidence"),
+            claim_id=payload.claim_id,
+            tier=payload.tier,
+            stance=payload.stance,
+            source_title=payload.source_title,
+            source_url=payload.source_url,
+            identifier=payload.identifier,
+            abstract_or_summary=payload.abstract_or_summary,
+            key_finding=payload.key_finding,
+        )
+
+        with connect_sqlite(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO evidence_records (
+                    id,
+                    claim_id,
+                    tier,
+                    stance,
+                    source_title,
+                    source_url,
+                    identifier,
+                    abstract_or_summary,
+                    key_finding
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                """,
+                (
+                    evidence.id,
+                    evidence.claim_id,
+                    evidence.tier,
+                    evidence.stance,
+                    evidence.source_title,
+                    str(evidence.source_url) if evidence.source_url else None,
+                    evidence.identifier,
+                    evidence.abstract_or_summary,
+                    evidence.key_finding,
+                ),
+            )
+
+        return evidence
+
+    def get_evidence_record(
+        self,
+        evidence_id: str,
+    ) -> Optional[EvidenceRecordRead]:
+        with connect_sqlite(self.db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    id,
+                    claim_id,
+                    tier,
+                    stance,
+                    source_title,
+                    source_url,
+                    identifier,
+                    abstract_or_summary,
+                    key_finding
+                FROM evidence_records
+                WHERE id = ?;
+                """,
+                (evidence_id,),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_evidence_record(row)
+
+    def list_evidence_records_for_claim(
+        self,
+        claim_id: str,
+    ) -> List[EvidenceRecordRead]:
+        with connect_sqlite(self.db_path) as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    id,
+                    claim_id,
+                    tier,
+                    stance,
+                    source_title,
+                    source_url,
+                    identifier,
+                    abstract_or_summary,
+                    key_finding
+                FROM evidence_records
+                WHERE claim_id = ?
+                ORDER BY tier ASC, source_title ASC;
+                """,
+                (claim_id,),
+            ).fetchall()
+
+        return [self._row_to_evidence_record(row) for row in rows]
+
     @staticmethod
     def _row_to_run(row: sqlite3.Row) -> RunRecordRead:
         return RunRecordRead(
@@ -469,6 +572,20 @@ class BackendRepository:
                 "end": row["anchor_clip_end"],
             },
             embed_url=row["embed_url"],
+        )
+
+    @staticmethod
+    def _row_to_evidence_record(row: sqlite3.Row) -> EvidenceRecordRead:
+        return EvidenceRecordRead(
+            id=row["id"],
+            claim_id=row["claim_id"],
+            tier=row["tier"],
+            stance=row["stance"],
+            source_title=row["source_title"],
+            source_url=row["source_url"],
+            identifier=row["identifier"],
+            abstract_or_summary=row["abstract_or_summary"],
+            key_finding=row["key_finding"],
         )
 
     @staticmethod
