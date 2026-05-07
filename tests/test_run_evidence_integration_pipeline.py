@@ -183,6 +183,9 @@ def test_pipeline_writes_adjudications_and_skips_non_empirical_claims(tmp_path):
     skipped = result["skipped_claims"][0]
     assert skipped["claim_id"] == "claim_002"
 
+    assert result["cherry_picking_guard"]["total_adjudications"] == 1
+    assert result["cherry_picking_guard"]["publishable_for_week8"] is True
+
 
 def test_pipeline_marks_empirical_claim_with_no_evidence_as_insufficient(tmp_path):
     claim_inventory_path = tmp_path / "claim_inventory.json"
@@ -217,6 +220,10 @@ def test_pipeline_marks_empirical_claim_with_no_evidence_as_insufficient(tmp_pat
     assert adjudication["confidence"] == "low"
     assert adjudication["guard_reason"] is not None
     assert result["metrics"]["guarded_adjudications"] == 1
+
+    assert result["cherry_picking_guard"]["guarded_adjudications"] == 1
+    assert result["cherry_picking_guard"]["insufficient_evidence_count"] == 1
+    assert result["cherry_picking_guard"]["publishable_for_week8"] is False
 
 
 def test_pipeline_rejects_evidence_record_without_claim_id():
@@ -304,6 +311,9 @@ def test_pipeline_writes_mlops_run_log(tmp_path):
     assert run_log["metrics"]["guarded_adjudications"] == 0
     assert run_log["metrics"]["llm_narratives_used"] == 0
     assert run_log["metrics"]["fallback_narratives_used"] == 1
+
+    assert run_log["cherry_picking_guard"]["total_adjudications"] == 1
+    assert run_log["cherry_picking_guard"]["publishable_for_week8"] is True
 
 
 def test_pipeline_writes_failed_run_log_when_input_is_missing(tmp_path):
