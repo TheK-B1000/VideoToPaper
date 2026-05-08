@@ -7,6 +7,11 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from src.frontend.run_progress import load_run_progress, summarize_progress
+from src.frontend.run_request import (
+    DEFAULT_PIPELINE_STAGES,
+    create_inquiry_run_request,
+    save_run_request,
+)
 
 
 YOUTUBE_ID_PATTERN = re.compile(
@@ -255,16 +260,32 @@ def run_streamlit_app() -> None:
             help="1 = peer-reviewed, 2 = institutional, 3 = secondary",
         )
 
-        if st.button("Prepare Run Config", use_container_width=True):
+        selected_stages = st.multiselect(
+            "Pipeline stages",
+            options=DEFAULT_PIPELINE_STAGES,
+            default=DEFAULT_PIPELINE_STAGES,
+        )
+
+        if st.button("Prepare Run Request", use_container_width=True):
             try:
-                params = build_run_parameters(
+                request = create_inquiry_run_request(
                     youtube_url=youtube_url,
                     claim_type_filter=claim_type_filter,
                     retrieval_depth=retrieval_depth,
                     source_tiers=source_tiers,
+                    stages=selected_stages,
+                    metadata={
+                        "created_from": "streamlit_inquiry_studio",
+                    },
                 )
-                st.success("Run config is valid.")
-                st.json(params.to_dict())
+
+                output_path = save_run_request(
+                    request,
+                    output_dir="data/run_requests",
+                )
+
+                st.success(f"Run request saved to {output_path}")
+                st.json(request.to_dict())
             except ValueError as error:
                 st.error(str(error))
 
