@@ -13,6 +13,7 @@ from src.frontend.run_queue import (
     summarize_queue,
 )
 from src.frontend.local_runner import launch_local_run
+from src.frontend.queue_status import mark_request_queued
 from src.frontend.run_request import (
     DEFAULT_PIPELINE_STAGES,
     create_inquiry_run_request,
@@ -414,6 +415,13 @@ def run_streamlit_app() -> None:
                         ):
                             try:
                                 launch = launch_local_run(item, runs_dir="logs/runs")
+
+                                if item.request_path:
+                                    mark_request_queued(
+                                        item.request_path,
+                                        progress_path=launch.progress_path,
+                                    )
+
                                 st.success(f"Run launched: {launch.run_id}")
                                 st.write(f"Progress log: `{launch.progress_path}`")
                                 st.json(launch.to_dict())
