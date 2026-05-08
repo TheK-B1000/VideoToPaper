@@ -35,6 +35,9 @@ from src.pipelines.run_evaluation_handoff_pipeline import (
 from src.pipelines.run_export_and_evaluate_pipeline import (
     run_export_and_evaluate_pipeline,
 )
+from src.pipelines.run_assembler_fixture_pipeline import (
+    run_assembler_fixture_pipeline,
+)
 from src.pipelines.run_html_paper_pipeline import run_html_paper_pipeline
 from src.pipelines.run_paper_artifact_export_pipeline import (
     run_paper_artifact_export_pipeline,
@@ -141,6 +144,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "assemble_paper",
             "audit_html_paper",
             "evaluation",
+            "assembler_fixture",
             "evaluation_architecture",
             "evaluation_checklist",
             "evaluation_closeout",
@@ -446,6 +450,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
     if args.stage == "evaluation":
         return run_evaluation_pipeline(forwarded)
+
+    if args.stage == "assembler_fixture":
+        return run_assembler_fixture_pipeline(forwarded)
 
     if args.stage == "evaluation_architecture":
         return run_evaluation_architecture_pipeline(forwarded)

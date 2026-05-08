@@ -1,6 +1,10 @@
 from src.evaluation.audit_report_writer import load_audit_report, write_audit_report
 from src.evaluation.audit_summary import render_audit_summary
 from src.evaluation.audit_summary_writer import write_audit_summary
+from src.evaluation.assembler_fixture_writer import (
+    build_assembler_fixture_payloads,
+    write_assembler_fixtures,
+)
 from src.evaluation.evaluation_architecture_doc import (
     render_evaluation_architecture_doc,
     write_evaluation_architecture_doc,
@@ -90,6 +94,7 @@ __all__ = [
     "EvaluationRunResult",
     "EvaluationRuntimeConfig",
     "PublishabilityDecision",
+    "build_assembler_fixture_payloads",
     "build_evaluation_artifact_index",
     "build_default_evaluation_dev_log",
     "build_evaluation_manifest",
@@ -118,6 +123,7 @@ __all__ = [
     "validate_paper_artifact",
     "write_audit_report",
     "write_audit_summary",
+    "write_assembler_fixtures",
     "write_evaluation_architecture_doc",
     "write_evaluation_closeout_bundle",
     "write_evaluation_completion_checklist",
