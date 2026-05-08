@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from src.evaluation.audit_report_writer import load_audit_report
+from src.evaluation.audit_summary import render_audit_summary
 from src.evaluation.evaluation_harness import EvaluationConfig
 from src.evaluation.evaluation_runner import run_paper_evaluation
 
@@ -54,6 +56,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Minimum ratio of claims that must have balanced retrieval.",
     )
 
+    parser.add_argument(
+        "--print-summary",
+        action="store_true",
+        help="Print a human-readable Markdown audit summary.",
+    )
+
     return parser
 
 
@@ -81,6 +89,11 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     print(f"Audit report written to: {result.audit_report_path}")
     print(f"Evaluation result: {status}")
+
+    if args.print_summary:
+        audit_payload = load_audit_report(audit_report_path)
+        print()
+        print(render_audit_summary(audit_payload))
 
     return 0 if result.publishable else 1
 

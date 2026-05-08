@@ -128,3 +128,30 @@ def test_main_returns_nonzero_for_unpublishable_artifact(tmp_path, capsys):
     assert exit_code == 1
     assert payload["publishable"] is False
     assert "Evaluation result: not publishable" in captured.out
+
+
+def test_main_can_print_markdown_summary(tmp_path, capsys):
+    artifact_path = tmp_path / "paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+
+    artifact_path.write_text(
+        json.dumps(make_clean_paper_artifact()),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--paper-artifact",
+            str(artifact_path),
+            "--audit-report",
+            str(audit_report_path),
+            "--print-summary",
+        ]
+    )
+
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert "# Inquiry Audit Summary" in captured.out
+    assert "**Publishable:** PASS" in captured.out
+    assert "| References resolved | 100% |" in captured.out
