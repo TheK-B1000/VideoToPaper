@@ -10,6 +10,7 @@ from src.ops.run_tracker import (
     finish_run_log,
     save_run_log,
 )
+from src.pipelines.run_html_paper_pipeline import run_html_paper_pipeline
 from src.source.ingestion import ingest_source
 
 
@@ -103,12 +104,13 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "steelman",
             "evidence_retrieval",
             "evidence_integration",
+            "html_paper",
         ),
         default="source_ingestion",
         help=(
             "Pipeline stage (default: Week 1 source ingestion demo). "
             "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval. "
-            "Week 7: evidence_integration."
+            "Week 7: evidence_integration. Week 8: html_paper."
         ),
     )
     parser.add_argument(
@@ -176,7 +178,33 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         default=None,
         help="Fail evidence retrieval when balance audit is not publishable.",
     )
+    parser.add_argument(
+        "--paper-spec-path",
+        default="data/outputs/paper_spec.json",
+        help="Path to the Week 8 paper spec JSON file.",
+    )
+    parser.add_argument(
+        "--html-output-path",
+        default="data/outputs/inquiry_paper.html",
+        help="Path where the assembled HTML paper should be written.",
+    )
     args, forwarded = parser.parse_known_args(argv)
+
+    if args.stage == "html_paper":
+        if forwarded:
+            parser.error(
+                "unrecognized arguments for html_paper: {}".format(
+                    " ".join(forwarded)
+                )
+            )
+
+        output_path = run_html_paper_pipeline(
+            paper_spec_path=args.paper_spec_path,
+            output_path=args.html_output_path,
+        )
+
+        print(f"HTML paper written to: {output_path}")
+        return
 
     if args.stage == "evidence_integration":
         from src.pipelines.run_evidence_integration_pipeline import (
@@ -279,13 +307,16 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         or args.source is not None
         or args.per_query_limit is not None
         or args.fail_on_unbalanced is not None
+        or args.paper_spec_path != "data/outputs/paper_spec.json"
+        or args.html_output_path != "data/outputs/inquiry_paper.html"
     ):
         parser.error(
             "--config-path, --claim-inventory-path, --output-path, --evidence-records-path, "
             "--run-log-dir, --allow-skewed-adjudication, --use-llm-narratives, "
-            "--dry-run/--no-dry-run, --source, --per-query-limit, and --fail-on-unbalanced "
+            "--dry-run/--no-dry-run, --source, --per-query-limit, --fail-on-unbalanced, "
+            "--paper-spec-path, and --html-output-path "
             "are only valid with claim_inventory, speaker_perspective, steelman, "
-            "evidence_retrieval, or evidence_integration."
+            "evidence_retrieval, evidence_integration, or html_paper."
         )
 
     _run_source_ingestion()
