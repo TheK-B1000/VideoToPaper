@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
+from src.paper.html_audit import audit_html_paper
 from src.paper.paper_spec_builder import build_paper_spec
 from src.data.json_store import load_json
 from src.ops.run_tracker import (
@@ -108,13 +109,14 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "build_paper_spec",
             "html_paper",
             "assemble_paper",
+            "audit_html_paper",
         ),
         default="source_ingestion",
         help=(
             "Pipeline stage (default: Week 1 source ingestion demo). "
             "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval. "
             "Week 7: evidence_integration. "
-            "Week 8: build_paper_spec, html_paper, and assemble_paper."
+            "Week 8: build_paper_spec, html_paper, assemble_paper, and audit_html_paper."
         ),
     )
     parser.add_argument(
@@ -217,6 +219,16 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         default="data/outputs/inquiry_paper.html",
         help="Path where the assembled HTML paper should be written.",
     )
+    parser.add_argument(
+        "--html-audit-report-path",
+        default="data/outputs/html_audit_report.json",
+        help="Path where the Week 8 HTML audit report should be written.",
+    )
+    parser.add_argument(
+        "--audit-after-assembly",
+        action="store_true",
+        help="Run the Week 8 HTML audit immediately after assembling the paper.",
+    )
     args, forwarded = parser.parse_known_args(argv)
 
     if args.stage == "build_paper_spec":
@@ -281,6 +293,48 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
         print(f"Paper spec written to: {paper_spec_path}")
         print(f"HTML paper written to: {html_output_path}")
+
+        if args.audit_after_assembly:
+            report = audit_html_paper(
+                html_path=html_output_path,
+                paper_spec_path=paper_spec_path,
+                report_output_path=args.html_audit_report_path,
+            )
+
+            print(f"HTML audit report written to: {args.html_audit_report_path}")
+            print(f"HTML audit passed: {report.passed}")
+
+            if not report.passed:
+                for finding in report.findings:
+                    print(f"[{finding.severity}] {finding.code}: {finding.message}")
+
+                raise SystemExit(1)
+
+        return
+
+    if args.stage == "audit_html_paper":
+        if forwarded:
+            parser.error(
+                "unrecognized arguments for audit_html_paper: {}".format(
+                    " ".join(forwarded)
+                )
+            )
+
+        report = audit_html_paper(
+            html_path=args.html_output_path,
+            paper_spec_path=args.paper_spec_path,
+            report_output_path=args.html_audit_report_path,
+        )
+
+        print(f"HTML audit report written to: {args.html_audit_report_path}")
+        print(f"HTML audit passed: {report.passed}")
+
+        if not report.passed:
+            for finding in report.findings:
+                print(f"[{finding.severity}] {finding.code}: {finding.message}")
+
+            raise SystemExit(1)
+
         return
 
     if args.stage == "evidence_integration":
@@ -391,16 +445,19 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         or args.paper_abstract is not None
         or args.paper_spec_path != "data/outputs/paper_spec.json"
         or args.html_output_path != "data/outputs/inquiry_paper.html"
+        or args.html_audit_report_path != "data/outputs/html_audit_report.json"
+        or args.audit_after_assembly
     ):
         parser.error(
             "--config-path, --claim-inventory-path, --output-path, --evidence-records-path, "
             "--run-log-dir, --allow-skewed-adjudication, --use-llm-narratives, "
             "--dry-run/--no-dry-run, --source, --per-query-limit, --fail-on-unbalanced, "
             "--source-registry-path, --evidence-integration-path, --paper-spec-output-path, "
-            "--paper-title, --paper-abstract, --paper-spec-path, and --html-output-path "
+            "--paper-title, --paper-abstract, --paper-spec-path, --html-output-path, "
+            "--html-audit-report-path, and --audit-after-assembly "
             "are only valid with claim_inventory, speaker_perspective, steelman, "
             "evidence_retrieval, evidence_integration, build_paper_spec, "
-            "html_paper, or assemble_paper."
+            "html_paper, assemble_paper, or audit_html_paper."
         )
 
     _run_source_ingestion()
