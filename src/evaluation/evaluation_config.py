@@ -15,6 +15,7 @@ class EvaluationOutputConfig:
     manifest_path: Optional[str] = "data/outputs/evaluation_manifest.json"
     validation_report_path: Optional[str] = "data/outputs/validation_report.json"
     validation_summary_path: Optional[str] = "data/outputs/validation_summary.md"
+    artifact_index_path: Optional[str] = "data/outputs/evaluation_artifact_index.json"
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,10 @@ def load_evaluation_runtime_config(
         validation_summary_path=output_payload.get(
             "validation_summary_path",
             "data/outputs/validation_summary.md",
+        ),
+        artifact_index_path=output_payload.get(
+            "artifact_index_path",
+            "data/outputs/evaluation_artifact_index.json",
         ),
     )
 

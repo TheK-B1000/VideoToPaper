@@ -17,6 +17,12 @@ from src.evaluation.evaluation_manifest import (
     load_evaluation_manifest,
     write_evaluation_manifest,
 )
+from src.evaluation.evaluation_artifact_index import (
+    EvaluationArtifactIndex,
+    build_evaluation_artifact_index,
+    load_evaluation_artifact_index,
+    write_evaluation_artifact_index,
+)
 from src.evaluation.evaluation_runner import EvaluationRunResult, run_paper_evaluation
 from src.evaluation.paper_artifact_validator import (
     ArtifactValidationResult,
@@ -42,18 +48,21 @@ from src.evaluation.validation_summary_writer import write_validation_summary
 __all__ = [
     "ArtifactValidationResult",
     "EvaluationConfig",
+    "EvaluationArtifactIndex",
     "EvaluationManifest",
     "EvaluationOutputConfig",
     "EvaluationReport",
     "EvaluationRunResult",
     "EvaluationRuntimeConfig",
     "PublishabilityDecision",
+    "build_evaluation_artifact_index",
     "build_evaluation_manifest",
     "build_publishable_sample_artifact",
     "build_unpublishable_sample_artifact",
     "build_validation_report_payload",
     "decide_publishability",
     "load_audit_report",
+    "load_evaluation_artifact_index",
     "load_evaluation_manifest",
     "load_evaluation_runtime_config",
     "load_validation_report",
@@ -64,6 +73,7 @@ __all__ = [
     "validate_paper_artifact",
     "write_audit_report",
     "write_audit_summary",
+    "write_evaluation_artifact_index",
     "write_evaluation_manifest",
     "write_sample_artifact",
     "write_validation_report",

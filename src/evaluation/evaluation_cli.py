@@ -8,6 +8,10 @@ from typing import Any, Dict, Optional
 from src.evaluation.audit_report_writer import load_audit_report
 from src.evaluation.audit_summary import render_audit_summary
 from src.evaluation.evaluation_config import load_evaluation_runtime_config
+from src.evaluation.evaluation_artifact_index import (
+    build_evaluation_artifact_index,
+    write_evaluation_artifact_index,
+)
 from src.evaluation.evaluation_harness import EvaluationConfig
 from src.evaluation.evaluation_runner import run_paper_evaluation
 from src.evaluation.validation_report_writer import load_validation_report
@@ -74,6 +78,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--validation-summary",
         required=False,
         help="Optional path where artifact validation Markdown summary should be written.",
+    )
+
+    parser.add_argument(
+        "--artifact-index",
+        required=False,
+        help="Optional path where the evaluation artifact index should be written.",
     )
 
     parser.add_argument(
@@ -176,6 +186,18 @@ def main(argv: Optional[list[str]] = None) -> int:
         if (args.validation_summary or runtime_config)
         else None
     )
+    artifact_index_path = (
+        Path(
+            args.artifact_index
+            or (
+                runtime_config.outputs.artifact_index_path
+                if runtime_config
+                else "data/outputs/evaluation_artifact_index.json"
+            )
+        )
+        if (args.artifact_index or runtime_config)
+        else None
+    )
 
     paper_artifact = load_paper_artifact(paper_artifact_path)
 
@@ -234,6 +256,24 @@ def main(argv: Optional[list[str]] = None) -> int:
                 print()
                 print(render_validation_summary(validation_payload))
 
+        if artifact_index_path is not None:
+            index = build_evaluation_artifact_index(
+                paper_artifact_path=paper_artifact_path,
+                audit_report_path=None,
+                audit_summary_path=None,
+                manifest_path=None,
+                validation_report_path=validation_report_path,
+                validation_summary_path=validation_summary_path,
+                publishable=None,
+                valid=False,
+                metadata=metadata,
+            )
+            written_index_path = write_evaluation_artifact_index(
+                index=index,
+                output_path=artifact_index_path,
+            )
+            print(f"Evaluation artifact index written to: {written_index_path}")
+
         raise
 
     status = "publishable" if result.publishable else "not publishable"
@@ -252,6 +292,24 @@ def main(argv: Optional[list[str]] = None) -> int:
         audit_payload = load_audit_report(audit_report_path)
         print()
         print(render_audit_summary(audit_payload))
+
+    if artifact_index_path is not None:
+        index = build_evaluation_artifact_index(
+            paper_artifact_path=paper_artifact_path,
+            audit_report_path=result.audit_report_path,
+            audit_summary_path=result.audit_summary_path,
+            manifest_path=result.manifest_path,
+            validation_report_path=validation_report_path,
+            validation_summary_path=validation_summary_path,
+            publishable=result.publishable,
+            valid=True,
+            metadata=metadata,
+        )
+        written_index_path = write_evaluation_artifact_index(
+            index=index,
+            output_path=artifact_index_path,
+        )
+        print(f"Evaluation artifact index written to: {written_index_path}")
 
     return 0 if result.publishable else 1
 

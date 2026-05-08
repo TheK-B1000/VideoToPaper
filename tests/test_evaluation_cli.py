@@ -442,3 +442,92 @@ def test_main_uses_configured_validation_outputs_when_artifact_is_malformed(tmp_
     assert validation_payload["error_count"] >= 1
     assert "# Paper Artifact Validation Summary" in validation_summary
     assert "**Valid:** FAIL" in validation_summary
+
+
+def test_main_can_write_artifact_index_for_successful_evaluation(tmp_path, capsys):
+    artifact_path = tmp_path / "paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    audit_summary_path = tmp_path / "audit_summary.md"
+    manifest_path = tmp_path / "manifest.json"
+    artifact_index_path = tmp_path / "artifact_index.json"
+
+    artifact_path.write_text(
+        json.dumps(make_clean_paper_artifact()),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--paper-artifact",
+            str(artifact_path),
+            "--audit-report",
+            str(audit_report_path),
+            "--audit-summary",
+            str(audit_summary_path),
+            "--manifest",
+            str(manifest_path),
+            "--artifact-index",
+            str(artifact_index_path),
+            "--run-id",
+            "artifact_index_success_001",
+        ]
+    )
+
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert artifact_index_path.exists()
+    assert "Evaluation artifact index written to:" in captured.out
+
+    payload = json.loads(artifact_index_path.read_text(encoding="utf-8"))
+
+    assert payload["paper_artifact_path"] == str(artifact_path)
+    assert payload["audit_report_path"] == str(audit_report_path)
+    assert payload["audit_summary_path"] == str(audit_summary_path)
+    assert payload["manifest_path"] == str(manifest_path)
+    assert payload["publishable"] is True
+    assert payload["valid"] is True
+    assert payload["metadata"]["run_id"] == "artifact_index_success_001"
+
+
+def test_main_can_write_artifact_index_for_validation_failure(tmp_path, capsys):
+    artifact = make_clean_paper_artifact()
+    del artifact["claims"][0]["anchor_clip"]
+
+    artifact_path = tmp_path / "bad_paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    validation_report_path = tmp_path / "validation_report.json"
+    validation_summary_path = tmp_path / "validation_summary.md"
+    artifact_index_path = tmp_path / "artifact_index.json"
+
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Paper artifact validation failed"):
+        main(
+            [
+                "--paper-artifact",
+                str(artifact_path),
+                "--audit-report",
+                str(audit_report_path),
+                "--validation-report",
+                str(validation_report_path),
+                "--validation-summary",
+                str(validation_summary_path),
+                "--artifact-index",
+                str(artifact_index_path),
+            ]
+        )
+
+    captured = capsys.readouterr()
+
+    assert artifact_index_path.exists()
+    assert "Evaluation artifact index written to:" in captured.out
+
+    payload = json.loads(artifact_index_path.read_text(encoding="utf-8"))
+
+    assert payload["paper_artifact_path"] == str(artifact_path)
+    assert payload["audit_report_path"] is None
+    assert payload["validation_report_path"] == str(validation_report_path)
+    assert payload["validation_summary_path"] == str(validation_summary_path)
+    assert payload["publishable"] is None
+    assert payload["valid"] is False

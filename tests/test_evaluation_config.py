@@ -24,6 +24,7 @@ def test_load_evaluation_runtime_config_reads_thresholds_outputs_and_metadata(tm
                     "manifest_path": "custom/manifest.json",
                     "validation_report_path": "custom/validation_report.json",
                     "validation_summary_path": "custom/validation_summary.md",
+                    "artifact_index_path": "custom/artifact_index.json",
                 },
                 "metadata": {
                     "run_family": "smoke_test",
@@ -42,6 +43,7 @@ def test_load_evaluation_runtime_config_reads_thresholds_outputs_and_metadata(tm
     assert config.outputs.manifest_path == "custom/manifest.json"
     assert config.outputs.validation_report_path == "custom/validation_report.json"
     assert config.outputs.validation_summary_path == "custom/validation_summary.md"
+    assert config.outputs.artifact_index_path == "custom/artifact_index.json"
     assert config.metadata["run_family"] == "smoke_test"
 
 
