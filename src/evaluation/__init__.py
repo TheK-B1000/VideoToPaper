@@ -1,6 +1,10 @@
 from src.evaluation.audit_report_writer import load_audit_report, write_audit_report
 from src.evaluation.audit_summary import render_audit_summary
 from src.evaluation.audit_summary_writer import write_audit_summary
+from src.evaluation.evaluation_architecture_doc import (
+    render_evaluation_architecture_doc,
+    write_evaluation_architecture_doc,
+)
 from src.evaluation.evaluation_config import (
     EvaluationOutputConfig,
     EvaluationRuntimeConfig,
@@ -84,6 +88,7 @@ __all__ = [
     "load_evaluation_runtime_config",
     "load_validation_report",
     "render_audit_summary",
+    "render_evaluation_architecture_doc",
     "render_evaluation_completion_checklist",
     "render_evaluation_dev_log",
     "render_evaluation_readme_section",
@@ -94,6 +99,7 @@ __all__ = [
     "validate_paper_artifact",
     "write_audit_report",
     "write_audit_summary",
+    "write_evaluation_architecture_doc",
     "write_evaluation_completion_checklist",
     "write_evaluation_dev_log",
     "write_evaluation_readme_section",

@@ -18,6 +18,9 @@ from src.ops.run_tracker import (
     save_run_log,
 )
 from src.pipelines.run_evaluation_pipeline import run_evaluation_pipeline
+from src.pipelines.run_evaluation_architecture_pipeline import (
+    run_evaluation_architecture_pipeline,
+)
 from src.pipelines.run_evaluation_checklist_pipeline import (
     run_evaluation_checklist_pipeline,
 )
@@ -126,6 +129,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "assemble_paper",
             "audit_html_paper",
             "evaluation",
+            "evaluation_architecture",
             "evaluation_checklist",
             "evaluation_docs",
             "evaluation_dev_log",
@@ -426,6 +430,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
     if args.stage == "evaluation":
         raise SystemExit(run_evaluation_pipeline(forwarded))
+
+    if args.stage == "evaluation_architecture":
+        return run_evaluation_architecture_pipeline(forwarded)
 
     if args.stage == "evaluation_checklist":
         return run_evaluation_checklist_pipeline(forwarded)
