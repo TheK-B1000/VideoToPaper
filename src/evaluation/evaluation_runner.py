@@ -16,6 +16,7 @@ from src.evaluation.evaluation_manifest import (
     utc_now_iso,
     write_evaluation_manifest,
 )
+from src.evaluation.paper_artifact_validator import validate_paper_artifact
 
 
 @dataclass(frozen=True)
@@ -38,12 +39,16 @@ def run_paper_evaluation(
     manifest_path: Optional[Union[str, Path]] = None,
     paper_artifact_path: Optional[Union[str, Path]] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    validate_artifact: bool = True,
 ) -> EvaluationRunResult:
     """
     Evaluate a generated paper artifact and write its audit artifacts to disk.
 
     The JSON report is always written. The Markdown summary and manifest are optional.
     """
+    if validate_artifact:
+        validate_paper_artifact(paper_artifact).raise_if_invalid()
+
     started_at = utc_now_iso()
 
     report = run_evaluation_harness(

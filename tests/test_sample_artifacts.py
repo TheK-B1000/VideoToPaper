@@ -69,4 +69,4 @@ def test_write_sample_artifact_creates_unpublishable_json(tmp_path):
     payload = json.loads(output_path.read_text(encoding="utf-8"))
 
     assert payload["rendered_clips"][0]["start"] == 40.0
-    assert payload["references"][-1]["evidence_record_id"] == "fabricated_evidence"
+    assert payload["references"][-1]["evidence_record_id"] == "evidence_001"

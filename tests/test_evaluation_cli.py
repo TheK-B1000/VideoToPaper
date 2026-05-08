@@ -107,6 +107,7 @@ def test_main_writes_audit_report_for_publishable_artifact(tmp_path, capsys):
 def test_main_returns_nonzero_for_unpublishable_artifact(tmp_path, capsys):
     artifact = make_clean_paper_artifact()
     artifact["rendered_clips"][0]["start"] = 99.0
+    artifact["rendered_clips"][0]["end"] = 109.0
 
     artifact_path = tmp_path / "paper_artifact.json"
     audit_report_path = tmp_path / "audit_report.json"

@@ -90,12 +90,13 @@ def build_unpublishable_sample_artifact() -> Dict[str, Any]:
     artifact = build_publishable_sample_artifact()
 
     artifact["rendered_clips"][0]["start"] = 40.0
+    artifact["rendered_clips"][0]["end"] = 50.0
     artifact["adjudications"][0]["balance_score"] = "supportive_skewed"
     artifact["adjudications"][0]["verdict"] = "well_supported"
 
     artifact["references"].append(
         {
-            "evidence_record_id": "fabricated_evidence",
+            "evidence_record_id": "evidence_001",
             "identifier": "fake-source",
             "url": "https://fake.example/source",
         }

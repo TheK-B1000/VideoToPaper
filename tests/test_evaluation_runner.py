@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from src.evaluation.evaluation_runner import run_paper_evaluation
 
 
@@ -153,3 +155,18 @@ def test_run_paper_evaluation_can_write_manifest(tmp_path):
     assert manifest["metadata"]["run_id"] == "run_001"
     assert manifest["started_at"]
     assert manifest["finished_at"]
+
+
+def test_run_paper_evaluation_rejects_malformed_artifact(tmp_path):
+    paper_artifact = make_clean_paper_artifact()
+    del paper_artifact["claims"][0]["anchor_clip"]
+
+    audit_report_path = tmp_path / "audit_report.json"
+
+    with pytest.raises(ValueError, match="Paper artifact validation failed"):
+        run_paper_evaluation(
+            paper_artifact=paper_artifact,
+            audit_report_path=audit_report_path,
+        )
+
+    assert not audit_report_path.exists()

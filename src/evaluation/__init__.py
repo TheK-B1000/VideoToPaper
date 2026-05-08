@@ -18,6 +18,10 @@ from src.evaluation.evaluation_manifest import (
     write_evaluation_manifest,
 )
 from src.evaluation.evaluation_runner import EvaluationRunResult, run_paper_evaluation
+from src.evaluation.paper_artifact_validator import (
+    ArtifactValidationResult,
+    validate_paper_artifact,
+)
 from src.evaluation.publishability_gate import (
     PublishabilityDecision,
     decide_publishability,
@@ -29,6 +33,7 @@ from src.evaluation.sample_artifacts import (
 )
 
 __all__ = [
+    "ArtifactValidationResult",
     "EvaluationConfig",
     "EvaluationManifest",
     "EvaluationOutputConfig",
@@ -46,6 +51,7 @@ __all__ = [
     "render_audit_summary",
     "run_evaluation_harness",
     "run_paper_evaluation",
+    "validate_paper_artifact",
     "write_audit_report",
     "write_audit_summary",
     "write_evaluation_manifest",
