@@ -32,6 +32,7 @@ from src.frontend.run_request import (
     create_inquiry_run_request,
     save_run_request,
 )
+from src.frontend.studio_config import ensure_studio_directories, load_studio_config
 
 
 YOUTUBE_ID_PATTERN = re.compile(
@@ -234,11 +235,13 @@ def run_streamlit_app() -> None:
         page_icon="🔎",
         layout="wide",
     )
+    studio_config = load_studio_config()
+    ensure_studio_directories(studio_config)
 
     st.title("Inquiry Studio")
     st.caption("Operate the video-to-paper engine from one local cockpit.")
 
-    library_dir = Path("data/inquiries")
+    library_dir = Path(studio_config.inquiry_library_dir)
 
     with st.sidebar:
         st.header("New Inquiry")
@@ -301,13 +304,14 @@ def run_streamlit_app() -> None:
 
                 output_path = save_run_request(
                     request,
-                    output_dir="data/run_requests",
+                    output_dir=studio_config.run_requests_dir,
                 )
                 record_activity(
                     activity_type="request_created",
                     message=f"Created run request for video {request.video_id}.",
                     request_id=request.request_id,
                     artifact_path=output_path.as_posix(),
+                    log_path=studio_config.operator_activity_log_path,
                 )
 
                 st.success(f"Run request saved to {output_path}")
@@ -423,7 +427,7 @@ def run_streamlit_app() -> None:
 
                                     rerun_path = save_rerun_request(
                                         rerun_request,
-                                        output_dir="data/run_requests",
+                                        output_dir=studio_config.run_requests_dir,
                                     )
                                     record_activity(
                                         activity_type="rerun_created",
@@ -431,6 +435,7 @@ def run_streamlit_app() -> None:
                                         request_id=rerun_request.request_id,
                                         inquiry_id=record.inquiry_id,
                                         artifact_path=rerun_path.as_posix(),
+                                        log_path=studio_config.operator_activity_log_path,
                                     )
 
                                     st.success(f"Rerun request saved to {rerun_path}")
@@ -445,7 +450,7 @@ def run_streamlit_app() -> None:
     with tab_requests:
         st.subheader("Run Request Queue")
 
-        queued_requests = discover_run_requests("data/run_requests")
+        queued_requests = discover_run_requests(studio_config.run_requests_dir)
         queue_summary = summarize_queue(queued_requests)
 
         metric_cols = st.columns(6)
@@ -495,7 +500,10 @@ def run_streamlit_app() -> None:
                             use_container_width=True,
                         ):
                             try:
-                                launch = launch_local_run(item, runs_dir="logs/runs")
+                                launch = launch_local_run(
+                                    item,
+                                    runs_dir=studio_config.runs_dir,
+                                )
 
                                 if item.request_path:
                                     mark_request_queued(
@@ -508,6 +516,7 @@ def run_streamlit_app() -> None:
                                         request_id=item.request_id,
                                         run_id=launch.run_id,
                                         artifact_path=launch.progress_path,
+                                        log_path=studio_config.operator_activity_log_path,
                                     )
 
                                 st.success(f"Run launched: {launch.run_id}")
@@ -540,6 +549,7 @@ def run_streamlit_app() -> None:
 
         audit_path = st.text_input(
             "Audit report path",
+            value=studio_config.default_audit_report_path or "",
             placeholder="data/inquiries/inquiry_001/audit_report.json",
         )
 
@@ -553,6 +563,7 @@ def run_streamlit_app() -> None:
                     activity_type="audit_opened",
                     message="Opened audit report in the Studio.",
                     artifact_path=audit_path,
+                    log_path=studio_config.operator_activity_log_path,
                 )
                 summary = summarize_audit_report(report)
 
@@ -589,6 +600,7 @@ def run_streamlit_app() -> None:
 
         progress_path = st.text_input(
             "Progress log path",
+            value=studio_config.default_progress_log_path or "",
             placeholder="logs/runs/latest_progress.json",
         )
 
@@ -604,6 +616,7 @@ def run_streamlit_app() -> None:
                         message=f"Viewed progress for run {progress.run_id}.",
                         run_id=progress.run_id,
                         artifact_path=progress_path,
+                        log_path=studio_config.operator_activity_log_path,
                     )
                     summary = summarize_progress(progress)
 
@@ -637,7 +650,10 @@ def run_streamlit_app() -> None:
     with tab_activity:
         st.subheader("Operator Activity Log")
 
-        activities = read_activity_log(limit=200)
+        activities = read_activity_log(
+            studio_config.operator_activity_log_path,
+            limit=200,
+        )
 
         col_query, col_type = st.columns([3, 1])
 

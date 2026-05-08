@@ -1,0 +1,8 @@
+{
+  "inquiry_library_dir": "data/inquiries",
+  "run_requests_dir": "data/run_requests",
+  "runs_dir": "logs/runs",
+  "operator_activity_log_path": "logs/operator_activity.jsonl",
+  "default_audit_report_path": null,
+  "default_progress_log_path": "logs/runs/latest_progress.json"
+}
