@@ -38,6 +38,7 @@ from src.frontend.run_request import (
 )
 from src.frontend.studio_config import ensure_studio_directories, load_studio_config
 from src.frontend.studio_health import run_studio_health_checks
+from src.frontend.studio_readme import write_studio_readme
 
 
 YOUTUBE_ID_PATTERN = re.compile(
@@ -845,6 +846,25 @@ def run_streamlit_app() -> None:
 
         with st.expander("Raw health report"):
             st.json(health_report.to_dict())
+
+        st.divider()
+        st.subheader("Documentation")
+
+        if st.button("Generate Studio README"):
+            readme_path = write_studio_readme(
+                studio_config,
+                output_path="docs/inquiry_studio.md",
+            )
+
+            record_activity(
+                activity_type="documentation_generated",
+                message="Generated Inquiry Studio README.",
+                artifact_path=readme_path.as_posix(),
+                log_path=studio_config.operator_activity_log_path,
+                metadata={"artifact_type": "documentation"},
+            )
+
+            st.success(f"README written to {readme_path}")
 
     with tab_backend:
         st.subheader("Backend Connection")

@@ -17,6 +17,7 @@ VALID_ACTIVITY_TYPES = {
     "paper_opened",
     "progress_viewed",
     "inquiry_imported",
+    "documentation_generated",
 }
 
 
