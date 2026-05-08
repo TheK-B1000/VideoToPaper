@@ -95,31 +95,18 @@ A structurally valid but low-quality artifact should produce audit diagnostics a
 
 ## Next Engineering Step
 
-Connect the evaluator to the real paper assembler output.
+You can now use the combined export-and-evaluate stage:
 
-The assembler should emit a paper artifact JSON with:
-
-claims
-speaker_perspective
-adjudications
-evidence_records
-references
-rendered_clips
-
-Then call:
-
-```python
-from src.evaluation.evaluation_runner import run_paper_evaluation
-
-result = run_paper_evaluation(
-    paper_artifact=paper_artifact,
-    paper_artifact_path="data/outputs/paper_artifact.json",
-    audit_report_path="data/outputs/audit_report.json",
-    audit_summary_path="data/outputs/audit_summary.md",
-    manifest_path="data/outputs/evaluation_manifest.json",
-    validation_report_path="data/outputs/validation_report.json",
-    metadata={"run_id": run_id},
-)
+```bash
+python main.py --stage export_and_evaluate \
+  --claims data/outputs/claims.json \
+  --speaker-perspective data/outputs/speaker_perspective.json \
+  --adjudications data/outputs/adjudications.json \
+  --evidence-records data/outputs/evidence_records.json \
+  --paper-artifact data/outputs/paper_artifact.json \
+  --config-path configs/evaluation_config.json \
+  --run-id assembler_eval_001 \
+  --print-summary
 ```
 
 ## Interview Explanation

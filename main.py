@@ -32,6 +32,9 @@ from src.pipelines.run_evaluation_docs_pipeline import run_evaluation_docs_pipel
 from src.pipelines.run_evaluation_handoff_pipeline import (
     run_evaluation_handoff_pipeline,
 )
+from src.pipelines.run_export_and_evaluate_pipeline import (
+    run_export_and_evaluate_pipeline,
+)
 from src.pipelines.run_html_paper_pipeline import run_html_paper_pipeline
 from src.pipelines.run_paper_artifact_export_pipeline import (
     run_paper_artifact_export_pipeline,
@@ -144,6 +147,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "evaluation_docs",
             "evaluation_dev_log",
             "evaluation_handoff",
+            "export_and_evaluate",
             "paper_artifact_export",
             "sample_artifact",
         ),
@@ -460,6 +464,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
     if args.stage == "evaluation_handoff":
         return run_evaluation_handoff_pipeline(forwarded)
+
+    if args.stage == "export_and_evaluate":
+        return run_export_and_evaluate_pipeline(forwarded)
 
     if args.stage == "paper_artifact_export":
         return run_paper_artifact_export_pipeline(forwarded)
