@@ -15,6 +15,7 @@ from src.frontend.run_queue import (
 from src.frontend.local_runner import launch_local_run
 from src.frontend.audit_summary import summarize_audit_report
 from src.frontend.backend_client import BackendClient, BackendClientConfig
+from src.frontend.backend_inquiry_import import import_backend_inquiry
 from src.frontend.backend_progress_sync import sync_backend_progress
 from src.frontend.backend_submission import submit_queued_request_to_backend
 from src.frontend.operator_activity import (
@@ -496,7 +497,7 @@ def run_streamlit_app() -> None:
                     st.write(f"**Source:** {item.youtube_url}")
                     st.write(f"**Request file:** `{item.request_path}`")
 
-                    cols = st.columns(3)
+                    cols = st.columns(4)
 
                     with cols[0]:
                         if st.button(
@@ -878,6 +879,59 @@ def run_streamlit_app() -> None:
                     st.error(response.error_message or "Backend health check failed.")
 
                 st.json(response.data)
+
+            except ValueError as error:
+                st.error(str(error))
+
+        st.divider()
+        st.subheader("Import Completed Inquiry")
+
+        backend_inquiry_id = st.text_input(
+            "Backend inquiry id",
+            placeholder="inquiry_001",
+        )
+
+        if st.button("Import Inquiry"):
+            try:
+                client = BackendClient(
+                    BackendClientConfig(
+                        base_url=getattr(
+                            studio_config,
+                            "backend_base_url",
+                            None,
+                        )
+                        or "http://127.0.0.1:8000",
+                        timeout_seconds=float(
+                            getattr(
+                                studio_config,
+                                "backend_timeout_seconds",
+                                10.0,
+                            )
+                        ),
+                    )
+                )
+
+                result = import_backend_inquiry(
+                    inquiry_id=backend_inquiry_id,
+                    client=client,
+                    library_dir=studio_config.inquiry_library_dir,
+                )
+
+                if result.imported:
+                    st.success(result.message)
+
+                    record_activity(
+                        activity_type="inquiry_imported",
+                        message=f"Imported backend inquiry {result.inquiry_id}.",
+                        inquiry_id=result.inquiry_id,
+                        artifact_path=result.manifest_path,
+                        log_path=studio_config.operator_activity_log_path,
+                        metadata={"source": "backend_import"},
+                    )
+                else:
+                    st.error(result.message)
+
+                st.json(result.to_dict())
 
             except ValueError as error:
                 st.error(str(error))

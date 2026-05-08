@@ -16,6 +16,7 @@ VALID_ACTIVITY_TYPES = {
     "audit_opened",
     "paper_opened",
     "progress_viewed",
+    "inquiry_imported",
 }
 
 
