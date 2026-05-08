@@ -37,6 +37,7 @@ from src.evaluation.sample_artifacts import (
     build_unpublishable_sample_artifact,
     write_sample_artifact,
 )
+from src.evaluation.sample_artifact_cli import main as sample_artifact_cli_main
 from src.evaluation.validation_report_writer import (
     build_validation_report_payload,
     load_validation_report,
@@ -70,6 +71,7 @@ __all__ = [
     "render_validation_summary",
     "run_evaluation_harness",
     "run_paper_evaluation",
+    "sample_artifact_cli_main",
     "validate_paper_artifact",
     "write_audit_report",
     "write_audit_summary",
