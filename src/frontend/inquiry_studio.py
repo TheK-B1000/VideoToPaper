@@ -12,6 +12,7 @@ from src.frontend.run_queue import (
     filter_queued_requests,
     summarize_queue,
 )
+from src.frontend.local_runner import launch_local_run
 from src.frontend.run_request import (
     DEFAULT_PIPELINE_STAGES,
     create_inquiry_run_request,
@@ -405,13 +406,23 @@ def run_streamlit_app() -> None:
                     cols = st.columns(3)
 
                     with cols[0]:
-                        st.button(
-                            "Ready to Run" if item.is_executable else "Not Runnable",
+                        if st.button(
+                            "Launch Local Run" if item.is_executable else "Not Runnable",
                             disabled=not item.is_executable,
-                            key=f"ready-{item.request_id}",
+                            key=f"launch-{item.request_id}",
                             use_container_width=True,
-                            help="Actual backend execution wiring comes next.",
-                        )
+                        ):
+                            try:
+                                launch = launch_local_run(item, runs_dir="logs/runs")
+                                st.success(f"Run launched: {launch.run_id}")
+                                st.write(f"Progress log: `{launch.progress_path}`")
+                                st.json(launch.to_dict())
+                            except ValueError as error:
+                                st.error(str(error))
+                            except FileExistsError:
+                                st.error(
+                                    "A run folder with this generated id already exists. Try again."
+                                )
 
                     with cols[1]:
                         if item.progress_path:
