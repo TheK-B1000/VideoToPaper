@@ -98,3 +98,27 @@ def test_run_paper_evaluation_returns_not_publishable_for_bad_clip(tmp_path):
     assert payload["publishable"] is False
     assert payload["clip_anchor_accuracy"]["clips_within_tolerance"] == "0%"
     assert payload["clip_anchor_accuracy"]["drift_detected"][0]["claim_id"] == "claim_001"
+
+
+def test_run_paper_evaluation_can_write_markdown_summary(tmp_path):
+    paper_artifact = make_clean_paper_artifact()
+    audit_report_path = tmp_path / "runs" / "audit_report.json"
+    audit_summary_path = tmp_path / "runs" / "audit_summary.md"
+
+    result = run_paper_evaluation(
+        paper_artifact=paper_artifact,
+        audit_report_path=audit_report_path,
+        audit_summary_path=audit_summary_path,
+    )
+
+    assert result.publishable is True
+    assert result.audit_report_path == audit_report_path
+    assert result.audit_summary_path == audit_summary_path
+    assert audit_report_path.exists()
+    assert audit_summary_path.exists()
+
+    summary = audit_summary_path.read_text(encoding="utf-8")
+
+    assert "# Inquiry Audit Summary" in summary
+    assert "**Publishable:** PASS" in summary
+    assert "| Clips within tolerance | 100% |" in summary

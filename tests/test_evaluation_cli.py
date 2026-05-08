@@ -155,3 +155,37 @@ def test_main_can_print_markdown_summary(tmp_path, capsys):
     assert "# Inquiry Audit Summary" in captured.out
     assert "**Publishable:** PASS" in captured.out
     assert "| References resolved | 100% |" in captured.out
+
+
+def test_main_can_write_markdown_summary_file(tmp_path, capsys):
+    artifact_path = tmp_path / "paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    audit_summary_path = tmp_path / "audit_summary.md"
+
+    artifact_path.write_text(
+        json.dumps(make_clean_paper_artifact()),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--paper-artifact",
+            str(artifact_path),
+            "--audit-report",
+            str(audit_report_path),
+            "--audit-summary",
+            str(audit_summary_path),
+        ]
+    )
+
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert audit_report_path.exists()
+    assert audit_summary_path.exists()
+    assert "Audit summary written to:" in captured.out
+
+    summary = audit_summary_path.read_text(encoding="utf-8")
+
+    assert "# Inquiry Audit Summary" in summary
+    assert "**Publishable:** PASS" in summary

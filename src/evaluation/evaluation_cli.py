@@ -43,6 +43,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--audit-summary",
+        required=False,
+        help="Optional path where the Markdown audit summary should be written.",
+    )
+
+    parser.add_argument(
         "--clip-tolerance-seconds",
         type=float,
         default=1.0,
@@ -71,6 +77,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     paper_artifact_path = Path(args.paper_artifact)
     audit_report_path = Path(args.audit_report)
+    audit_summary_path = Path(args.audit_summary) if args.audit_summary else None
 
     paper_artifact = load_paper_artifact(paper_artifact_path)
 
@@ -82,12 +89,17 @@ def main(argv: Optional[list[str]] = None) -> int:
     result = run_paper_evaluation(
         paper_artifact=paper_artifact,
         audit_report_path=audit_report_path,
+        audit_summary_path=audit_summary_path,
         config=config,
     )
 
     status = "publishable" if result.publishable else "not publishable"
 
     print(f"Audit report written to: {result.audit_report_path}")
+
+    if result.audit_summary_path is not None:
+        print(f"Audit summary written to: {result.audit_summary_path}")
+
     print(f"Evaluation result: {status}")
 
     if args.print_summary:

@@ -1,5 +1,6 @@
 from src.evaluation.audit_report_writer import load_audit_report, write_audit_report
 from src.evaluation.audit_summary import render_audit_summary
+from src.evaluation.audit_summary_writer import write_audit_summary
 from src.evaluation.evaluation_harness import (
     EvaluationConfig,
     EvaluationReport,
@@ -29,5 +30,6 @@ __all__ = [
     "run_evaluation_harness",
     "run_paper_evaluation",
     "write_audit_report",
+    "write_audit_summary",
     "write_sample_artifact",
 ]
