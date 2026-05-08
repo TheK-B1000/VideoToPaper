@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
+from src.paper.paper_spec_builder import build_paper_spec
 from src.data.json_store import load_json
 from src.ops.run_tracker import (
     create_run_log,
@@ -104,13 +105,16 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "steelman",
             "evidence_retrieval",
             "evidence_integration",
+            "build_paper_spec",
             "html_paper",
+            "assemble_paper",
         ),
         default="source_ingestion",
         help=(
             "Pipeline stage (default: Week 1 source ingestion demo). "
             "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval. "
-            "Week 7: evidence_integration. Week 8: html_paper."
+            "Week 7: evidence_integration. "
+            "Week 8: build_paper_spec, html_paper, and assemble_paper."
         ),
     )
     parser.add_argument(
@@ -179,6 +183,31 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         help="Fail evidence retrieval when balance audit is not publishable.",
     )
     parser.add_argument(
+        "--source-registry-path",
+        default="data/processed/source_registry.json",
+        help="Path to the Week 1 source registry JSON file.",
+    )
+    parser.add_argument(
+        "--evidence-integration-path",
+        default="data/outputs/evidence_integration.json",
+        help="Path to the Week 7 evidence integration JSON file.",
+    )
+    parser.add_argument(
+        "--paper-spec-output-path",
+        default="data/outputs/paper_spec.json",
+        help="Path where the Week 8 paper spec JSON should be written.",
+    )
+    parser.add_argument(
+        "--paper-title",
+        default=None,
+        help="Optional custom title for the assembled inquiry paper.",
+    )
+    parser.add_argument(
+        "--paper-abstract",
+        default=None,
+        help="Optional custom abstract for the assembled inquiry paper.",
+    )
+    parser.add_argument(
         "--paper-spec-path",
         default="data/outputs/paper_spec.json",
         help="Path to the Week 8 paper spec JSON file.",
@@ -189,6 +218,27 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         help="Path where the assembled HTML paper should be written.",
     )
     args, forwarded = parser.parse_known_args(argv)
+
+    if args.stage == "build_paper_spec":
+        if forwarded:
+            parser.error(
+                "unrecognized arguments for build_paper_spec: {}".format(
+                    " ".join(forwarded)
+                )
+            )
+
+        output_path = build_paper_spec(
+            source_registry_path=args.source_registry_path,
+            claim_inventory_path=args.claim_inventory_path
+            or "data/processed/claim_inventory.json",
+            evidence_integration_path=args.evidence_integration_path,
+            output_path=args.paper_spec_output_path,
+            title=args.paper_title,
+            abstract=args.paper_abstract,
+        )
+
+        print(f"Paper spec written to: {output_path}")
+        return
 
     if args.stage == "html_paper":
         if forwarded:
@@ -204,6 +254,33 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         )
 
         print(f"HTML paper written to: {output_path}")
+        return
+
+    if args.stage == "assemble_paper":
+        if forwarded:
+            parser.error(
+                "unrecognized arguments for assemble_paper: {}".format(
+                    " ".join(forwarded)
+                )
+            )
+
+        paper_spec_path = build_paper_spec(
+            source_registry_path=args.source_registry_path,
+            claim_inventory_path=args.claim_inventory_path
+            or "data/processed/claim_inventory.json",
+            evidence_integration_path=args.evidence_integration_path,
+            output_path=args.paper_spec_output_path,
+            title=args.paper_title,
+            abstract=args.paper_abstract,
+        )
+
+        html_output_path = run_html_paper_pipeline(
+            paper_spec_path=paper_spec_path,
+            output_path=args.html_output_path,
+        )
+
+        print(f"Paper spec written to: {paper_spec_path}")
+        print(f"HTML paper written to: {html_output_path}")
         return
 
     if args.stage == "evidence_integration":
@@ -307,6 +384,11 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         or args.source is not None
         or args.per_query_limit is not None
         or args.fail_on_unbalanced is not None
+        or args.source_registry_path != "data/processed/source_registry.json"
+        or args.evidence_integration_path != "data/outputs/evidence_integration.json"
+        or args.paper_spec_output_path != "data/outputs/paper_spec.json"
+        or args.paper_title is not None
+        or args.paper_abstract is not None
         or args.paper_spec_path != "data/outputs/paper_spec.json"
         or args.html_output_path != "data/outputs/inquiry_paper.html"
     ):
@@ -314,9 +396,11 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "--config-path, --claim-inventory-path, --output-path, --evidence-records-path, "
             "--run-log-dir, --allow-skewed-adjudication, --use-llm-narratives, "
             "--dry-run/--no-dry-run, --source, --per-query-limit, --fail-on-unbalanced, "
-            "--paper-spec-path, and --html-output-path "
+            "--source-registry-path, --evidence-integration-path, --paper-spec-output-path, "
+            "--paper-title, --paper-abstract, --paper-spec-path, and --html-output-path "
             "are only valid with claim_inventory, speaker_perspective, steelman, "
-            "evidence_retrieval, evidence_integration, or html_paper."
+            "evidence_retrieval, evidence_integration, build_paper_spec, "
+            "html_paper, or assemble_paper."
         )
 
     _run_source_ingestion()
