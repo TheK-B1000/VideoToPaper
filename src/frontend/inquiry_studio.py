@@ -15,6 +15,7 @@ from src.frontend.run_queue import (
 from src.frontend.local_runner import launch_local_run
 from src.frontend.audit_summary import summarize_audit_report
 from src.frontend.backend_client import BackendClient, BackendClientConfig
+from src.frontend.backend_submission import submit_queued_request_to_backend
 from src.frontend.operator_activity import (
     VALID_ACTIVITY_TYPES,
     filter_activities,
@@ -22,7 +23,7 @@ from src.frontend.operator_activity import (
     record_activity,
 )
 from src.frontend.paper_artifacts import build_file_url, inspect_paper_artifact
-from src.frontend.queue_status import mark_request_queued
+from src.frontend.queue_status import mark_request_queued, mark_request_running
 from src.frontend.rerun_request import (
     RerunOverrides,
     create_rerun_from_inquiry_record,
@@ -361,7 +362,7 @@ def run_streamlit_app() -> None:
                     st.write(f"**Created:** {record.created_at}")
                     st.write(f"**Source:** {record.youtube_url}")
 
-                    cols = st.columns(3)
+                    cols = st.columns(4)
 
                     with cols[0]:
                         paper_artifact = inspect_paper_artifact(record.paper_path)
@@ -534,12 +535,68 @@ def run_streamlit_app() -> None:
                                 )
 
                     with cols[1]:
+                        if st.button(
+                            "Submit to Backend",
+                            disabled=not item.is_executable,
+                            key=f"submit-backend-{item.request_id}",
+                            use_container_width=True,
+                        ):
+                            try:
+                                client = BackendClient(
+                                    BackendClientConfig(
+                                        base_url=getattr(
+                                            studio_config,
+                                            "backend_base_url",
+                                            None,
+                                        )
+                                        or "http://127.0.0.1:8000",
+                                        timeout_seconds=float(
+                                            getattr(
+                                                studio_config,
+                                                "backend_timeout_seconds",
+                                                10.0,
+                                            )
+                                        ),
+                                    )
+                                )
+
+                                result = submit_queued_request_to_backend(
+                                    item,
+                                    client=client,
+                                )
+
+                                if result.submitted:
+                                    if item.request_path:
+                                        mark_request_running(
+                                            item.request_path,
+                                            progress_path=item.progress_path,
+                                        )
+
+                                    record_activity(
+                                        activity_type="run_launched",
+                                        message=f"Submitted request {item.request_id} to backend.",
+                                        request_id=item.request_id,
+                                        run_id=result.run_id,
+                                        artifact_path=item.request_path,
+                                        log_path=studio_config.operator_activity_log_path,
+                                    )
+
+                                    st.success(result.message)
+                                else:
+                                    st.error(result.message)
+
+                                st.json(result.to_dict())
+
+                            except ValueError as error:
+                                st.error(str(error))
+
+                    with cols[2]:
                         if item.progress_path:
                             st.write(f"Progress: `{item.progress_path}`")
                         else:
                             st.write("Progress: not started")
 
-                    with cols[2]:
+                    with cols[3]:
                         if item.result_inquiry_id:
                             st.write(f"Result: `{item.result_inquiry_id}`")
                         else:
