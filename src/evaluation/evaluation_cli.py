@@ -10,6 +10,9 @@ from src.evaluation.audit_summary import render_audit_summary
 from src.evaluation.evaluation_config import load_evaluation_runtime_config
 from src.evaluation.evaluation_harness import EvaluationConfig
 from src.evaluation.evaluation_runner import run_paper_evaluation
+from src.evaluation.validation_report_writer import load_validation_report
+from src.evaluation.validation_summary import render_validation_summary
+from src.evaluation.validation_summary_writer import write_validation_summary
 
 
 def load_paper_artifact(path: Path) -> Dict[str, Any]:
@@ -68,6 +71,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--validation-summary",
+        required=False,
+        help="Optional path where artifact validation Markdown summary should be written.",
+    )
+
+    parser.add_argument(
         "--run-id",
         required=False,
         help="Optional run identifier to store in the manifest metadata.",
@@ -91,6 +100,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--print-summary",
         action="store_true",
         help="Print a human-readable Markdown audit summary.",
+    )
+
+    parser.add_argument(
+        "--print-validation-summary",
+        action="store_true",
+        help="Print validation diagnostics if validation fails.",
     )
 
     return parser
@@ -140,6 +155,9 @@ def main(argv: Optional[list[str]] = None) -> int:
     validation_report_path = (
         Path(args.validation_report) if args.validation_report else None
     )
+    validation_summary_path = (
+        Path(args.validation_summary) if args.validation_summary else None
+    )
 
     paper_artifact = load_paper_artifact(paper_artifact_path)
 
@@ -172,16 +190,33 @@ def main(argv: Optional[list[str]] = None) -> int:
     if args.run_id:
         metadata["run_id"] = args.run_id
 
-    result = run_paper_evaluation(
-        paper_artifact=paper_artifact,
-        paper_artifact_path=paper_artifact_path,
-        audit_report_path=audit_report_path,
-        audit_summary_path=audit_summary_path,
-        manifest_path=manifest_path,
-        validation_report_path=validation_report_path,
-        metadata=metadata,
-        config=config,
-    )
+    try:
+        result = run_paper_evaluation(
+            paper_artifact=paper_artifact,
+            paper_artifact_path=paper_artifact_path,
+            audit_report_path=audit_report_path,
+            audit_summary_path=audit_summary_path,
+            manifest_path=manifest_path,
+            validation_report_path=validation_report_path,
+            metadata=metadata,
+            config=config,
+        )
+    except ValueError:
+        if validation_report_path is not None and validation_report_path.exists():
+            validation_payload = load_validation_report(validation_report_path)
+
+            if validation_summary_path is not None:
+                written_summary_path = write_validation_summary(
+                    validation_payload=validation_payload,
+                    output_path=validation_summary_path,
+                )
+                print(f"Validation summary written to: {written_summary_path}")
+
+            if args.print_validation_summary:
+                print()
+                print(render_validation_summary(validation_payload))
+
+        raise
 
     status = "publishable" if result.publishable else "not publishable"
 

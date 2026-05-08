@@ -318,3 +318,68 @@ def test_main_writes_validation_report_when_artifact_is_malformed(tmp_path):
 
     assert payload["valid"] is False
     assert payload["error_count"] >= 1
+
+
+def test_main_writes_validation_summary_when_artifact_is_malformed(tmp_path):
+    artifact = make_clean_paper_artifact()
+    del artifact["claims"][0]["anchor_clip"]
+
+    artifact_path = tmp_path / "bad_paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    validation_report_path = tmp_path / "validation_report.json"
+    validation_summary_path = tmp_path / "validation_summary.md"
+
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Paper artifact validation failed"):
+        main(
+            [
+                "--paper-artifact",
+                str(artifact_path),
+                "--audit-report",
+                str(audit_report_path),
+                "--validation-report",
+                str(validation_report_path),
+                "--validation-summary",
+                str(validation_summary_path),
+            ]
+        )
+
+    assert not audit_report_path.exists()
+    assert validation_report_path.exists()
+    assert validation_summary_path.exists()
+
+    summary = validation_summary_path.read_text(encoding="utf-8")
+
+    assert "# Paper Artifact Validation Summary" in summary
+    assert "**Valid:** FAIL" in summary
+    assert "claims[0] is missing anchor_clip." in summary
+
+
+def test_main_can_print_validation_summary_when_artifact_is_malformed(tmp_path, capsys):
+    artifact = make_clean_paper_artifact()
+    del artifact["claims"][0]["anchor_clip"]
+
+    artifact_path = tmp_path / "bad_paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    validation_report_path = tmp_path / "validation_report.json"
+
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Paper artifact validation failed"):
+        main(
+            [
+                "--paper-artifact",
+                str(artifact_path),
+                "--audit-report",
+                str(audit_report_path),
+                "--validation-report",
+                str(validation_report_path),
+                "--print-validation-summary",
+            ]
+        )
+
+    captured = capsys.readouterr()
+
+    assert "# Paper Artifact Validation Summary" in captured.out
+    assert "**Valid:** FAIL" in captured.out

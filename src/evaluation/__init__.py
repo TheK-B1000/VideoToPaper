@@ -36,6 +36,8 @@ from src.evaluation.validation_report_writer import (
     load_validation_report,
     write_validation_report,
 )
+from src.evaluation.validation_summary import render_validation_summary
+from src.evaluation.validation_summary_writer import write_validation_summary
 
 __all__ = [
     "ArtifactValidationResult",
@@ -56,6 +58,7 @@ __all__ = [
     "load_evaluation_runtime_config",
     "load_validation_report",
     "render_audit_summary",
+    "render_validation_summary",
     "run_evaluation_harness",
     "run_paper_evaluation",
     "validate_paper_artifact",
@@ -64,4 +67,5 @@ __all__ = [
     "write_evaluation_manifest",
     "write_sample_artifact",
     "write_validation_report",
+    "write_validation_summary",
 ]
