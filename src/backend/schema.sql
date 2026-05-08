@@ -207,3 +207,19 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_run_id
 
 CREATE INDEX IF NOT EXISTS idx_audit_events_event_type
     ON audit_events(event_type);
+
+-- Inquiry Studio handoff: persisted RunProgress JSON keyed by backend run_id.
+CREATE TABLE IF NOT EXISTS inquiry_engine_runs (
+    run_id TEXT PRIMARY KEY,
+    request_id TEXT NOT NULL,
+    video_id TEXT NOT NULL,
+    youtube_url TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    progress_json TEXT NOT NULL,
+    simulate_progress INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_inquiry_engine_runs_request_id
+    ON inquiry_engine_runs(request_id);

@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import os
+import threading
+import time
 from pathlib import Path
+from typing import Any
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, Field
 
 from src.backend.db import initialize_sqlite_database
 from src.backend.mlops_schemas import (
@@ -11,6 +17,10 @@ from src.backend.mlops_schemas import (
     RunRecordRead,
 )
 from src.backend.repository import BackendRepository
+from src.ops.inquiry_progress_payload import (
+    advance_pipeline_tick,
+    build_initial_progress_log,
+)
 from src.backend.schemas import (
     ClaimCreate,
     ClaimRead,
@@ -26,6 +36,47 @@ from src.backend.schemas import (
 )
 
 DEFAULT_API_DB_PATH = Path("data/inquiry_engine.db")
+
+
+def _progress_simulation_loop(run_id: str, db_path: Path) -> None:
+    tick = float(os.environ.get("INQUIRY_ENGINE_PROGRESS_TICK_SECONDS", "1.5"))
+    repo = BackendRepository(db_path)
+
+    for _ in range(10_000):
+        time.sleep(tick)
+        bundle = repo.get_inquiry_engine_run_bundle(run_id)
+
+        if bundle is None:
+            return
+
+        progress, should_simulate = bundle
+
+        if not should_simulate:
+            return
+
+        if str(progress.get("status", "")).lower() == "completed":
+            return
+
+        new_progress = advance_pipeline_tick(progress)
+        repo.update_inquiry_engine_run_progress(run_id, new_progress)
+
+        if str(new_progress.get("status", "")).lower() == "completed":
+            return
+
+
+class InquiryRunSubmitBody(BaseModel):
+    request_id: str = Field(..., min_length=1)
+    created_at: str = ""
+    youtube_url: str = Field(..., min_length=1)
+    video_id: str = Field(..., min_length=1)
+    claim_type_filter: list[str] = Field(default_factory=list)
+    retrieval_depth: int = 3
+    source_tiers: list[int] = Field(default_factory=list)
+    stages: list[str] = Field(..., min_length=1)
+    rerun_of: str | None = None
+    reason: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
 
 app = FastAPI(
     title="Inquiry Engine API",
@@ -406,6 +457,67 @@ def get_video_audit(video_id: str) -> InquiryAuditReport:
     )
 
     return repo.build_video_audit_report(video_id)
+
+
+@app.post("/inquiries/run", status_code=status.HTTP_202_ACCEPTED)
+def submit_inquiry_run(body: InquiryRunSubmitBody) -> dict[str, Any]:
+    repo = get_repository()
+    run_id = f"run_be_{uuid4().hex[:16]}"
+    payload = body.model_dump()
+
+    progress = build_initial_progress_log(
+        run_id=run_id,
+        request_id=body.request_id,
+        stages=list(body.stages),
+    )
+
+    simulate = os.environ.get("INQUIRY_ENGINE_SIMULATE_PROGRESS", "true").lower() not in (
+        "0",
+        "false",
+        "no",
+    )
+
+    repo.create_inquiry_engine_run(
+        run_id=run_id,
+        request_id=body.request_id,
+        video_id=body.video_id,
+        youtube_url=body.youtube_url,
+        request_dict=payload,
+        progress_dict=progress,
+        simulate_progress=simulate,
+    )
+
+    if simulate:
+        threading.Thread(
+            target=_progress_simulation_loop,
+            args=(run_id, repo.db_path),
+            daemon=True,
+        ).start()
+
+    return {
+        "request_id": body.request_id,
+        "run_id": run_id,
+        "status": "accepted",
+        "message": (
+            "Run accepted. Poll GET /runs/{run_id}/progress for pipeline progress."
+        ),
+    }
+
+
+@app.get("/runs/{run_id}/progress")
+def get_inquiry_run_progress(run_id: str) -> dict[str, Any]:
+    repo = get_repository()
+    bundle = repo.get_inquiry_engine_run_bundle(run_id)
+
+    if bundle is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Inquiry run progress not found: {run_id}",
+        )
+
+    progress_dict, _simulate_flag = bundle
+
+    return progress_dict
 
 
 @app.get("/runs", response_model=list[RunRecordRead])

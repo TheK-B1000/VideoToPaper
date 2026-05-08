@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from src.frontend.run_queue import QueuedRunRequest, load_queued_run_request
-from src.frontend.run_request import DEFAULT_PIPELINE_STAGES
+from src.ops.inquiry_progress_payload import build_initial_progress_log
 
 
 @dataclass(frozen=True)
@@ -102,38 +102,3 @@ def build_run_id(request_id: str) -> str:
     safe_request_id = request_id.replace("/", "_").replace("\\", "_")
     return f"run_{timestamp}_{safe_request_id}"
 
-
-def build_initial_progress_log(
-    *,
-    run_id: str,
-    request_id: str,
-    stages: list[str] | None = None,
-) -> dict[str, Any]:
-    selected_stages = DEFAULT_PIPELINE_STAGES if stages is None else stages
-
-    if not selected_stages:
-        raise ValueError("At least one stage is required to build a progress log.")
-
-    now = datetime.now(timezone.utc).isoformat()
-
-    return {
-        "run_id": run_id,
-        "request_id": request_id,
-        "status": "queued",
-        "current_step": selected_stages[0],
-        "created_at": now,
-        "started_at": None,
-        "finished_at": None,
-        "elapsed_seconds": 0.0,
-        "steps": [
-            {
-                "name": stage,
-                "status": "queued",
-                "started_at": None,
-                "finished_at": None,
-                "elapsed_seconds": None,
-                "message": "Waiting to execute.",
-            }
-            for stage in selected_stages
-        ],
-    }
