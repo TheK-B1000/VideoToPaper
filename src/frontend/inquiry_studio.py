@@ -13,6 +13,7 @@ from src.frontend.run_queue import (
     summarize_queue,
 )
 from src.frontend.local_runner import launch_local_run
+from src.frontend.audit_summary import summarize_audit_report
 from src.frontend.queue_status import mark_request_queued
 from src.frontend.rerun_request import (
     RerunOverrides,
@@ -507,7 +508,35 @@ def run_streamlit_app() -> None:
             if report is None:
                 st.error("Audit report could not be loaded.")
             else:
-                st.json(report)
+                summary = summarize_audit_report(report)
+
+                if summary.publishable:
+                    st.success("Audit status: publishable")
+                else:
+                    st.error("Audit status: not publishable")
+
+                axis_cols = st.columns(4)
+
+                for index, axis in enumerate(summary.axes):
+                    with axis_cols[index]:
+                        st.metric(
+                            label=axis.axis.replace("_", " ").title(),
+                            value=axis.status.upper(),
+                            delta=axis.score,
+                        )
+
+                if summary.blocking_issues:
+                    st.subheader("Blocking Issues")
+                    for issue in summary.blocking_issues:
+                        st.error(issue)
+
+                if summary.warning_issues:
+                    st.subheader("Warnings")
+                    for issue in summary.warning_issues:
+                        st.warning(issue)
+
+                with st.expander("Raw audit report"):
+                    st.json(report)
 
     with tab_progress:
         st.subheader("Run Progress")
