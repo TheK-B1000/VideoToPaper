@@ -1,6 +1,11 @@
 from src.evaluation.audit_report_writer import load_audit_report, write_audit_report
 from src.evaluation.audit_summary import render_audit_summary
 from src.evaluation.audit_summary_writer import write_audit_summary
+from src.evaluation.evaluation_config import (
+    EvaluationOutputConfig,
+    EvaluationRuntimeConfig,
+    load_evaluation_runtime_config,
+)
 from src.evaluation.evaluation_harness import (
     EvaluationConfig,
     EvaluationReport,
@@ -26,8 +31,10 @@ from src.evaluation.sample_artifacts import (
 __all__ = [
     "EvaluationConfig",
     "EvaluationManifest",
+    "EvaluationOutputConfig",
     "EvaluationReport",
     "EvaluationRunResult",
+    "EvaluationRuntimeConfig",
     "PublishabilityDecision",
     "build_evaluation_manifest",
     "build_publishable_sample_artifact",
@@ -35,6 +42,7 @@ __all__ = [
     "decide_publishability",
     "load_audit_report",
     "load_evaluation_manifest",
+    "load_evaluation_runtime_config",
     "render_audit_summary",
     "run_evaluation_harness",
     "run_paper_evaluation",

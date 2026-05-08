@@ -10,7 +10,6 @@ from src.paper.paper_run_report import (
     write_paper_assembly_run_report,
 )
 from src.data.json_store import load_json
-from src.evaluation.evaluation_cli import main as evaluation_main
 from src.ops.run_tracker import (
     create_run_log,
     record_metric,
@@ -18,6 +17,7 @@ from src.ops.run_tracker import (
     finish_run_log,
     save_run_log,
 )
+from src.pipelines.run_evaluation_pipeline import run_evaluation_pipeline
 from src.pipelines.run_html_paper_pipeline import run_html_paper_pipeline
 from src.source.ingestion import ingest_source
 
@@ -412,7 +412,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         return
 
     if args.stage == "evaluation":
-        return evaluation_main(forwarded)
+        return run_evaluation_pipeline(forwarded)
 
     if args.stage == "evidence_integration":
         from src.pipelines.run_evidence_integration_pipeline import (

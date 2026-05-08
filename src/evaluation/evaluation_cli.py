@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 
 from src.evaluation.audit_report_writer import load_audit_report
 from src.evaluation.audit_summary import render_audit_summary
+from src.evaluation.evaluation_config import load_evaluation_runtime_config
 from src.evaluation.evaluation_harness import EvaluationConfig
 from src.evaluation.evaluation_runner import run_paper_evaluation
 
@@ -37,8 +38,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--config-path",
+        required=False,
+        help="Optional evaluation config JSON path.",
+    )
+
+    parser.add_argument(
         "--audit-report",
-        required=True,
+        required=False,
         help="Path where the audit report JSON should be written.",
     )
 
@@ -63,14 +70,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--clip-tolerance-seconds",
         type=float,
-        default=1.0,
+        default=None,
         help="Allowed start/end timestamp drift for rendered clips.",
     )
 
     parser.add_argument(
         "--minimum-balanced-retrieval-ratio",
         type=float,
-        default=0.8,
+        default=None,
         help="Minimum ratio of claims that must have balanced retrieval.",
     )
 
@@ -87,19 +94,72 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    runtime_config = None
+    if args.config_path:
+        runtime_config = load_evaluation_runtime_config(args.config_path)
+
     paper_artifact_path = Path(args.paper_artifact)
-    audit_report_path = Path(args.audit_report)
-    audit_summary_path = Path(args.audit_summary) if args.audit_summary else None
-    manifest_path = Path(args.manifest) if args.manifest else None
+    audit_report_path = Path(
+        args.audit_report
+        or (
+            runtime_config.outputs.audit_report_path
+            if runtime_config
+            else "data/outputs/audit_report.json"
+        )
+    )
+    audit_summary_path = (
+        Path(
+            args.audit_summary
+            or (
+                runtime_config.outputs.audit_summary_path
+                if runtime_config
+                else "data/outputs/audit_summary.md"
+            )
+        )
+        if (args.audit_summary or runtime_config)
+        else None
+    )
+    manifest_path = (
+        Path(
+            args.manifest
+            or (
+                runtime_config.outputs.manifest_path
+                if runtime_config
+                else "data/outputs/evaluation_manifest.json"
+            )
+        )
+        if (args.manifest or runtime_config)
+        else None
+    )
 
     paper_artifact = load_paper_artifact(paper_artifact_path)
 
-    config = EvaluationConfig(
-        clip_tolerance_seconds=args.clip_tolerance_seconds,
-        minimum_balanced_retrieval_ratio=args.minimum_balanced_retrieval_ratio,
+    clip_tolerance_seconds = (
+        args.clip_tolerance_seconds
+        if args.clip_tolerance_seconds is not None
+        else (
+            runtime_config.evaluation.clip_tolerance_seconds
+            if runtime_config
+            else 1.0
+        )
     )
 
-    metadata = {}
+    minimum_balanced_retrieval_ratio = (
+        args.minimum_balanced_retrieval_ratio
+        if args.minimum_balanced_retrieval_ratio is not None
+        else (
+            runtime_config.evaluation.minimum_balanced_retrieval_ratio
+            if runtime_config
+            else 0.8
+        )
+    )
+
+    config = EvaluationConfig(
+        clip_tolerance_seconds=clip_tolerance_seconds,
+        minimum_balanced_retrieval_ratio=minimum_balanced_retrieval_ratio,
+    )
+
+    metadata = dict(runtime_config.metadata) if runtime_config else {}
     if args.run_id:
         metadata["run_id"] = args.run_id
 

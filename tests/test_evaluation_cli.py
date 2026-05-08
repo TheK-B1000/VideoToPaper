@@ -229,3 +229,60 @@ def test_main_can_write_manifest_file(tmp_path, capsys):
     assert manifest["audit_report_path"] == str(audit_report_path)
     assert manifest["audit_summary_path"] == str(audit_summary_path)
     assert manifest["metadata"]["run_id"] == "run_001"
+
+
+def test_main_can_use_evaluation_config_file(tmp_path, capsys):
+    artifact_path = tmp_path / "paper_artifact.json"
+    audit_report_path = tmp_path / "configured_audit_report.json"
+    audit_summary_path = tmp_path / "configured_audit_summary.md"
+    manifest_path = tmp_path / "configured_manifest.json"
+    config_path = tmp_path / "evaluation_config.json"
+
+    artifact_path.write_text(
+        json.dumps(make_clean_paper_artifact()),
+        encoding="utf-8",
+    )
+
+    config_path.write_text(
+        json.dumps(
+            {
+                "evaluation": {
+                    "clip_tolerance_seconds": 1.0,
+                    "minimum_balanced_retrieval_ratio": 0.8,
+                },
+                "outputs": {
+                    "audit_report_path": str(audit_report_path),
+                    "audit_summary_path": str(audit_summary_path),
+                    "manifest_path": str(manifest_path),
+                },
+                "metadata": {
+                    "source": "configured_test",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--paper-artifact",
+            str(artifact_path),
+            "--config-path",
+            str(config_path),
+            "--run-id",
+            "configured_run_001",
+        ]
+    )
+
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert audit_report_path.exists()
+    assert audit_summary_path.exists()
+    assert manifest_path.exists()
+    assert "Evaluation manifest written to:" in captured.out
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert manifest["metadata"]["source"] == "configured_test"
+    assert manifest["metadata"]["run_id"] == "configured_run_001"
