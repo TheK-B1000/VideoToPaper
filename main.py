@@ -4,6 +4,10 @@ from typing import Any
 
 from src.paper.html_audit import audit_html_paper
 from src.paper.paper_spec_builder import build_paper_spec
+from src.paper.paper_run_report import (
+    utc_now_iso,
+    write_paper_assembly_run_report,
+)
 from src.data.json_store import load_json
 from src.ops.run_tracker import (
     create_run_log,
@@ -225,6 +229,11 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         help="Path where the Week 8 HTML audit report should be written.",
     )
     parser.add_argument(
+        "--paper-run-report-path",
+        default="data/outputs/paper_assembly_run_report.json",
+        help="Path where the Week 8 paper assembly run report should be written.",
+    )
+    parser.add_argument(
         "--audit-after-assembly",
         action="store_true",
         help="Run the Week 8 HTML audit immediately after assembling the paper.",
@@ -276,6 +285,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
                 )
             )
 
+        started_at = utc_now_iso()
+        audit_passed = None
+
         paper_spec_path = build_paper_spec(
             source_registry_path=args.source_registry_path,
             claim_inventory_path=args.claim_inventory_path
@@ -295,21 +307,56 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         print(f"HTML paper written to: {html_output_path}")
 
         if args.audit_after_assembly:
-            report = audit_html_paper(
+            audit_report = audit_html_paper(
                 html_path=html_output_path,
                 paper_spec_path=paper_spec_path,
                 report_output_path=args.html_audit_report_path,
             )
 
-            print(f"HTML audit report written to: {args.html_audit_report_path}")
-            print(f"HTML audit passed: {report.passed}")
+            audit_passed = audit_report.passed
 
-            if not report.passed:
-                for finding in report.findings:
+            print(f"HTML audit report written to: {args.html_audit_report_path}")
+            print(f"HTML audit passed: {audit_report.passed}")
+
+            if not audit_report.passed:
+                write_paper_assembly_run_report(
+                    output_path=args.paper_run_report_path,
+                    started_at=started_at,
+                    source_registry_path=args.source_registry_path,
+                    claim_inventory_path=args.claim_inventory_path
+                    or "data/processed/claim_inventory.json",
+                    evidence_integration_path=args.evidence_integration_path,
+                    paper_spec_path=paper_spec_path,
+                    html_output_path=html_output_path,
+                    audit_requested=True,
+                    audit_report_path=args.html_audit_report_path,
+                    audit_passed=False,
+                    status="failed_audit",
+                )
+
+                print(f"Paper assembly run report written to: {args.paper_run_report_path}")
+
+                for finding in audit_report.findings:
                     print(f"[{finding.severity}] {finding.code}: {finding.message}")
 
                 raise SystemExit(1)
 
+        run_report_path = write_paper_assembly_run_report(
+            output_path=args.paper_run_report_path,
+            started_at=started_at,
+            source_registry_path=args.source_registry_path,
+            claim_inventory_path=args.claim_inventory_path
+            or "data/processed/claim_inventory.json",
+            evidence_integration_path=args.evidence_integration_path,
+            paper_spec_path=paper_spec_path,
+            html_output_path=html_output_path,
+            audit_requested=args.audit_after_assembly,
+            audit_report_path=args.html_audit_report_path if args.audit_after_assembly else None,
+            audit_passed=audit_passed,
+            status="completed",
+        )
+
+        print(f"Paper assembly run report written to: {run_report_path}")
         return
 
     if args.stage == "audit_html_paper":
@@ -446,6 +493,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         or args.paper_spec_path != "data/outputs/paper_spec.json"
         or args.html_output_path != "data/outputs/inquiry_paper.html"
         or args.html_audit_report_path != "data/outputs/html_audit_report.json"
+        or args.paper_run_report_path != "data/outputs/paper_assembly_run_report.json"
         or args.audit_after_assembly
     ):
         parser.error(
@@ -454,7 +502,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "--dry-run/--no-dry-run, --source, --per-query-limit, --fail-on-unbalanced, "
             "--source-registry-path, --evidence-integration-path, --paper-spec-output-path, "
             "--paper-title, --paper-abstract, --paper-spec-path, --html-output-path, "
-            "--html-audit-report-path, and --audit-after-assembly "
+            "--html-audit-report-path, --paper-run-report-path, and --audit-after-assembly "
             "are only valid with claim_inventory, speaker_perspective, steelman, "
             "evidence_retrieval, evidence_integration, build_paper_spec, "
             "html_paper, assemble_paper, or audit_html_paper."
