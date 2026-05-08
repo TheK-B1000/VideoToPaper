@@ -15,6 +15,7 @@ from src.frontend.run_queue import (
 from src.frontend.local_runner import launch_local_run
 from src.frontend.audit_summary import summarize_audit_report
 from src.frontend.backend_client import BackendClient, BackendClientConfig
+from src.frontend.backend_progress_sync import sync_backend_progress
 from src.frontend.backend_submission import submit_queued_request_to_backend
 from src.frontend.operator_activity import (
     VALID_ACTIVITY_TYPES,
@@ -704,6 +705,70 @@ def run_streamlit_app() -> None:
 
                             if step.message:
                                 st.write(step.message)
+
+            except ValueError as error:
+                st.error(str(error))
+
+        st.divider()
+        st.subheader("Sync Backend Progress")
+
+        backend_run_id = st.text_input(
+            "Backend run id",
+            placeholder="run_001",
+        )
+
+        if st.button("Sync from Backend"):
+            try:
+                client = BackendClient(
+                    BackendClientConfig(
+                        base_url=getattr(
+                            studio_config,
+                            "backend_base_url",
+                            None,
+                        )
+                        or "http://127.0.0.1:8000",
+                        timeout_seconds=float(
+                            getattr(
+                                studio_config,
+                                "backend_timeout_seconds",
+                                10.0,
+                            )
+                        ),
+                    )
+                )
+
+                result = sync_backend_progress(
+                    run_id=backend_run_id,
+                    client=client,
+                    snapshot_dir=studio_config.runs_dir,
+                )
+
+                if result.synced and result.progress is not None:
+                    st.success(result.message)
+
+                    summary = summarize_progress(result.progress)
+
+                    st.progress(summary["completion_ratio"])
+                    st.write(f"**Run ID:** {summary['run_id']}")
+                    st.write(f"**Status:** {summary['status']}")
+                    st.write(f"**Current step:** {summary['current_step'] or 'None'}")
+
+                    if result.snapshot_path:
+                        st.write(f"Snapshot saved to: `{result.snapshot_path}`")
+
+                    record_activity(
+                        activity_type="progress_viewed",
+                        message=f"Synced backend progress for run {result.run_id}.",
+                        run_id=result.run_id,
+                        artifact_path=result.snapshot_path,
+                        log_path=studio_config.operator_activity_log_path,
+                    )
+
+                    with st.expander("Synced progress payload"):
+                        st.json(result.to_dict())
+                else:
+                    st.error(result.message)
+                    st.json(result.to_dict())
 
             except ValueError as error:
                 st.error(str(error))
