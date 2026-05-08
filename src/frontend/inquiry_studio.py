@@ -14,6 +14,7 @@ from src.frontend.run_queue import (
 )
 from src.frontend.local_runner import launch_local_run
 from src.frontend.audit_summary import summarize_audit_report
+from src.frontend.paper_artifacts import build_file_url, inspect_paper_artifact
 from src.frontend.queue_status import mark_request_queued
 from src.frontend.rerun_request import (
     RerunOverrides,
@@ -337,12 +338,20 @@ def run_streamlit_app() -> None:
                     cols = st.columns(3)
 
                     with cols[0]:
-                        if paper_exists(record.paper_path):
+                        paper_artifact = inspect_paper_artifact(record.paper_path)
+
+                        if paper_artifact.is_openable:
                             st.link_button(
                                 "Open Paper",
-                                Path(record.paper_path).as_posix(),
+                                build_file_url(paper_artifact.path),
                                 use_container_width=True,
                             )
+
+                            if paper_artifact.title:
+                                st.caption(f"Paper title: {paper_artifact.title}")
+
+                            if paper_artifact.size_bytes is not None:
+                                st.caption(f"Size: {paper_artifact.size_bytes:,} bytes")
                         else:
                             st.button(
                                 "Paper Missing",
