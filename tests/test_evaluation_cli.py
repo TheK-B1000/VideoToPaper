@@ -287,3 +287,34 @@ def test_main_can_use_evaluation_config_file(tmp_path, capsys):
 
     assert manifest["metadata"]["source"] == "configured_test"
     assert manifest["metadata"]["run_id"] == "configured_run_001"
+
+
+def test_main_writes_validation_report_when_artifact_is_malformed(tmp_path):
+    artifact = make_clean_paper_artifact()
+    del artifact["claims"][0]["anchor_clip"]
+
+    artifact_path = tmp_path / "bad_paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    validation_report_path = tmp_path / "validation_report.json"
+
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Paper artifact validation failed"):
+        main(
+            [
+                "--paper-artifact",
+                str(artifact_path),
+                "--audit-report",
+                str(audit_report_path),
+                "--validation-report",
+                str(validation_report_path),
+            ]
+        )
+
+    assert not audit_report_path.exists()
+    assert validation_report_path.exists()
+
+    payload = json.loads(validation_report_path.read_text(encoding="utf-8"))
+
+    assert payload["valid"] is False
+    assert payload["error_count"] >= 1

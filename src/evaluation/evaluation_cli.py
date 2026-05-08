@@ -62,6 +62,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--validation-report",
+        required=False,
+        help="Optional path where artifact validation diagnostics should be written.",
+    )
+
+    parser.add_argument(
         "--run-id",
         required=False,
         help="Optional run identifier to store in the manifest metadata.",
@@ -131,6 +137,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         if (args.manifest or runtime_config)
         else None
     )
+    validation_report_path = (
+        Path(args.validation_report) if args.validation_report else None
+    )
 
     paper_artifact = load_paper_artifact(paper_artifact_path)
 
@@ -169,6 +178,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         audit_report_path=audit_report_path,
         audit_summary_path=audit_summary_path,
         manifest_path=manifest_path,
+        validation_report_path=validation_report_path,
         metadata=metadata,
         config=config,
     )

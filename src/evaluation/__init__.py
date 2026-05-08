@@ -31,6 +31,11 @@ from src.evaluation.sample_artifacts import (
     build_unpublishable_sample_artifact,
     write_sample_artifact,
 )
+from src.evaluation.validation_report_writer import (
+    build_validation_report_payload,
+    load_validation_report,
+    write_validation_report,
+)
 
 __all__ = [
     "ArtifactValidationResult",
@@ -44,10 +49,12 @@ __all__ = [
     "build_evaluation_manifest",
     "build_publishable_sample_artifact",
     "build_unpublishable_sample_artifact",
+    "build_validation_report_payload",
     "decide_publishability",
     "load_audit_report",
     "load_evaluation_manifest",
     "load_evaluation_runtime_config",
+    "load_validation_report",
     "render_audit_summary",
     "run_evaluation_harness",
     "run_paper_evaluation",
@@ -56,4 +63,5 @@ __all__ = [
     "write_audit_summary",
     "write_evaluation_manifest",
     "write_sample_artifact",
+    "write_validation_report",
 ]

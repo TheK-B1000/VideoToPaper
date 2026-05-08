@@ -170,3 +170,27 @@ def test_run_paper_evaluation_rejects_malformed_artifact(tmp_path):
         )
 
     assert not audit_report_path.exists()
+
+
+def test_run_paper_evaluation_writes_validation_report_for_malformed_artifact(tmp_path):
+    paper_artifact = make_clean_paper_artifact()
+    del paper_artifact["claims"][0]["anchor_clip"]
+
+    audit_report_path = tmp_path / "audit_report.json"
+    validation_report_path = tmp_path / "validation_report.json"
+
+    with pytest.raises(ValueError, match="Paper artifact validation failed"):
+        run_paper_evaluation(
+            paper_artifact=paper_artifact,
+            audit_report_path=audit_report_path,
+            validation_report_path=validation_report_path,
+        )
+
+    assert not audit_report_path.exists()
+    assert validation_report_path.exists()
+
+    payload = json.loads(validation_report_path.read_text(encoding="utf-8"))
+
+    assert payload["valid"] is False
+    assert payload["error_count"] >= 1
+    assert "claims[0] is missing anchor_clip." in payload["errors"]
