@@ -1,0 +1,100 @@
+{
+    "stage": "argument_structure",
+    "input_path": "data/outputs/processed_transcript.json",
+    "output_paths": {
+      "chunks": "data/outputs/chunks.json",
+      "argument_map": "data/outputs/argument_map.json",
+      "anchor_moments": "data/outputs/anchor_moments.json",
+      "run_report_dir": "data/runs",
+      "run_report_prefix": "argument_structure"
+    },
+    "chunking": {
+      "max_chunk_chars": 1200,
+      "min_chunk_chars": 400,
+      "overlap_chars": 150,
+      "prefer_sentence_boundaries": true,
+      "preserve_raw_offsets": true,
+      "overlap_reuses_source_offsets": true
+    },
+    "anchors": {
+      "allowed_types": [
+        "verbal_claim",
+        "definition",
+        "example",
+        "qualification",
+        "summary_claim",
+        "visual_reference",
+        "diagram_or_figure",
+        "demo"
+      ],
+      "require_timestamp": true,
+      "require_char_offsets": true
+    },
+    "llm": {
+      "enabled": false,
+      "model": null,
+      "temperature": 0,
+      "structured_output_required": true
+    },
+    "safety": {
+      "drop_invalid_offsets": true,
+      "drop_unverifiable_anchors": true,
+      "reject_external_knowledge": true,
+      "require_supporting_point_anchor": true
+    },
+    "budget": {
+      "llm_enabled": false,
+      "dry_run": true,
+      "max_llm_calls_per_run": 5,
+      "max_input_tokens_per_call": 4000,
+      "max_output_tokens_per_call": 1000,
+      "max_total_tokens_per_run": 10000,
+      "max_estimated_cost_usd_per_run": 0.0,
+      "max_estimated_cost_usd_per_day": 0.0,
+      "max_estimated_cost_usd_per_month": 0.0,
+      "max_estimated_cost_usd_per_call": 0.0,
+      "allowed_models": ["gemini-2.5-flash-lite"],
+      "model_pricing": {},
+      "max_prompt_chars": 500000,
+      "max_llm_retries_per_call": 1,
+      "budget_persistence_dir": "logs/budget",
+      "fail_closed": true
+    },
+    "claim_inventory": {
+      "enabled": true,
+      "drop_non_verbatim_claims": true,
+      "require_embed_url": true,
+      "allowed_claim_types": [
+        "empirical_technical",
+        "empirical_historical",
+        "empirical_scientific",
+        "interpretive",
+        "normative",
+        "anecdotal",
+        "predictive"
+      ],
+      "output_path": "data/processed/claim_inventory.json",
+      "embed_base_url": null,
+      "source_registry_path": "data/processed/source_registry.json"
+    },
+    "speaker_perspective": {
+      "enabled": true,
+      "use_llm": false,
+      "output_path": "data/processed/speaker_perspective.json",
+      "llm": {
+        "provider": "gemini",
+        "model": "gemini-2.5-flash-lite",
+        "max_output_tokens": 900,
+        "max_claims_per_call": 12,
+        "fallback_on_guard_rejection": true
+      }
+    },
+    "evidence_retrieval": {
+      "claim_inventory_path": "data/processed/claim_inventory.json",
+      "output_path": "data/processed/evidence_retrieval.json",
+      "source": "all",
+      "per_query_limit": 3,
+      "dry_run": true,
+      "fail_on_unbalanced": false
+    }
+  }

@@ -1,0 +1,3393 @@
+{
+  "results": [
+    {
+      "id": "https://openalex.org/W169090064",
+      "doi": null,
+      "title": "The Effects of Character Education on Student Behavior.",
+      "display_name": "The Effects of Character Education on Student Behavior.",
+      "relevance_score": 19.304113,
+      "publication_year": 2002,
+      "publication_date": "2002-01-01",
+      "ids": {
+        "openalex": "https://openalex.org/W169090064",
+        "mag": "169090064"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "pmh:oai:dc.etsu.edu:etd-1863",
+        "is_oa": true,
+        "landing_page_url": "https://dc.etsu.edu/etd/706",
+        "pdf_url": "https://dc.etsu.edu/etd/706",
+        "source": {
+          "id": "https://openalex.org/S4377196424",
+          "display_name": "Digital Commons - East Tennessee State University (East Tennessee State University)",
+          "issn_l": null,
+          "issn": null,
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": false,
+          "host_organization": "https://openalex.org/I119443389",
+          "host_organization_name": "East Tennessee State University",
+          "host_organization_lineage": [
+            "https://openalex.org/I119443389"
+          ],
+          "host_organization_lineage_names": [],
+          "type": "repository"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "submittedVersion",
+        "is_accepted": false,
+        "is_published": false,
+        "raw_source_name": "Electronic Theses and Dissertations",
+        "raw_type": "text"
+      },
+      "type": "article",
+      "indexed_in": [],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "green",
+        "oa_url": "https://dc.etsu.edu/etd/706",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5007437907",
+            "display_name": "W. G. Thompson",
+            "orcid": "https://orcid.org/0000-0003-2988-7998"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I119443389",
+              "display_name": "East Tennessee State University",
+              "ror": "https://ror.org/05rfqv493",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I119443389"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": true,
+          "raw_author_name": "W. G. Thompson",
+          "raw_affiliation_strings": [
+            "East Tennessee State University"
+          ],
+          "raw_orcid": "https://orcid.org/0000-0003-2988-7998",
+          "affiliations": [
+            {
+              "raw_affiliation_string": "East Tennessee State University",
+              "institution_ids": [
+                "https://openalex.org/I119443389"
+              ]
+            }
+          ]
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 1,
+      "institutions_distinct_count": 1,
+      "corresponding_author_ids": [
+        "https://openalex.org/A5007437907"
+      ],
+      "corresponding_institution_ids": [
+        "https://openalex.org/I119443389"
+      ],
+      "apc_list": null,
+      "apc_paid": null,
+      "fwci": 1.572,
+      "has_fulltext": true,
+      "cited_by_count": 29,
+      "citation_normalized_percentile": {
+        "value": 0.85005929,
+        "is_in_top_1_percent": false,
+        "is_in_top_10_percent": false
+      },
+      "cited_by_percentile_year": {
+        "min": 90,
+        "max": 99
+      },
+      "biblio": {
+        "volume": null,
+        "issue": null,
+        "first_page": null,
+        "last_page": null
+      },
+      "is_retracted": false,
+      "is_paratext": false,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T12531",
+        "display_name": "Values and Moral Education",
+        "score": 0.9998999834060669,
+        "subfield": {
+          "id": "https://openalex.org/subfields/3304",
+          "display_name": "Education"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/33",
+          "display_name": "Social Sciences"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/2",
+          "display_name": "Social Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T12531",
+          "display_name": "Values and Moral Education",
+          "score": 0.9998999834060669,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3304",
+            "display_name": "Education"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11715",
+          "display_name": "Education and Critical Thinking Development",
+          "score": 0.98580002784729,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3304",
+            "display_name": "Education"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T12164",
+          "display_name": "Education Practices and Challenges",
+          "score": 0.9805999994277954,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1211",
+            "display_name": "Philosophy"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/12",
+            "display_name": "Arts and Humanities"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/character",
+          "display_name": "Character (mathematics)",
+          "score": 0.5975608825683594
+        },
+        {
+          "id": "https://openalex.org/keywords/psychology",
+          "display_name": "Psychology",
+          "score": 0.4214785695075989
+        },
+        {
+          "id": "https://openalex.org/keywords/social-psychology",
+          "display_name": "Social psychology",
+          "score": 0.3379335105419159
+        },
+        {
+          "id": "https://openalex.org/keywords/mathematics",
+          "display_name": "Mathematics",
+          "score": 0.1193019449710846
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C2780861071",
+          "wikidata": "https://www.wikidata.org/wiki/Q1062934",
+          "display_name": "Character (mathematics)",
+          "level": 2,
+          "score": 0.5975608825683594
+        },
+        {
+          "id": "https://openalex.org/C15744967",
+          "wikidata": "https://www.wikidata.org/wiki/Q9418",
+          "display_name": "Psychology",
+          "level": 0,
+          "score": 0.4214785695075989
+        },
+        {
+          "id": "https://openalex.org/C77805123",
+          "wikidata": "https://www.wikidata.org/wiki/Q161272",
+          "display_name": "Social psychology",
+          "level": 1,
+          "score": 0.3379335105419159
+        },
+        {
+          "id": "https://openalex.org/C33923547",
+          "wikidata": "https://www.wikidata.org/wiki/Q395",
+          "display_name": "Mathematics",
+          "level": 0,
+          "score": 0.1193019449710846
+        },
+        {
+          "id": "https://openalex.org/C2524010",
+          "wikidata": "https://www.wikidata.org/wiki/Q8087",
+          "display_name": "Geometry",
+          "level": 1,
+          "score": 0.0
+        }
+      ],
+      "mesh": [],
+      "locations_count": 3,
+      "locations": [
+        {
+          "id": "pmh:oai:dc.etsu.edu:etd-1863",
+          "is_oa": true,
+          "landing_page_url": "https://dc.etsu.edu/etd/706",
+          "pdf_url": "https://dc.etsu.edu/etd/706",
+          "source": {
+            "id": "https://openalex.org/S4377196424",
+            "display_name": "Digital Commons - East Tennessee State University (East Tennessee State University)",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "host_organization": "https://openalex.org/I119443389",
+            "host_organization_name": "East Tennessee State University",
+            "host_organization_lineage": [
+              "https://openalex.org/I119443389"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "Electronic Theses and Dissertations",
+          "raw_type": "text"
+        },
+        {
+          "id": "pmh:oai:CiteSeerX.psu:10.1.1.687.1673",
+          "is_oa": false,
+          "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.687.1673",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "http://dc.etsu.edu/cgi/viewcontent.cgi?article%3D1863%26context%3Detd",
+          "raw_type": "text"
+        },
+        {
+          "id": "mag:169090064",
+          "is_oa": false,
+          "landing_page_url": "https://dc.etsu.edu/cgi/viewcontent.cgi?article=1863&context=etd",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": null,
+          "is_accepted": false,
+          "is_published": null,
+          "raw_source_name": null,
+          "raw_type": null
+        }
+      ],
+      "best_oa_location": {
+        "id": "pmh:oai:dc.etsu.edu:etd-1863",
+        "is_oa": true,
+        "landing_page_url": "https://dc.etsu.edu/etd/706",
+        "pdf_url": "https://dc.etsu.edu/etd/706",
+        "source": {
+          "id": "https://openalex.org/S4377196424",
+          "display_name": "Digital Commons - East Tennessee State University (East Tennessee State University)",
+          "issn_l": null,
+          "issn": null,
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": false,
+          "host_organization": "https://openalex.org/I119443389",
+          "host_organization_name": "East Tennessee State University",
+          "host_organization_lineage": [
+            "https://openalex.org/I119443389"
+          ],
+          "host_organization_lineage_names": [],
+          "type": "repository"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "submittedVersion",
+        "is_accepted": false,
+        "is_published": false,
+        "raw_source_name": "Electronic Theses and Dissertations",
+        "raw_type": "text"
+      },
+      "sustainable_development_goals": [],
+      "awards": [],
+      "funders": [],
+      "has_content": {
+        "grobid_xml": true,
+        "pdf": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W169090064.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W169090064.grobid-xml"
+      },
+      "referenced_works_count": 32,
+      "referenced_works": [
+        "https://openalex.org/W37222801",
+        "https://openalex.org/W46854400",
+        "https://openalex.org/W58097700",
+        "https://openalex.org/W73232658",
+        "https://openalex.org/W145047842",
+        "https://openalex.org/W188850868",
+        "https://openalex.org/W213618106",
+        "https://openalex.org/W426509933",
+        "https://openalex.org/W577344601",
+        "https://openalex.org/W587345542",
+        "https://openalex.org/W603838335",
+        "https://openalex.org/W830453739",
+        "https://openalex.org/W890515235",
+        "https://openalex.org/W1492851095",
+        "https://openalex.org/W1521606574",
+        "https://openalex.org/W1527311855",
+        "https://openalex.org/W1806688136",
+        "https://openalex.org/W1964536381",
+        "https://openalex.org/W1972531816",
+        "https://openalex.org/W1997656182",
+        "https://openalex.org/W2033000832",
+        "https://openalex.org/W2034093027",
+        "https://openalex.org/W2034338084",
+        "https://openalex.org/W2039340703",
+        "https://openalex.org/W2043617625",
+        "https://openalex.org/W2052761600",
+        "https://openalex.org/W2060927418",
+        "https://openalex.org/W2064882171",
+        "https://openalex.org/W2087510452",
+        "https://openalex.org/W2440302202",
+        "https://openalex.org/W2737641736",
+        "https://openalex.org/W2798601923"
+      ],
+      "related_works": [
+        "https://openalex.org/W2943322579",
+        "https://openalex.org/W110183803",
+        "https://openalex.org/W144688891",
+        "https://openalex.org/W344737520",
+        "https://openalex.org/W2911551962",
+        "https://openalex.org/W58630543",
+        "https://openalex.org/W268577779",
+        "https://openalex.org/W350014172",
+        "https://openalex.org/W2079496630",
+        "https://openalex.org/W147087476",
+        "https://openalex.org/W1982101565",
+        "https://openalex.org/W1480026717",
+        "https://openalex.org/W2341686697",
+        "https://openalex.org/W40367188",
+        "https://openalex.org/W287003691",
+        "https://openalex.org/W3200319182",
+        "https://openalex.org/W1528970393",
+        "https://openalex.org/W246207794",
+        "https://openalex.org/W274981024",
+        "https://openalex.org/W2099353414"
+      ],
+      "abstract_inverted_index": {
+        "Character": [
+          0
+        ],
+        "education": [
+          1,
+          52,
+          87,
+          114,
+          135
+        ],
+        "has": [
+          2,
+          17
+        ],
+        "been": [
+          3
+        ],
+        "a": [
+          4,
+          139
+        ],
+        "part": [
+          5
+        ],
+        "of": [
+          6,
+          69,
+          79,
+          91,
+          108,
+          111
+        ],
+        "public": [
+          7
+        ],
+        "schooling": [
+          8
+        ],
+        "in": [
+          9,
+          41,
+          53,
+          56,
+          73
+        ],
+        "the": [
+          10,
+          22,
+          57,
+          65,
+          89,
+          109,
+          146,
+          152
+        ],
+        "United": [
+          11
+        ],
+        "States": [
+          12
+        ],
+        "since": [
+          13
+        ],
+        "its": [
+          14
+        ],
+        "beginning.": [
+          15
+        ],
+        "It": [
+          16
+        ],
+        "undergone": [
+          18
+        ],
+        "dramatic": [
+          19
+        ],
+        "changes": [
+          20
+        ],
+        "over": [
+          21
+        ],
+        "years,": [
+          23
+        ],
+        "from": [
+          24,
+          45,
+          129
+        ],
+        "didactic": [
+          25
+        ],
+        "instruction": [
+          26
+        ],
+        "to": [
+          27,
+          32,
+          63,
+          83,
+          104,
+          123,
+          149
+        ],
+        "service": [
+          28
+        ],
+        "learning;": [
+          29
+        ],
+        "it": [
+          30
+        ],
+        "continues": [
+          31
+        ],
+        "evolve": [
+          33
+        ],
+        "as": [
+          34,
+          60,
+          71
+        ],
+        "more": [
+          35,
+          37
+        ],
+        "and": [
+          36,
+          102,
+          119
+        ],
+        "schools": [
+          38,
+          54
+        ],
+        "become": [
+          39
+        ],
+        "involved": [
+          40
+        ],
+        "teaching": [
+          42
+        ],
+        "students": [
+          43,
+          70
+        ],
+        "right": [
+          44
+        ],
+        "wrong.": [
+          46
+        ],
+        "The": [
+          47,
+          77,
+          93,
+          127
+        ],
+        "current": [
+          48
+        ],
+        "emphasis": [
+          49
+        ],
+        "on": [
+          50,
+          116,
+          142
+        ],
+        "character": [
+          51,
+          86,
+          113,
+          134
+        ],
+        "began": [
+          55
+        ],
+        "early": [
+          58
+        ],
+        "1990s": [
+          59
+        ],
+        "an": [
+          61
+        ],
+        "attempt": [
+          62
+        ],
+        "alleviate": [
+          64
+        ],
+        "increasingly": [
+          66
+        ],
+        "violent": [
+          67
+        ],
+        "behavior": [
+          68,
+          90
+        ],
+        "reported": [
+          72
+        ],
+        "he": [
+          74
+        ],
+        "m": [
+          75
+        ],
+        "dia.": [
+          76
+        ],
+        "purpose": [
+          78
+        ],
+        "this": [
+          80,
+          130
+        ],
+        "study": [
+          81,
+          94,
+          131
+        ],
+        "was": [
+          82
+        ],
+        "determine": [
+          84,
+          105
+        ],
+        "how": [
+          85
+        ],
+        "affected": [
+          88
+        ],
+        "students.": [
+          92
+        ],
+        "involved:": [
+          95
+        ],
+        "observing": [
+          96
+        ],
+        "student": [
+          97,
+          117,
+          143
+        ],
+        "behavior;": [
+          98,
+          118
+        ],
+        "interviewing": [
+          99
+        ],
+        "teachers,": [
+          100
+        ],
+        "students,": [
+          101
+        ],
+        "parents": [
+          103
+        ],
+        "their": [
+          106
+        ],
+        "perceptions": [
+          107
+        ],
+        "effects": [
+          110
+        ],
+        "th": [
+          112
+        ],
+        "program": [
+          115
+        ],
+        "reviewing": [
+          120
+        ],
+        "disciplinary": [
+          121
+        ],
+        "records": [
+          122
+        ],
+        "identify": [
+          124
+        ],
+        "behavioral": [
+          125
+        ],
+        "patterns.": [
+          126
+        ],
+        "findings": [
+          128,
+          147
+        ],
+        "suggested": [
+          132
+        ],
+        "that": [
+          133
+        ],
+        "programs": [
+          136
+        ],
+        "may": [
+          137
+        ],
+        "have": [
+          138
+        ],
+        "positive": [
+          140
+        ],
+        "effect": [
+          141
+        ],
+        "behavior.": [
+          144
+        ],
+        "Furthermoe,": [
+          145
+        ],
+        "led": [
+          148
+        ],
+        "recommendations": [
+          150
+        ],
+        "regarding": [
+          151
+        ]
+      },
+      "counts_by_year": [
+        {
+          "year": 2025,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2023,
+          "cited_by_count": 3
+        },
+        {
+          "year": 2022,
+          "cited_by_count": 4
+        },
+        {
+          "year": 2021,
+          "cited_by_count": 4
+        },
+        {
+          "year": 2020,
+          "cited_by_count": 7
+        },
+        {
+          "year": 2019,
+          "cited_by_count": 3
+        },
+        {
+          "year": 2018,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2017,
+          "cited_by_count": 5
+        }
+      ],
+      "updated_date": "2025-11-06T04:12:42.849631",
+      "created_date": "2025-10-10T00:00:00"
+    },
+    {
+      "id": "https://openalex.org/W2002917977",
+      "doi": "https://doi.org/10.1007/s11013-009-9155-1",
+      "title": "\u201cA Massive Long Way\u201d: Interconnecting Histories, a \u201cSpecial Child,\u201d ADHD, and Everyday Family Life",
+      "display_name": "\u201cA Massive Long Way\u201d: Interconnecting Histories, a \u201cSpecial Child,\u201d ADHD, and Everyday Family Life",
+      "relevance_score": 13.071634,
+      "publication_year": 2009,
+      "publication_date": "2009-09-28",
+      "ids": {
+        "openalex": "https://openalex.org/W2002917977",
+        "doi": "https://doi.org/10.1007/s11013-009-9155-1",
+        "mag": "2002917977",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/19787444"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "doi:10.1007/s11013-009-9155-1",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1007/s11013-009-9155-1",
+        "pdf_url": "https://link.springer.com/content/pdf/10.1007/s11013-009-9155-1.pdf",
+        "source": {
+          "id": "https://openalex.org/S75857574",
+          "display_name": "Culture Medicine and Psychiatry",
+          "issn_l": "0165-005X",
+          "issn": [
+            "0165-005X",
+            "1573-076X"
+          ],
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": true,
+          "host_organization": "https://openalex.org/P4310319900",
+          "host_organization_name": "Springer Science+Business Media",
+          "host_organization_lineage": [
+            "https://openalex.org/P4310319900",
+            "https://openalex.org/P4310319965"
+          ],
+          "host_organization_lineage_names": [
+            "Springer Science+Business Media",
+            "Springer Nature"
+          ],
+          "type": "journal"
+        },
+        "license": "cc-by-nc",
+        "license_id": "https://openalex.org/licenses/cc-by-nc",
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Culture, Medicine, and Psychiatry",
+        "raw_type": "journal-article"
+      },
+      "type": "article",
+      "indexed_in": [
+        "crossref",
+        "pubmed"
+      ],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "hybrid",
+        "oa_url": "https://link.springer.com/content/pdf/10.1007/s11013-009-9155-1.pdf",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5008795997",
+            "display_name": "Linda C. Garro",
+            "orcid": null
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I161318765",
+              "display_name": "University of California, Los Angeles",
+              "ror": "https://ror.org/046rm7j60",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I161318765"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": true,
+          "raw_author_name": "Linda C. Garro",
+          "raw_affiliation_strings": [
+            "Department of Anthropology, University of California, Los Angeles, 90095, USA. lgarro@anthro.ucla.edu",
+            "Department of Anthropology, University of California\u2014Los Angeles, Los Angeles, USA"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Department of Anthropology, University of California, Los Angeles, 90095, USA. lgarro@anthro.ucla.edu",
+              "institution_ids": [
+                "https://openalex.org/I161318765"
+              ]
+            },
+            {
+              "raw_affiliation_string": "Department of Anthropology, University of California\u2014Los Angeles, Los Angeles, USA",
+              "institution_ids": [
+                "https://openalex.org/I161318765"
+              ]
+            }
+          ]
+        },
+        {
+          "author_position": "last",
+          "author": {
+            "id": "https://openalex.org/A5048998758",
+            "display_name": "Kristin Elizabeth Yarris",
+            "orcid": "https://orcid.org/0000-0001-8961-3994"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I161318765",
+              "display_name": "University of California, Los Angeles",
+              "ror": "https://ror.org/046rm7j60",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I161318765"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": false,
+          "raw_author_name": "Kristin E. Yarris",
+          "raw_affiliation_strings": [
+            "Department of Anthropology, University of California, Los Angeles, 341 Haines Hall, Los Angeles, CA, 90095, USA",
+            "Department of Anthropology, University of California\u2014Los Angeles, Los Angeles, USA"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Department of Anthropology, University of California, Los Angeles, 341 Haines Hall, Los Angeles, CA, 90095, USA",
+              "institution_ids": [
+                "https://openalex.org/I161318765"
+              ]
+            },
+            {
+              "raw_affiliation_string": "Department of Anthropology, University of California\u2014Los Angeles, Los Angeles, USA",
+              "institution_ids": [
+                "https://openalex.org/I161318765"
+              ]
+            }
+          ]
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 1,
+      "institutions_distinct_count": 2,
+      "corresponding_author_ids": [
+        "https://openalex.org/A5008795997"
+      ],
+      "corresponding_institution_ids": [
+        "https://openalex.org/I161318765"
+      ],
+      "apc_list": {
+        "value": 2290,
+        "currency": "EUR",
+        "value_usd": 2890
+      },
+      "apc_paid": {
+        "value": 2290,
+        "currency": "EUR",
+        "value_usd": 2890
+      },
+      "fwci": 0.8463,
+      "has_fulltext": true,
+      "cited_by_count": 21,
+      "citation_normalized_percentile": {
+        "value": 0.71415197,
+        "is_in_top_1_percent": false,
+        "is_in_top_10_percent": false
+      },
+      "cited_by_percentile_year": {
+        "min": 89,
+        "max": 98
+      },
+      "biblio": {
+        "volume": "33",
+        "issue": "4",
+        "first_page": "559",
+        "last_page": "607"
+      },
+      "is_retracted": false,
+      "is_paratext": false,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10537",
+        "display_name": "Attention Deficit Hyperactivity Disorder",
+        "score": 0.9947999715805054,
+        "subfield": {
+          "id": "https://openalex.org/subfields/2738",
+          "display_name": "Psychiatry and Mental health"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/27",
+          "display_name": "Medicine"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/4",
+          "display_name": "Health Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10537",
+          "display_name": "Attention Deficit Hyperactivity Disorder",
+          "score": 0.9947999715805054,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2738",
+            "display_name": "Psychiatry and Mental health"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/27",
+            "display_name": "Medicine"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/4",
+            "display_name": "Health Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11678",
+          "display_name": "Healthcare Decision-Making and Restraints",
+          "score": 0.9864000082015991,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3203",
+            "display_name": "Clinical Psychology"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/32",
+            "display_name": "Psychology"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11953",
+          "display_name": "Neuroethics, Human Enhancement, Biomedical Innovations",
+          "score": 0.986299991607666,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2805",
+            "display_name": "Cognitive Neuroscience"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/28",
+            "display_name": "Neuroscience"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/1",
+            "display_name": "Life Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/narrative",
+          "display_name": "Narrative",
+          "score": 0.6495251655578613
+        },
+        {
+          "id": "https://openalex.org/keywords/context",
+          "display_name": "Context (archaeology)",
+          "score": 0.6218376159667969
+        },
+        {
+          "id": "https://openalex.org/keywords/everyday-life",
+          "display_name": "Everyday life",
+          "score": 0.6113393902778625
+        },
+        {
+          "id": "https://openalex.org/keywords/psychology",
+          "display_name": "Psychology",
+          "score": 0.4578624367713928
+        },
+        {
+          "id": "https://openalex.org/keywords/family-life",
+          "display_name": "Family life",
+          "score": 0.442327618598938
+        },
+        {
+          "id": "https://openalex.org/keywords/sociology",
+          "display_name": "Sociology",
+          "score": 0.39907774329185486
+        },
+        {
+          "id": "https://openalex.org/keywords/developmental-psychology",
+          "display_name": "Developmental psychology",
+          "score": 0.3266249895095825
+        },
+        {
+          "id": "https://openalex.org/keywords/aesthetics",
+          "display_name": "Aesthetics",
+          "score": 0.3227289915084839
+        },
+        {
+          "id": "https://openalex.org/keywords/gender-studies",
+          "display_name": "Gender studies",
+          "score": 0.3124021887779236
+        },
+        {
+          "id": "https://openalex.org/keywords/history",
+          "display_name": "History",
+          "score": 0.17748817801475525
+        },
+        {
+          "id": "https://openalex.org/keywords/epistemology",
+          "display_name": "Epistemology",
+          "score": 0.14743924140930176
+        },
+        {
+          "id": "https://openalex.org/keywords/art",
+          "display_name": "Art",
+          "score": 0.1441877782344818
+        },
+        {
+          "id": "https://openalex.org/keywords/literature",
+          "display_name": "Literature",
+          "score": 0.11551022529602051
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C199033989",
+          "wikidata": "https://www.wikidata.org/wiki/Q1318295",
+          "display_name": "Narrative",
+          "level": 2,
+          "score": 0.6495251655578613
+        },
+        {
+          "id": "https://openalex.org/C2779343474",
+          "wikidata": "https://www.wikidata.org/wiki/Q3109175",
+          "display_name": "Context (archaeology)",
+          "level": 2,
+          "score": 0.6218376159667969
+        },
+        {
+          "id": "https://openalex.org/C2779018934",
+          "wikidata": "https://www.wikidata.org/wiki/Q1129653",
+          "display_name": "Everyday life",
+          "level": 2,
+          "score": 0.6113393902778625
+        },
+        {
+          "id": "https://openalex.org/C15744967",
+          "wikidata": "https://www.wikidata.org/wiki/Q9418",
+          "display_name": "Psychology",
+          "level": 0,
+          "score": 0.4578624367713928
+        },
+        {
+          "id": "https://openalex.org/C2993804084",
+          "wikidata": "https://www.wikidata.org/wiki/Q8436",
+          "display_name": "Family life",
+          "level": 2,
+          "score": 0.442327618598938
+        },
+        {
+          "id": "https://openalex.org/C144024400",
+          "wikidata": "https://www.wikidata.org/wiki/Q21201",
+          "display_name": "Sociology",
+          "level": 0,
+          "score": 0.39907774329185486
+        },
+        {
+          "id": "https://openalex.org/C138496976",
+          "wikidata": "https://www.wikidata.org/wiki/Q175002",
+          "display_name": "Developmental psychology",
+          "level": 1,
+          "score": 0.3266249895095825
+        },
+        {
+          "id": "https://openalex.org/C107038049",
+          "wikidata": "https://www.wikidata.org/wiki/Q35986",
+          "display_name": "Aesthetics",
+          "level": 1,
+          "score": 0.3227289915084839
+        },
+        {
+          "id": "https://openalex.org/C107993555",
+          "wikidata": "https://www.wikidata.org/wiki/Q1662673",
+          "display_name": "Gender studies",
+          "level": 1,
+          "score": 0.3124021887779236
+        },
+        {
+          "id": "https://openalex.org/C95457728",
+          "wikidata": "https://www.wikidata.org/wiki/Q309",
+          "display_name": "History",
+          "level": 0,
+          "score": 0.17748817801475525
+        },
+        {
+          "id": "https://openalex.org/C111472728",
+          "wikidata": "https://www.wikidata.org/wiki/Q9471",
+          "display_name": "Epistemology",
+          "level": 1,
+          "score": 0.14743924140930176
+        },
+        {
+          "id": "https://openalex.org/C142362112",
+          "wikidata": "https://www.wikidata.org/wiki/Q735",
+          "display_name": "Art",
+          "level": 0,
+          "score": 0.1441877782344818
+        },
+        {
+          "id": "https://openalex.org/C124952713",
+          "wikidata": "https://www.wikidata.org/wiki/Q8242",
+          "display_name": "Literature",
+          "level": 1,
+          "score": 0.11551022529602051
+        },
+        {
+          "id": "https://openalex.org/C166957645",
+          "wikidata": "https://www.wikidata.org/wiki/Q23498",
+          "display_name": "Archaeology",
+          "level": 1,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C138885662",
+          "wikidata": "https://www.wikidata.org/wiki/Q5891",
+          "display_name": "Philosophy",
+          "level": 0,
+          "score": 0.0
+        }
+      ],
+      "mesh": [
+        {
+          "descriptor_ui": "D001289",
+          "descriptor_name": "Attention Deficit Disorder with Hyperactivity",
+          "qualifier_ui": "Q000523",
+          "qualifier_name": "psychology",
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D001289",
+          "descriptor_name": "Attention Deficit Disorder with Hyperactivity",
+          "qualifier_ui": "Q000523",
+          "qualifier_name": "psychology",
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D001289",
+          "descriptor_name": "Attention Deficit Disorder with Hyperactivity",
+          "qualifier_ui": "Q000523",
+          "qualifier_name": "psychology",
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D002648",
+          "descriptor_name": "Child",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D002648",
+          "descriptor_name": "Child",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D002648",
+          "descriptor_name": "Child",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D005195",
+          "descriptor_name": "Family Relations",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": true
+        },
+        {
+          "descriptor_ui": "D005195",
+          "descriptor_name": "Family Relations",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": true
+        },
+        {
+          "descriptor_ui": "D005195",
+          "descriptor_name": "Family Relations",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": true
+        },
+        {
+          "descriptor_ui": "D005260",
+          "descriptor_name": "Female",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D005260",
+          "descriptor_name": "Female",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D005260",
+          "descriptor_name": "Female",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D006801",
+          "descriptor_name": "Humans",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D006801",
+          "descriptor_name": "Humans",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D006801",
+          "descriptor_name": "Humans",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D007407",
+          "descriptor_name": "Interviews as Topic",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D007407",
+          "descriptor_name": "Interviews as Topic",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D007407",
+          "descriptor_name": "Interviews as Topic",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D008297",
+          "descriptor_name": "Male",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D008297",
+          "descriptor_name": "Male",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D008297",
+          "descriptor_name": "Male",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D014743",
+          "descriptor_name": "Videotape Recording",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D014743",
+          "descriptor_name": "Videotape Recording",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D014743",
+          "descriptor_name": "Videotape Recording",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D014836",
+          "descriptor_name": "Volition",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D014836",
+          "descriptor_name": "Volition",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D014836",
+          "descriptor_name": "Volition",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D015141",
+          "descriptor_name": "Los Angeles",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D015141",
+          "descriptor_name": "Los Angeles",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D015141",
+          "descriptor_name": "Los Angeles",
+          "qualifier_ui": null,
+          "qualifier_name": null,
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D019988",
+          "descriptor_name": "Children with Disabilities",
+          "qualifier_ui": "Q000523",
+          "qualifier_name": "psychology",
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D019988",
+          "descriptor_name": "Children with Disabilities",
+          "qualifier_ui": "Q000523",
+          "qualifier_name": "psychology",
+          "is_major_topic": false
+        },
+        {
+          "descriptor_ui": "D019988",
+          "descriptor_name": "Disabled Children",
+          "qualifier_ui": "Q000523",
+          "qualifier_name": "psychology",
+          "is_major_topic": false
+        }
+      ],
+      "locations_count": 4,
+      "locations": [
+        {
+          "id": "doi:10.1007/s11013-009-9155-1",
+          "is_oa": true,
+          "landing_page_url": "https://doi.org/10.1007/s11013-009-9155-1",
+          "pdf_url": "https://link.springer.com/content/pdf/10.1007/s11013-009-9155-1.pdf",
+          "source": {
+            "id": "https://openalex.org/S75857574",
+            "display_name": "Culture Medicine and Psychiatry",
+            "issn_l": "0165-005X",
+            "issn": [
+              "0165-005X",
+              "1573-076X"
+            ],
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": true,
+            "host_organization": "https://openalex.org/P4310319900",
+            "host_organization_name": "Springer Science+Business Media",
+            "host_organization_lineage": [
+              "https://openalex.org/P4310319900",
+              "https://openalex.org/P4310319965"
+            ],
+            "host_organization_lineage_names": [
+              "Springer Science+Business Media",
+              "Springer Nature"
+            ],
+            "type": "journal"
+          },
+          "license": "cc-by-nc",
+          "license_id": "https://openalex.org/licenses/cc-by-nc",
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Culture, Medicine, and Psychiatry",
+          "raw_type": "journal-article"
+        },
+        {
+          "id": "pmid:19787444",
+          "is_oa": false,
+          "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/19787444",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306525036",
+            "display_name": "PubMed",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "host_organization": "https://openalex.org/I1299303238",
+            "host_organization_name": "National Institutes of Health",
+            "host_organization_lineage": [
+              "https://openalex.org/I1299303238"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Culture, medicine and psychiatry",
+          "raw_type": null
+        },
+        {
+          "id": "pmh:oai:escholarship.org/ark:/13030/qt82k3n470",
+          "is_oa": false,
+          "landing_page_url": "https://escholarship.org/uc/item/82k3n470",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306400115",
+            "display_name": "eScholarship (California Digital Library)",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "host_organization": "https://openalex.org/I2801248553",
+            "host_organization_name": "California Digital Library",
+            "host_organization_lineage": [
+              "https://openalex.org/I2801248553"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "Culture, Medicine, and Psychiatry: An International Journal of Cross-Cultural Health\\nResearch, vol 33, iss 4",
+          "raw_type": "article"
+        },
+        {
+          "id": "pmh:oai:pubmedcentral.nih.gov:2759016",
+          "is_oa": true,
+          "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/2759016",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S2764455111",
+            "display_name": "PubMed Central",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": true,
+            "is_in_doaj": false,
+            "is_core": false,
+            "host_organization": "https://openalex.org/I1299303238",
+            "host_organization_name": "National Institutes of Health",
+            "host_organization_lineage": [
+              "https://openalex.org/I1299303238"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "Cult Med Psychiatry",
+          "raw_type": "Text"
+        }
+      ],
+      "best_oa_location": {
+        "id": "doi:10.1007/s11013-009-9155-1",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1007/s11013-009-9155-1",
+        "pdf_url": "https://link.springer.com/content/pdf/10.1007/s11013-009-9155-1.pdf",
+        "source": {
+          "id": "https://openalex.org/S75857574",
+          "display_name": "Culture Medicine and Psychiatry",
+          "issn_l": "0165-005X",
+          "issn": [
+            "0165-005X",
+            "1573-076X"
+          ],
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": true,
+          "host_organization": "https://openalex.org/P4310319900",
+          "host_organization_name": "Springer Science+Business Media",
+          "host_organization_lineage": [
+            "https://openalex.org/P4310319900",
+            "https://openalex.org/P4310319965"
+          ],
+          "host_organization_lineage_names": [
+            "Springer Science+Business Media",
+            "Springer Nature"
+          ],
+          "type": "journal"
+        },
+        "license": "cc-by-nc",
+        "license_id": "https://openalex.org/licenses/cc-by-nc",
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Culture, Medicine, and Psychiatry",
+        "raw_type": "journal-article"
+      },
+      "sustainable_development_goals": [],
+      "awards": [],
+      "funders": [
+        {
+          "id": "https://openalex.org/F4320306151",
+          "display_name": "Alfred P. Sloan Foundation",
+          "ror": "https://ror.org/052csg198"
+        },
+        {
+          "id": "https://openalex.org/F4320309381",
+          "display_name": "Emory University",
+          "ror": "https://ror.org/03czfpz43"
+        },
+        {
+          "id": "https://openalex.org/F4320332864",
+          "display_name": "Society for Psychological Anthropology",
+          "ror": "https://ror.org/02b8m7s43"
+        }
+      ],
+      "has_content": {
+        "grobid_xml": true,
+        "pdf": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W2002917977.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W2002917977.grobid-xml"
+      },
+      "referenced_works_count": 61,
+      "referenced_works": [
+        "https://openalex.org/W166851476",
+        "https://openalex.org/W166959835",
+        "https://openalex.org/W182633242",
+        "https://openalex.org/W243412882",
+        "https://openalex.org/W382180162",
+        "https://openalex.org/W438687666",
+        "https://openalex.org/W587632794",
+        "https://openalex.org/W588877187",
+        "https://openalex.org/W590273923",
+        "https://openalex.org/W592500709",
+        "https://openalex.org/W594083834",
+        "https://openalex.org/W606423883",
+        "https://openalex.org/W642878639",
+        "https://openalex.org/W1562748904",
+        "https://openalex.org/W1575845858",
+        "https://openalex.org/W1576908921",
+        "https://openalex.org/W1601337787",
+        "https://openalex.org/W1603683491",
+        "https://openalex.org/W1604476085",
+        "https://openalex.org/W1790202905",
+        "https://openalex.org/W1981590158",
+        "https://openalex.org/W1983719177",
+        "https://openalex.org/W1990705124",
+        "https://openalex.org/W2007875534",
+        "https://openalex.org/W2011721313",
+        "https://openalex.org/W2015104175",
+        "https://openalex.org/W2026135506",
+        "https://openalex.org/W2040610760",
+        "https://openalex.org/W2042886120",
+        "https://openalex.org/W2049466450",
+        "https://openalex.org/W2061283377",
+        "https://openalex.org/W2068677358",
+        "https://openalex.org/W2071837450",
+        "https://openalex.org/W2077009652",
+        "https://openalex.org/W2078488451",
+        "https://openalex.org/W2080116872",
+        "https://openalex.org/W2081833025",
+        "https://openalex.org/W2082418672",
+        "https://openalex.org/W2089323671",
+        "https://openalex.org/W2106792511",
+        "https://openalex.org/W2150947790",
+        "https://openalex.org/W2159011576",
+        "https://openalex.org/W2160499004",
+        "https://openalex.org/W2166307729",
+        "https://openalex.org/W2169722072",
+        "https://openalex.org/W2313900445",
+        "https://openalex.org/W2487492000",
+        "https://openalex.org/W2495162596",
+        "https://openalex.org/W2505474797",
+        "https://openalex.org/W2506700509",
+        "https://openalex.org/W2529833596",
+        "https://openalex.org/W3023116981",
+        "https://openalex.org/W3174492367",
+        "https://openalex.org/W4234228858",
+        "https://openalex.org/W4236254244",
+        "https://openalex.org/W4254110988",
+        "https://openalex.org/W4255396331",
+        "https://openalex.org/W4285719527",
+        "https://openalex.org/W4299636778",
+        "https://openalex.org/W4301461015",
+        "https://openalex.org/W4389382249"
+      ],
+      "related_works": [
+        "https://openalex.org/W2348886128",
+        "https://openalex.org/W2388067091",
+        "https://openalex.org/W2593269833",
+        "https://openalex.org/W4248065973",
+        "https://openalex.org/W2147335026",
+        "https://openalex.org/W2003378975",
+        "https://openalex.org/W4377138844",
+        "https://openalex.org/W3083811524",
+        "https://openalex.org/W2990693992",
+        "https://openalex.org/W1972406803"
+      ],
+      "abstract_inverted_index": {
+        "Focusing": [
+          0
+        ],
+        "on": [
+          1,
+          20,
+          65,
+          218
+        ],
+        "one": [
+          2
+        ],
+        "family": [
+          3,
+          127
+        ],
+        "from": [
+          4
+        ],
+        "a": [
+          5,
+          188,
+          251,
+          264
+        ],
+        "study": [
+          6
+        ],
+        "of": [
+          7,
+          25,
+          39,
+          49,
+          84,
+          88,
+          116,
+          140,
+          198,
+          237,
+          254,
+          266
+        ],
+        "dual-earner": [
+          8
+        ],
+        "middle-class": [
+          9
+        ],
+        "families": [
+          10,
+          246
+        ],
+        "carried": [
+          11
+        ],
+        "out": [
+          12
+        ],
+        "in": [
+          13,
+          35,
+          56,
+          97,
+          118,
+          191,
+          223,
+          248,
+          277
+        ],
+        "Los": [
+          14
+        ],
+        "Angeles,": [
+          15
+        ],
+        "California,": [
+          16
+        ],
+        "this": [
+          17,
+          44,
+          77,
+          163
+        ],
+        "article": [
+          18
+        ],
+        "draws": [
+          19
+        ],
+        "interview": [
+          21
+        ],
+        "and": [
+          22,
+          31,
+          94,
+          107,
+          147,
+          149,
+          185,
+          231,
+          241
+        ],
+        "video-recorded": [
+          23
+        ],
+        "data": [
+          24
+        ],
+        "everyday": [
+          26,
+          98,
+          224
+        ],
+        "interactions": [
+          27
+        ],
+        "to": [
+          28,
+          120,
+          151,
+          154,
+          158,
+          180,
+          187,
+          203,
+          214,
+          216,
+          270,
+          286
+        ],
+        "explore": [
+          29,
+          112
+        ],
+        "illness": [
+          30
+        ],
+        "healing": [
+          32,
+          117
+        ],
+        "as": [
+          33,
+          105,
+          109,
+          263
+        ],
+        "embedded": [
+          34
+        ],
+        "the": [
+          36,
+          40,
+          82,
+          113,
+          126,
+          137,
+          141,
+          166,
+          170,
+          176,
+          238,
+          275
+        ],
+        "microcultural": [
+          37
+        ],
+        "context": [
+          38
+        ],
+        "Morris": [
+          41,
+          167,
+          177
+        ],
+        "family.": [
+          42,
+          168
+        ],
+        "For": [
+          43
+        ],
+        "family,": [
+          45
+        ],
+        "an": [
+          46,
+          196
+        ],
+        "important": [
+          47
+        ],
+        "aspect": [
+          48
+        ],
+        "what": [
+          50,
+          219
+        ],
+        "is": [
+          51,
+          60,
+          92,
+          201,
+          220,
+          260,
+          284
+        ],
+        "at": [
+          52,
+          128,
+          221
+        ],
+        "stake": [
+          53,
+          222
+        ],
+        "for": [
+          54,
+          144,
+          205,
+          227
+        ],
+        "them": [
+          55
+        ],
+        "their": [
+          57,
+          232
+        ],
+        "daily": [
+          58
+        ],
+        "lives": [
+          59,
+          104,
+          108
+        ],
+        "best": [
+          61
+        ],
+        "understood": [
+          62
+        ],
+        "by": [
+          63
+        ],
+        "focusing": [
+          64
+        ],
+        "9-year-old": [
+          66
+        ],
+        "Mark,": [
+          67
+        ],
+        "who": [
+          68
+        ],
+        "has": [
+          69
+        ],
+        "been": [
+          70
+        ],
+        "diagnosed": [
+          71
+        ],
+        "with": [
+          72,
+          81,
+          125,
+          229,
+          250
+        ],
+        "attention-deficit/hyperactivity": [
+          73
+        ],
+        "disorder": [
+          74
+        ],
+        "(ADHD).": [
+          75
+        ],
+        "In": [
+          76
+        ],
+        "article,": [
+          78
+        ],
+        "we": [
+          79,
+          111,
+          173,
+          211,
+          268
+        ],
+        "grapple": [
+          80
+        ],
+        "complexity": [
+          83
+        ],
+        "conveying": [
+          85
+        ],
+        "some": [
+          86
+        ],
+        "sense": [
+          87
+        ],
+        "how": [
+          89,
+          133,
+          175,
+          199
+        ],
+        "Mark's": [
+          90,
+          121,
+          182,
+          193
+        ],
+        "condition": [
+          91
+        ],
+        "experienced": [
+          93
+        ],
+        "relationally": [
+          95
+        ],
+        "enacted": [
+          96
+        ],
+        "contexts.": [
+          99
+        ],
+        "Through": [
+          100,
+          208
+        ],
+        "illuminating": [
+          101,
+          235
+        ],
+        "connections": [
+          102
+        ],
+        "between": [
+          103
+        ],
+        "lived": [
+          106
+        ],
+        "told,": [
+          110
+        ],
+        "narrative": [
+          114
+        ],
+        "structuring": [
+          115
+        ],
+        "relation": [
+          119
+        ],
+        "local": [
+          122
+        ],
+        "moral": [
+          123,
+          138,
+          183,
+          240
+        ],
+        "world": [
+          124
+        ],
+        "its": [
+          129
+        ],
+        "center.": [
+          130
+        ],
+        "We": [
+          131
+        ],
+        "examine": [
+          132
+        ],
+        "his": [
+          134,
+          145,
+          159,
+          206
+        ],
+        "parents": [
+          135,
+          178
+        ],
+        "understand": [
+          136
+        ],
+        "consequences": [
+          139
+        ],
+        "child's": [
+          142,
+          252
+        ],
+        "past": [
+          143
+        ],
+        "present": [
+          146
+        ],
+        "future,": [
+          148
+        ],
+        "work": [
+          150
+        ],
+        "encourage": [
+          152
+        ],
+        "others": [
+          153,
+          204
+        ],
+        "give": [
+          155
+        ],
+        "due": [
+          156
+        ],
+        "weight": [
+          157
+        ],
+        "troubled": [
+          160
+        ],
+        "beginnings": [
+          161
+        ],
+        "before": [
+          162
+        ],
+        "child": [
+          164
+        ],
+        "joined": [
+          165
+        ],
+        "At": [
+          169
+        ],
+        "same": [
+          171
+        ],
+        "time,": [
+          172
+        ],
+        "see": [
+          174
+        ],
+        "act": [
+          179
+        ],
+        "structure": [
+          181
+        ],
+        "experience": [
+          184
+        ],
+        "orient": [
+          186
+        ],
+        "desired": [
+          189
+        ],
+        "future": [
+          190
+        ],
+        "which": [
+          192
+        ],
+        "\"success\"": [
+          194
+        ],
+        "includes": [
+          195
+        ],
+        "appreciation": [
+          197
+        ],
+        "he": [
+          200
+        ],
+        "accountable": [
+          202
+        ],
+        "actions.": [
+          207
+        ],
+        "our": [
+          209
+        ],
+        "analyses,": [
+          210
+        ],
+        "also": [
+          212
+        ],
+        "seek": [
+          213,
+          269
+        ],
+        "contribute": [
+          215
+        ],
+        "discussions": [
+          217
+        ],
+        "life": [
+          225
+        ],
+        "contexts": [
+          226
+        ],
+        "children": [
+          228
+        ],
+        "ADHD": [
+          230,
+          259
+        ],
+        "families,": [
+          233
+        ],
+        "through": [
+          234
+        ],
+        "aspects": [
+          236
+        ],
+        "cultural,": [
+          239
+        ],
+        "relational": [
+          242
+        ],
+        "terrain": [
+          243
+        ],
+        "that": [
+          244,
+          258
+        ],
+        "U.S.": [
+          245
+        ],
+        "navigate": [
+          247
+        ],
+        "contending": [
+          249
+        ],
+        "diagnosis": [
+          253
+        ],
+        "ADHD.": [
+          255
+        ],
+        "Further,": [
+          256
+        ],
+        "given": [
+          257
+        ],
+        "often": [
+          261
+        ],
+        "construed": [
+          262
+        ],
+        "\"disorder": [
+          265
+        ],
+        "volition,\"": [
+          267
+        ],
+        "advance": [
+          271
+        ],
+        "anthropological": [
+          272
+        ],
+        "theorizing": [
+          273
+        ],
+        "about": [
+          274
+        ],
+        "will": [
+          276
+        ],
+        "situations": [
+          278
+        ],
+        "where": [
+          279
+        ],
+        "volitional": [
+          280
+        ],
+        "control": [
+          281
+        ],
+        "over": [
+          282
+        ],
+        "behavior": [
+          283
+        ],
+        "seen": [
+          285
+        ],
+        "be": [
+          287
+        ],
+        "disordered.": [
+          288
+        ]
+      },
+      "counts_by_year": [
+        {
+          "year": 2025,
+          "cited_by_count": 2
+        },
+        {
+          "year": 2024,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2023,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2021,
+          "cited_by_count": 2
+        },
+        {
+          "year": 2020,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2019,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2016,
+          "cited_by_count": 5
+        },
+        {
+          "year": 2015,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2014,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2013,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2012,
+          "cited_by_count": 2
+        }
+      ],
+      "updated_date": "2026-05-05T08:41:31.759640",
+      "created_date": "2025-10-10T00:00:00"
+    },
+    {
+      "id": "https://openalex.org/W2291644965",
+      "doi": null,
+      "title": "Exploring the Moral Dimension of Professors' Folk Pedagogy",
+      "display_name": "Exploring the Moral Dimension of Professors' Folk Pedagogy",
+      "relevance_score": 10.27549,
+      "publication_year": 1997,
+      "publication_date": "1997-12-01",
+      "ids": {
+        "openalex": "https://openalex.org/W2291644965",
+        "mag": "2291644965"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "pmh:oai:vtechworks.lib.vt.edu:10919/29826",
+        "is_oa": true,
+        "landing_page_url": "http://scholar.lib.vt.edu/theses/available/etd-11597-114041/",
+        "pdf_url": "http://hdl.handle.net/10919/29826",
+        "source": {
+          "id": "https://openalex.org/S4306400248",
+          "display_name": "VTechWorks (Virginia Tech)",
+          "issn_l": null,
+          "issn": null,
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": false,
+          "host_organization": "https://openalex.org/I859038795",
+          "host_organization_name": "Virginia Tech",
+          "host_organization_lineage": [
+            "https://openalex.org/I859038795"
+          ],
+          "host_organization_lineage_names": [],
+          "type": "repository"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "submittedVersion",
+        "is_accepted": false,
+        "is_published": false,
+        "raw_source_name": null,
+        "raw_type": "Dissertation"
+      },
+      "type": "dissertation",
+      "indexed_in": [],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "green",
+        "oa_url": "http://hdl.handle.net/10919/29826",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5047658777",
+            "display_name": "Thomas S. Barrett",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": true,
+          "raw_author_name": "Thomas S. Barrett",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 0,
+      "institutions_distinct_count": 1,
+      "corresponding_author_ids": [
+        "https://openalex.org/A5047658777"
+      ],
+      "corresponding_institution_ids": [],
+      "apc_list": null,
+      "apc_paid": null,
+      "fwci": null,
+      "has_fulltext": true,
+      "cited_by_count": 5,
+      "citation_normalized_percentile": null,
+      "cited_by_percentile_year": null,
+      "biblio": {
+        "volume": null,
+        "issue": null,
+        "first_page": null,
+        "last_page": null
+      },
+      "is_retracted": false,
+      "is_paratext": false,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T11715",
+        "display_name": "Education and Critical Thinking Development",
+        "score": 0.9866999983787537,
+        "subfield": {
+          "id": "https://openalex.org/subfields/3304",
+          "display_name": "Education"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/33",
+          "display_name": "Social Sciences"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/2",
+          "display_name": "Social Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T11715",
+          "display_name": "Education and Critical Thinking Development",
+          "score": 0.9866999983787537,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3304",
+            "display_name": "Education"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T12593",
+          "display_name": "Communication in Education and Healthcare",
+          "score": 0.9645000100135803,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3207",
+            "display_name": "Social Psychology"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/32",
+            "display_name": "Psychology"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11058",
+          "display_name": "Ethics in Business and Education",
+          "score": 0.9623000025749207,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1802",
+            "display_name": "Information Systems and Management"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/18",
+            "display_name": "Decision Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/narrative",
+          "display_name": "Narrative",
+          "score": 0.6481134295463562
+        },
+        {
+          "id": "https://openalex.org/keywords/pedagogy",
+          "display_name": "Pedagogy",
+          "score": 0.6226612329483032
+        },
+        {
+          "id": "https://openalex.org/keywords/agency",
+          "display_name": "Agency (philosophy)",
+          "score": 0.5696364045143127
+        },
+        {
+          "id": "https://openalex.org/keywords/moral-agency",
+          "display_name": "Moral agency",
+          "score": 0.5350521802902222
+        },
+        {
+          "id": "https://openalex.org/keywords/moral-development",
+          "display_name": "Moral development",
+          "score": 0.5177366137504578
+        },
+        {
+          "id": "https://openalex.org/keywords/perception",
+          "display_name": "Perception",
+          "score": 0.478444367647171
+        },
+        {
+          "id": "https://openalex.org/keywords/value",
+          "display_name": "Value (mathematics)",
+          "score": 0.45222124457359314
+        },
+        {
+          "id": "https://openalex.org/keywords/sociology",
+          "display_name": "Sociology",
+          "score": 0.4454765319824219
+        },
+        {
+          "id": "https://openalex.org/keywords/dimension",
+          "display_name": "Dimension (graph theory)",
+          "score": 0.42336350679397583
+        },
+        {
+          "id": "https://openalex.org/keywords/psychology",
+          "display_name": "Psychology",
+          "score": 0.36262574791908264
+        },
+        {
+          "id": "https://openalex.org/keywords/epistemology",
+          "display_name": "Epistemology",
+          "score": 0.35452014207839966
+        },
+        {
+          "id": "https://openalex.org/keywords/social-psychology",
+          "display_name": "Social psychology",
+          "score": 0.21271538734436035
+        },
+        {
+          "id": "https://openalex.org/keywords/social-science",
+          "display_name": "Social science",
+          "score": 0.1716497242450714
+        },
+        {
+          "id": "https://openalex.org/keywords/philosophy",
+          "display_name": "Philosophy",
+          "score": 0.11869779229164124
+        },
+        {
+          "id": "https://openalex.org/keywords/linguistics",
+          "display_name": "Linguistics",
+          "score": 0.10906815528869629
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C199033989",
+          "wikidata": "https://www.wikidata.org/wiki/Q1318295",
+          "display_name": "Narrative",
+          "level": 2,
+          "score": 0.6481134295463562
+        },
+        {
+          "id": "https://openalex.org/C19417346",
+          "wikidata": "https://www.wikidata.org/wiki/Q7922",
+          "display_name": "Pedagogy",
+          "level": 1,
+          "score": 0.6226612329483032
+        },
+        {
+          "id": "https://openalex.org/C108170787",
+          "wikidata": "https://www.wikidata.org/wiki/Q3951828",
+          "display_name": "Agency (philosophy)",
+          "level": 2,
+          "score": 0.5696364045143127
+        },
+        {
+          "id": "https://openalex.org/C2781439373",
+          "wikidata": "https://www.wikidata.org/wiki/Q11883221",
+          "display_name": "Moral agency",
+          "level": 2,
+          "score": 0.5350521802902222
+        },
+        {
+          "id": "https://openalex.org/C76247681",
+          "wikidata": "https://www.wikidata.org/wiki/Q6909101",
+          "display_name": "Moral development",
+          "level": 2,
+          "score": 0.5177366137504578
+        },
+        {
+          "id": "https://openalex.org/C26760741",
+          "wikidata": "https://www.wikidata.org/wiki/Q160402",
+          "display_name": "Perception",
+          "level": 2,
+          "score": 0.478444367647171
+        },
+        {
+          "id": "https://openalex.org/C2776291640",
+          "wikidata": "https://www.wikidata.org/wiki/Q2912517",
+          "display_name": "Value (mathematics)",
+          "level": 2,
+          "score": 0.45222124457359314
+        },
+        {
+          "id": "https://openalex.org/C144024400",
+          "wikidata": "https://www.wikidata.org/wiki/Q21201",
+          "display_name": "Sociology",
+          "level": 0,
+          "score": 0.4454765319824219
+        },
+        {
+          "id": "https://openalex.org/C33676613",
+          "wikidata": "https://www.wikidata.org/wiki/Q13415176",
+          "display_name": "Dimension (graph theory)",
+          "level": 2,
+          "score": 0.42336350679397583
+        },
+        {
+          "id": "https://openalex.org/C15744967",
+          "wikidata": "https://www.wikidata.org/wiki/Q9418",
+          "display_name": "Psychology",
+          "level": 0,
+          "score": 0.36262574791908264
+        },
+        {
+          "id": "https://openalex.org/C111472728",
+          "wikidata": "https://www.wikidata.org/wiki/Q9471",
+          "display_name": "Epistemology",
+          "level": 1,
+          "score": 0.35452014207839966
+        },
+        {
+          "id": "https://openalex.org/C77805123",
+          "wikidata": "https://www.wikidata.org/wiki/Q161272",
+          "display_name": "Social psychology",
+          "level": 1,
+          "score": 0.21271538734436035
+        },
+        {
+          "id": "https://openalex.org/C36289849",
+          "wikidata": "https://www.wikidata.org/wiki/Q34749",
+          "display_name": "Social science",
+          "level": 1,
+          "score": 0.1716497242450714
+        },
+        {
+          "id": "https://openalex.org/C138885662",
+          "wikidata": "https://www.wikidata.org/wiki/Q5891",
+          "display_name": "Philosophy",
+          "level": 0,
+          "score": 0.11869779229164124
+        },
+        {
+          "id": "https://openalex.org/C41895202",
+          "wikidata": "https://www.wikidata.org/wiki/Q8162",
+          "display_name": "Linguistics",
+          "level": 1,
+          "score": 0.10906815528869629
+        },
+        {
+          "id": "https://openalex.org/C202444582",
+          "wikidata": "https://www.wikidata.org/wiki/Q837863",
+          "display_name": "Pure mathematics",
+          "level": 1,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C41008148",
+          "wikidata": "https://www.wikidata.org/wiki/Q21198",
+          "display_name": "Computer science",
+          "level": 0,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C33923547",
+          "wikidata": "https://www.wikidata.org/wiki/Q395",
+          "display_name": "Mathematics",
+          "level": 0,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C119857082",
+          "wikidata": "https://www.wikidata.org/wiki/Q2539",
+          "display_name": "Machine learning",
+          "level": 1,
+          "score": 0.0
+        }
+      ],
+      "mesh": [],
+      "locations_count": 3,
+      "locations": [
+        {
+          "id": "pmh:oai:vtechworks.lib.vt.edu:10919/29826",
+          "is_oa": true,
+          "landing_page_url": "http://scholar.lib.vt.edu/theses/available/etd-11597-114041/",
+          "pdf_url": "http://hdl.handle.net/10919/29826",
+          "source": {
+            "id": "https://openalex.org/S4306400248",
+            "display_name": "VTechWorks (Virginia Tech)",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "host_organization": "https://openalex.org/I859038795",
+            "host_organization_name": "Virginia Tech",
+            "host_organization_lineage": [
+              "https://openalex.org/I859038795"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": null,
+          "raw_type": "Dissertation"
+        },
+        {
+          "id": "pmh:oai:CiteSeerX.psu:10.1.1.136.3486",
+          "is_oa": false,
+          "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.136.3486",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": "submittedVersion",
+          "is_accepted": false,
+          "is_published": false,
+          "raw_source_name": "http://scholar.lib.vt.edu/theses/available/etd-11597-114041/unrestricted/_tbarret.pdf",
+          "raw_type": "text"
+        },
+        {
+          "id": "mag:2291644965",
+          "is_oa": false,
+          "landing_page_url": "https://scholar.lib.vt.edu/theses/available/etd-11597-114041/unrestricted/_tbarret.pdf",
+          "pdf_url": null,
+          "source": null,
+          "license": null,
+          "license_id": null,
+          "version": null,
+          "is_accepted": false,
+          "is_published": null,
+          "raw_source_name": null,
+          "raw_type": null
+        }
+      ],
+      "best_oa_location": {
+        "id": "pmh:oai:vtechworks.lib.vt.edu:10919/29826",
+        "is_oa": true,
+        "landing_page_url": "http://scholar.lib.vt.edu/theses/available/etd-11597-114041/",
+        "pdf_url": "http://hdl.handle.net/10919/29826",
+        "source": {
+          "id": "https://openalex.org/S4306400248",
+          "display_name": "VTechWorks (Virginia Tech)",
+          "issn_l": null,
+          "issn": null,
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": false,
+          "host_organization": "https://openalex.org/I859038795",
+          "host_organization_name": "Virginia Tech",
+          "host_organization_lineage": [
+            "https://openalex.org/I859038795"
+          ],
+          "host_organization_lineage_names": [],
+          "type": "repository"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "submittedVersion",
+        "is_accepted": false,
+        "is_published": false,
+        "raw_source_name": null,
+        "raw_type": "Dissertation"
+      },
+      "sustainable_development_goals": [
+        {
+          "id": "https://metadata.un.org/sdg/4",
+          "score": 0.49000000953674316,
+          "display_name": "Quality Education"
+        }
+      ],
+      "awards": [],
+      "funders": [],
+      "has_content": {
+        "grobid_xml": true,
+        "pdf": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W2291644965.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W2291644965.grobid-xml"
+      },
+      "referenced_works_count": 48,
+      "referenced_works": [
+        "https://openalex.org/W24667928",
+        "https://openalex.org/W25140579",
+        "https://openalex.org/W197432558",
+        "https://openalex.org/W301008520",
+        "https://openalex.org/W319065278",
+        "https://openalex.org/W351554055",
+        "https://openalex.org/W617850328",
+        "https://openalex.org/W629693117",
+        "https://openalex.org/W1488331527",
+        "https://openalex.org/W1493117444",
+        "https://openalex.org/W1524972046",
+        "https://openalex.org/W1525414200",
+        "https://openalex.org/W1527311855",
+        "https://openalex.org/W1529031170",
+        "https://openalex.org/W1534868605",
+        "https://openalex.org/W1548005448",
+        "https://openalex.org/W1608600376",
+        "https://openalex.org/W1683865227",
+        "https://openalex.org/W1697523394",
+        "https://openalex.org/W1751769270",
+        "https://openalex.org/W1951310439",
+        "https://openalex.org/W1951384579",
+        "https://openalex.org/W1965516070",
+        "https://openalex.org/W1967641720",
+        "https://openalex.org/W1985190484",
+        "https://openalex.org/W1991482315",
+        "https://openalex.org/W2017411738",
+        "https://openalex.org/W2033952602",
+        "https://openalex.org/W2043533996",
+        "https://openalex.org/W2046348654",
+        "https://openalex.org/W2047213184",
+        "https://openalex.org/W2051471325",
+        "https://openalex.org/W2056457179",
+        "https://openalex.org/W2060149466",
+        "https://openalex.org/W2065608266",
+        "https://openalex.org/W2079905296",
+        "https://openalex.org/W2106478370",
+        "https://openalex.org/W2119978295",
+        "https://openalex.org/W2159548188",
+        "https://openalex.org/W2170174323",
+        "https://openalex.org/W2185670955",
+        "https://openalex.org/W2329040514",
+        "https://openalex.org/W2335125250",
+        "https://openalex.org/W2782878764",
+        "https://openalex.org/W2798526751",
+        "https://openalex.org/W2996698982",
+        "https://openalex.org/W3143515237",
+        "https://openalex.org/W3214833809"
+      ],
+      "related_works": [
+        "https://openalex.org/W2981601935",
+        "https://openalex.org/W2981971983",
+        "https://openalex.org/W573940970",
+        "https://openalex.org/W2902581185",
+        "https://openalex.org/W212768992",
+        "https://openalex.org/W2015164744",
+        "https://openalex.org/W3040708135",
+        "https://openalex.org/W589893812",
+        "https://openalex.org/W311417125",
+        "https://openalex.org/W2997162227",
+        "https://openalex.org/W294051000",
+        "https://openalex.org/W2887348061",
+        "https://openalex.org/W2091434886",
+        "https://openalex.org/W2416158132",
+        "https://openalex.org/W2551140687",
+        "https://openalex.org/W2146741746",
+        "https://openalex.org/W2781728544",
+        "https://openalex.org/W2974342512",
+        "https://openalex.org/W2907316406",
+        "https://openalex.org/W2181815456"
+      ],
+      "abstract_inverted_index": {
+        "This": [
+          0,
+          120
+        ],
+        "study": [
+          1,
+          129,
+          148
+        ],
+        "explores": [
+          2
+        ],
+        "the": [
+          3,
+          23,
+          36,
+          62,
+          70,
+          90,
+          136,
+          169,
+          174
+        ],
+        "intersection": [
+          4
+        ],
+        "of": [
+          5,
+          26,
+          38,
+          59,
+          72,
+          93,
+          123,
+          135,
+          144,
+          161
+        ],
+        "two": [
+          6
+        ],
+        "major": [
+          7
+        ],
+        "conceptions": [
+          8,
+          28,
+          46
+        ],
+        "in": [
+          9,
+          69,
+          82,
+          89,
+          127
+        ],
+        "higher": [
+          10
+        ],
+        "education:": [
+          11
+        ],
+        "professors": [
+          12,
+          32,
+          162
+        ],
+        "\u2019": [
+          13,
+          138,
+          163
+        ],
+        "folk": [
+          14,
+          75,
+          139,
+          164,
+          175
+        ],
+        "pedagogies": [
+          15
+        ],
+        "and": [
+          16,
+          29,
+          45,
+          115,
+          156
+        ],
+        "teaching\u2019s": [
+          17
+        ],
+        "moral": [
+          18,
+          102,
+          111,
+          113,
+          116,
+          121
+        ],
+        "dimension.": [
+          19
+        ],
+        "Folk": [
+          20
+        ],
+        "pedagogy": [
+          21,
+          176
+        ],
+        "is": [
+          22
+        ],
+        "accumulated": [
+          24
+        ],
+        "set": [
+          25
+        ],
+        "beliefs,": [
+          27
+        ],
+        "assumptions": [
+          30
+        ],
+        "that": [
+          31,
+          171
+        ],
+        "personally": [
+          33
+        ],
+        "hold": [
+          34
+        ],
+        "about": [
+          35,
+          84
+        ],
+        "practice": [
+          37
+        ],
+        "teaching": [
+          39,
+          51,
+          124
+        ],
+        "(Bruner,": [
+          40
+        ],
+        "1996).": [
+          41
+        ],
+        "When": [
+          42
+        ],
+        "these": [
+          43,
+          106,
+          145
+        ],
+        "beliefs": [
+          44
+        ],
+        "are": [
+          47,
+          54,
+          88,
+          118
+        ],
+        "enacted": [
+          48
+        ],
+        "as": [
+          49,
+          61
+        ],
+        "a": [
+          50,
+          65
+        ],
+        "practice,": [
+          52
+        ],
+        "they": [
+          53,
+          86,
+          99
+        ],
+        "conceivably": [
+          55
+        ],
+        "undertaken": [
+          56
+        ],
+        "on": [
+          57
+        ],
+        "behalf": [
+          58
+        ],
+        "students": [
+          60
+        ],
+        "means": [
+          63
+        ],
+        "to": [
+          64,
+          110,
+          130
+        ],
+        "good": [
+          66
+        ],
+        "end.": [
+          67
+        ],
+        "Professors,": [
+          68
+        ],
+        "course": [
+          71
+        ],
+        "enacting": [
+          73
+        ],
+        "their": [
+          74,
+          94
+        ],
+        "pedagogies,": [
+          76
+        ],
+        "make": [
+          77,
+          105
+        ],
+        "educational": [
+          78
+        ],
+        "decisions--": [
+          79
+        ],
+        "value": [
+          80
+        ],
+        "determinations": [
+          81
+        ],
+        "essence--": [
+          83
+        ],
+        "what": [
+          85
+        ],
+        "believe": [
+          87
+        ],
+        "best": [
+          91
+        ],
+        "interests": [
+          92
+        ],
+        "students.": [
+          95
+        ],
+        "In": [
+          96
+        ],
+        "so": [
+          97
+        ],
+        "doing": [
+          98
+        ],
+        "have": [
+          100
+        ],
+        "entered": [
+          101
+        ],
+        "territory.": [
+          103
+        ],
+        "To": [
+          104
+        ],
+        "decisions,": [
+          107
+        ],
+        "issues": [
+          108
+        ],
+        "related": [
+          109
+        ],
+        "perception,": [
+          112
+        ],
+        "imagination,": [
+          114
+        ],
+        "responsiveness": [
+          117
+        ],
+        "present.": [
+          119
+        ],
+        "dimension": [
+          122
+        ],
+        "was": [
+          125
+        ],
+        "found": [
+          126
+        ],
+        "this": [
+          128,
+          147
+        ],
+        "be": [
+          131
+        ],
+        "an": [
+          132
+        ],
+        "inherent": [
+          133
+        ],
+        "feature": [
+          134
+        ],
+        "participants": [
+          137
+        ],
+        "pedagogy.": [
+          140
+        ],
+        "Pursuing": [
+          141
+        ],
+        "tangible": [
+          142
+        ],
+        "exemplars": [
+          143
+        ],
+        "ideas,": [
+          146
+        ],
+        "accomplished": [
+          149
+        ],
+        "three": [
+          150
+        ],
+        "key": [
+          151,
+          159
+        ],
+        "objectives.": [
+          152
+        ],
+        "First,": [
+          153
+        ],
+        "it": [
+          154,
+          167
+        ],
+        "explored": [
+          155
+        ],
+        "described": [
+          157
+        ],
+        "some": [
+          158
+        ],
+        "features": [
+          160
+        ],
+        "pedagogies.": [
+          165
+        ],
+        "Second,": [
+          166
+        ],
+        "examines": [
+          168
+        ],
+        "discourse": [
+          170
+        ],
+        "emerged": [
+          172
+        ],
+        "from": [
+          173
+        ]
+      },
+      "counts_by_year": [
+        {
+          "year": 2016,
+          "cited_by_count": 3
+        },
+        {
+          "year": 2015,
+          "cited_by_count": 1
+        }
+      ],
+      "updated_date": "2026-03-07T16:01:11.037858",
+      "created_date": "2025-10-10T00:00:00"
+    }
+  ]
+}

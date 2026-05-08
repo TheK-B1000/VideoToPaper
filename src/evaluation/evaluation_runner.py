@@ -1,0 +1,110 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
+
+from src.evaluation.audit_report_writer import load_audit_report, write_audit_report
+from src.evaluation.audit_summary_writer import write_audit_summary
+from src.evaluation.evaluation_harness import (
+    EvaluationConfig,
+    EvaluationReport,
+    run_evaluation_harness,
+)
+from src.evaluation.evaluation_manifest import (
+    build_evaluation_manifest,
+    utc_now_iso,
+    write_evaluation_manifest,
+)
+from src.evaluation.paper_artifact_validator import validate_paper_artifact
+from src.evaluation.validation_report_writer import write_validation_report
+
+
+@dataclass(frozen=True)
+class EvaluationRunResult:
+    report: EvaluationReport
+    audit_report_path: Path
+    audit_summary_path: Optional[Path] = None
+    manifest_path: Optional[Path] = None
+
+    @property
+    def publishable(self) -> bool:
+        return self.report.publishable
+
+
+def run_paper_evaluation(
+    paper_artifact: Dict[str, Any],
+    audit_report_path: Union[str, Path],
+    config: Optional[EvaluationConfig] = None,
+    audit_summary_path: Optional[Union[str, Path]] = None,
+    manifest_path: Optional[Union[str, Path]] = None,
+    paper_artifact_path: Optional[Union[str, Path]] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    validate_artifact: bool = True,
+    validation_report_path: Optional[Union[str, Path]] = None,
+) -> EvaluationRunResult:
+    """
+    Evaluate a generated paper artifact and write its audit artifacts to disk.
+
+    The JSON report is always written after successful validation.
+    The Markdown summary, manifest, and validation report are optional.
+    """
+    if validate_artifact:
+        validation_result = validate_paper_artifact(paper_artifact)
+
+        if not validation_result.valid:
+            if validation_report_path is not None:
+                write_validation_report(
+                    validation_result=validation_result,
+                    output_path=validation_report_path,
+                )
+
+            validation_result.raise_if_invalid()
+
+    started_at = utc_now_iso()
+
+    report = run_evaluation_harness(
+        paper_artifact=paper_artifact,
+        config=config,
+    )
+
+    written_report_path = write_audit_report(
+        report=report,
+        output_path=audit_report_path,
+    )
+
+    written_summary_path: Optional[Path] = None
+
+    if audit_summary_path is not None:
+        audit_payload = load_audit_report(written_report_path)
+        written_summary_path = write_audit_summary(
+            audit_payload=audit_payload,
+            output_path=audit_summary_path,
+        )
+
+    finished_at = utc_now_iso()
+
+    written_manifest_path: Optional[Path] = None
+
+    if manifest_path is not None:
+        manifest = build_evaluation_manifest(
+            paper_artifact_path=paper_artifact_path,
+            audit_report_path=written_report_path,
+            audit_summary_path=written_summary_path,
+            publishable=report.publishable,
+            started_at=started_at,
+            finished_at=finished_at,
+            metadata=metadata,
+        )
+
+        written_manifest_path = write_evaluation_manifest(
+            manifest=manifest,
+            output_path=manifest_path,
+        )
+
+    return EvaluationRunResult(
+        report=report,
+        audit_report_path=written_report_path,
+        audit_summary_path=written_summary_path,
+        manifest_path=written_manifest_path,
+    )

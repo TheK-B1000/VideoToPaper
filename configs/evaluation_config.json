@@ -1,0 +1,18 @@
+{
+  "evaluation": {
+    "clip_tolerance_seconds": 1.0,
+    "minimum_balanced_retrieval_ratio": 0.8
+  },
+  "outputs": {
+    "audit_report_path": "data/outputs/audit_report.json",
+    "audit_summary_path": "data/outputs/audit_summary.md",
+    "manifest_path": "data/outputs/evaluation_manifest.json",
+    "validation_report_path": "data/outputs/validation_report.json",
+    "validation_summary_path": "data/outputs/validation_summary.md",
+    "artifact_index_path": "data/outputs/evaluation_artifact_index.json"
+  },
+  "metadata": {
+    "component": "paper_evaluation",
+    "mode": "local"
+  }
+}

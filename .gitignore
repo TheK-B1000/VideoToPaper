@@ -8,7 +8,13 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Environment secrets
 .env
+.env.*
+!.env.example
+
+# Local-only overrides (may enable LLM); never commit secrets here
+configs/*.local.json
 
 # Keep layout; ignore generated/large files under these trees
 data/raw/*
@@ -20,6 +26,9 @@ data/outputs/*
 
 logs/runs/*
 !logs/runs/.gitkeep
+
+logs/budget/*
+!logs/budget/.gitkeep
 logs/test_runs/
 
 reports/

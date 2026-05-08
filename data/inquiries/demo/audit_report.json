@@ -1,0 +1,22 @@
+{
+  "steelman_accuracy": {
+    "verbatim_anchored_assertions": "100%",
+    "qualifications_preserved": "100%",
+    "hedge_drift_detected": false
+  },
+  "evidence_balance": {
+    "claims_with_balanced_retrieval": "92%",
+    "cherry_picking_score": "low",
+    "false_consensus_count": 0
+  },
+  "citation_integrity": {
+    "references_resolved": "100%",
+    "fabricated_references": 0
+  },
+  "clip_anchor_accuracy": {
+    "clips_within_tolerance": "100%",
+    "tolerance_seconds": 1.0,
+    "drift_detected": []
+  },
+  "publishable": true
+}
