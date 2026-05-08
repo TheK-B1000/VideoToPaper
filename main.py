@@ -417,7 +417,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         return
 
     if args.stage == "evaluation":
-        return run_evaluation_pipeline(forwarded)
+        raise SystemExit(run_evaluation_pipeline(forwarded))
 
     if args.stage == "sample_artifact":
         return run_sample_artifact_pipeline(forwarded)
