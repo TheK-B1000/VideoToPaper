@@ -48,6 +48,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="docs/evaluation",
         help="Directory where closeout documentation should be written.",
     )
+    parser.add_argument(
+        "--export-smoke-output-dir",
+        default="data/outputs/smoke_export_and_evaluate",
+        help="Directory where export-and-evaluate smoke outputs should be written.",
+    )
 
     parser.add_argument(
         "--run-prefix",
@@ -70,6 +75,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     smoke_output_dir = Path(args.smoke_output_dir)
     docs_output_dir = Path(args.docs_output_dir)
+    export_smoke_output_dir = Path(args.export_smoke_output_dir)
 
     run_command(
         [
@@ -79,6 +85,16 @@ def main(argv: Optional[list[str]] = None) -> int:
             str(smoke_output_dir),
             "--run-prefix",
             args.run_prefix,
+        ]
+    )
+    run_command(
+        [
+            sys.executable,
+            "scripts/smoke_export_and_evaluate.py",
+            "--output-dir",
+            str(export_smoke_output_dir),
+            "--run-id",
+            f"{args.run_prefix}_export_eval",
         ]
     )
 
@@ -107,6 +123,17 @@ def main(argv: Optional[list[str]] = None) -> int:
         smoke_output_dir / "malformed" / "validation_summary.md",
         smoke_output_dir / "malformed" / "evaluation_artifact_index.json",
     ]
+    expected_export_smoke_artifacts = [
+        export_smoke_output_dir / "claims.json",
+        export_smoke_output_dir / "speaker_perspective.json",
+        export_smoke_output_dir / "adjudications.json",
+        export_smoke_output_dir / "evidence_records.json",
+        export_smoke_output_dir / "paper_artifact.json",
+        export_smoke_output_dir / "audit_report.json",
+        export_smoke_output_dir / "audit_summary.md",
+        export_smoke_output_dir / "evaluation_manifest.json",
+        export_smoke_output_dir / "evaluation_artifact_index.json",
+    ]
 
     expected_docs = [
         docs_output_dir / "evaluation_readme_section.md",
@@ -116,7 +143,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         docs_output_dir / "evaluation_handoff_note.md",
     ]
 
-    for artifact in expected_smoke_artifacts + expected_docs:
+    for artifact in (
+        expected_smoke_artifacts + expected_export_smoke_artifacts + expected_docs
+    ):
         assert_exists(artifact)
 
     if args.status_output:
@@ -144,6 +173,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     print("Evaluation module verification passed.")
     print(f"Smoke outputs: {smoke_output_dir}")
+    print(f"Export smoke outputs: {export_smoke_output_dir}")
     print(f"Closeout docs: {docs_output_dir}")
     if args.status_output:
         print(f"Status report: {args.status_output}")

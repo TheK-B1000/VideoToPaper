@@ -27,6 +27,7 @@ def test_run_command_raises_for_failed_command():
 
 def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
     smoke_output_dir = tmp_path / "smoke_suite"
+    export_smoke_output_dir = tmp_path / "export_smoke"
     docs_output_dir = tmp_path / "docs"
     status_output = tmp_path / "docs" / "evaluation_module_status.md"
 
@@ -34,6 +35,8 @@ def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
         [
             "--smoke-output-dir",
             str(smoke_output_dir),
+            "--export-smoke-output-dir",
+            str(export_smoke_output_dir),
             "--docs-output-dir",
             str(docs_output_dir),
             "--status-output",
@@ -66,6 +69,9 @@ def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
     assert (
         smoke_output_dir / "malformed" / "evaluation_artifact_index.json"
     ).exists()
+    assert (export_smoke_output_dir / "paper_artifact.json").exists()
+    assert (export_smoke_output_dir / "audit_report.json").exists()
+    assert (export_smoke_output_dir / "evaluation_artifact_index.json").exists()
 
     assert (docs_output_dir / "evaluation_readme_section.md").exists()
     assert (docs_output_dir / "evaluation_architecture.md").exists()
