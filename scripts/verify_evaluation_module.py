@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from scripts.evaluation_module_status import write_status_report
+
 
 def run_command(command: list[str]) -> None:
     result = subprocess.run(
@@ -149,26 +151,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         assert_exists(artifact)
 
     if args.status_output:
-        status_output = Path(args.status_output)
-        status_output.parent.mkdir(parents=True, exist_ok=True)
-        status_output.write_text(
-            "\n".join(
-                [
-                    "# Evaluation Module Status",
-                    "",
-                    "Module Ready: YES",
-                    "",
-                    "Verified smoke outputs and closeout documentation.",
-                    "",
-                    "Required docs:",
-                    *[
-                        f"- {path.name}"
-                        for path in expected_docs
-                    ],
-                    "",
-                ]
-            ),
-            encoding="utf-8",
+        status_output_path = Path(args.status_output)
+        write_status_report(
+            smoke_output_dir=smoke_output_dir,
+            export_smoke_output_dir=export_smoke_output_dir,
+            docs_output_dir=docs_output_dir,
+            output_path=status_output_path,
         )
 
     print("Evaluation module verification passed.")
@@ -176,7 +164,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     print(f"Export smoke outputs: {export_smoke_output_dir}")
     print(f"Closeout docs: {docs_output_dir}")
     if args.status_output:
-        print(f"Status report: {args.status_output}")
+        print(f"Status report: {status_output_path}")
 
     return 0
 

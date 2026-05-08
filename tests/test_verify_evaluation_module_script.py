@@ -92,4 +92,6 @@ def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
     assert "# Evaluation Smoke Suite Summary" in summary
     assert "# Evaluation System Architecture" in architecture
     assert "# Evaluation Module Handoff Note" in handoff
-    assert "Module Ready: YES" in status
+    assert "**Module Ready:** YES" in status
+    assert "## Export-And-Evaluate Bridge Artifacts" in status
+    assert "- [x] `paper_artifact.json`" in status
