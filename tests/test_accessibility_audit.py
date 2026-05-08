@@ -6,15 +6,15 @@ from src.html.accessibility_audit import (
     format_accessibility_report,
 )
 from src.html.paper_assembler import assemble_html_paper
-from tools.generate_week9_sample_paper import build_sample_document
+from tools.generate_sample_paper import build_sample_document
 
 
-def _valid_week9_html() -> str:
+def _valid_sample_html() -> str:
     return assemble_html_paper(build_sample_document())
 
 
-def test_valid_week9_sample_passes_accessibility_audit():
-    report = audit_accessibility_from_text(_valid_week9_html())
+def test_valid_sample_passes_accessibility_audit():
+    report = audit_accessibility_from_text(_valid_sample_html())
 
     assert report.passed is True
     assert report.issue_count == 0
@@ -28,7 +28,7 @@ def test_accessibility_audit_fails_empty_html():
 
 
 def test_accessibility_audit_fails_missing_aria_markers():
-    html = _valid_week9_html().replace("aria-controls", "data-missing-controls")
+    html = _valid_sample_html().replace("aria-controls", "data-missing-controls")
     html = html.replace("aria-expanded", "data-missing-expanded")
 
     report = audit_accessibility_from_text(html)
@@ -38,7 +38,7 @@ def test_accessibility_audit_fails_missing_aria_markers():
 
 
 def test_accessibility_audit_fails_empty_button_without_aria_label():
-    html = _valid_week9_html().replace(
+    html = _valid_sample_html().replace(
         "Expand trail",
         "",
         1,
@@ -54,7 +54,7 @@ def test_accessibility_audit_fails_empty_button_without_aria_label():
 
 
 def test_accessibility_audit_allows_empty_button_with_aria_label():
-    html = _valid_week9_html().replace(
+    html = _valid_sample_html().replace(
         """<button
       type="button"
       class="claim-card__toggle"
@@ -80,9 +80,10 @@ def test_accessibility_audit_allows_empty_button_with_aria_label():
 
 
 def test_accessibility_audit_fails_iframe_without_title():
-    html = _valid_week9_html().replace(
-        'title="Anchor clip for Multi-agent non-stationarity"',
+    html = _valid_sample_html().replace(
+        'title="Anchor clip for Non-stationarity in multi-agent reinforcement learning"',
         "",
+        1,
     )
 
     report = audit_accessibility_from_text(html)
@@ -92,7 +93,7 @@ def test_accessibility_audit_fails_iframe_without_title():
 
 
 def test_accessibility_audit_fails_missing_noscript():
-    html = _valid_week9_html().replace("<noscript>", "<div>")
+    html = _valid_sample_html().replace("<noscript>", "<div>")
     html = html.replace("</noscript>", "</div>")
 
     report = audit_accessibility_from_text(html)
@@ -113,7 +114,7 @@ def test_accessibility_audit_file_reports_missing_file(tmp_path: Path):
 
 def test_accessibility_audit_file_reads_existing_file(tmp_path: Path):
     html_path = tmp_path / "paper.html"
-    html_path.write_text(_valid_week9_html(), encoding="utf-8")
+    html_path.write_text(_valid_sample_html(), encoding="utf-8")
 
     report = audit_accessibility_file(html_path)
 
@@ -122,7 +123,7 @@ def test_accessibility_audit_file_reads_existing_file(tmp_path: Path):
 
 
 def test_format_accessibility_report_passed():
-    report = audit_accessibility_from_text(_valid_week9_html())
+    report = audit_accessibility_from_text(_valid_sample_html())
 
     output = format_accessibility_report(report)
 

@@ -2,7 +2,7 @@
 Run the accessibility audit against a generated Inquiry Engine paper.
 
 Usage:
-    python tools/audit_week9_accessibility.py data/outputs/sample_interactive_paper.html
+    python tools/audit_accessibility.py data/outputs/sample_interactive_paper.html
 """
 
 from __future__ import annotations
