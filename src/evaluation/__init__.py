@@ -5,6 +5,10 @@ from src.evaluation.evaluation_architecture_doc import (
     render_evaluation_architecture_doc,
     write_evaluation_architecture_doc,
 )
+from src.evaluation.evaluation_closeout_bundle import (
+    EvaluationCloseoutBundle,
+    write_evaluation_closeout_bundle,
+)
 from src.evaluation.evaluation_config import (
     EvaluationOutputConfig,
     EvaluationRuntimeConfig,
@@ -67,6 +71,7 @@ from src.evaluation.validation_summary_writer import write_validation_summary
 __all__ = [
     "ArtifactValidationResult",
     "EvaluationConfig",
+    "EvaluationCloseoutBundle",
     "EvaluationArtifactIndex",
     "EvaluationDevLog",
     "EvaluationManifest",
@@ -100,6 +105,7 @@ __all__ = [
     "write_audit_report",
     "write_audit_summary",
     "write_evaluation_architecture_doc",
+    "write_evaluation_closeout_bundle",
     "write_evaluation_completion_checklist",
     "write_evaluation_dev_log",
     "write_evaluation_readme_section",
