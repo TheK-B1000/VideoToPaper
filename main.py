@@ -10,6 +10,7 @@ from src.paper.paper_run_report import (
     write_paper_assembly_run_report,
 )
 from src.data.json_store import load_json
+from src.evaluation.evaluation_cli import main as evaluation_main
 from src.ops.run_tracker import (
     create_run_log,
     record_metric,
@@ -115,6 +116,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "html_paper",
             "assemble_paper",
             "audit_html_paper",
+            "evaluation",
         ),
         default="source_ingestion",
         help=(
@@ -122,6 +124,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval. "
             "Week 7: evidence_integration. "
             "Week 8: build_paper_spec, html_paper, assemble_paper, and audit_html_paper."
+            " Evaluation: run artifact evaluation and write an audit report."
         ),
     )
     parser.add_argument(
@@ -407,6 +410,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             raise SystemExit(1)
 
         return
+
+    if args.stage == "evaluation":
+        return evaluation_main(forwarded)
 
     if args.stage == "evidence_integration":
         from src.pipelines.run_evidence_integration_pipeline import (
