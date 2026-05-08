@@ -14,6 +14,12 @@ from src.frontend.run_queue import (
 )
 from src.frontend.local_runner import launch_local_run
 from src.frontend.audit_summary import summarize_audit_report
+from src.frontend.operator_activity import (
+    VALID_ACTIVITY_TYPES,
+    filter_activities,
+    read_activity_log,
+    record_activity,
+)
 from src.frontend.paper_artifacts import build_file_url, inspect_paper_artifact
 from src.frontend.queue_status import mark_request_queued
 from src.frontend.rerun_request import (
@@ -297,14 +303,26 @@ def run_streamlit_app() -> None:
                     request,
                     output_dir="data/run_requests",
                 )
+                record_activity(
+                    activity_type="request_created",
+                    message=f"Created run request for video {request.video_id}.",
+                    request_id=request.request_id,
+                    artifact_path=output_path.as_posix(),
+                )
 
                 st.success(f"Run request saved to {output_path}")
                 st.json(request.to_dict())
             except ValueError as error:
                 st.error(str(error))
 
-    tab_library, tab_requests, tab_audit, tab_progress = st.tabs(
-        ["Inquiry Library", "Run Requests", "Audit Inspector", "Run Progress"]
+    tab_library, tab_requests, tab_audit, tab_progress, tab_activity = st.tabs(
+        [
+            "Inquiry Library",
+            "Run Requests",
+            "Audit Inspector",
+            "Run Progress",
+            "Activity Log",
+        ]
     )
 
     records = discover_inquiries(library_dir)
@@ -407,6 +425,13 @@ def run_streamlit_app() -> None:
                                         rerun_request,
                                         output_dir="data/run_requests",
                                     )
+                                    record_activity(
+                                        activity_type="rerun_created",
+                                        message=f"Created rerun request from inquiry {record.inquiry_id}.",
+                                        request_id=rerun_request.request_id,
+                                        inquiry_id=record.inquiry_id,
+                                        artifact_path=rerun_path.as_posix(),
+                                    )
 
                                     st.success(f"Rerun request saved to {rerun_path}")
                                     st.json(rerun_request.to_dict())
@@ -477,6 +502,13 @@ def run_streamlit_app() -> None:
                                         item.request_path,
                                         progress_path=launch.progress_path,
                                     )
+                                    record_activity(
+                                        activity_type="run_launched",
+                                        message=f"Launched local run {launch.run_id}.",
+                                        request_id=item.request_id,
+                                        run_id=launch.run_id,
+                                        artifact_path=launch.progress_path,
+                                    )
 
                                 st.success(f"Run launched: {launch.run_id}")
                                 st.write(f"Progress log: `{launch.progress_path}`")
@@ -517,6 +549,11 @@ def run_streamlit_app() -> None:
             if report is None:
                 st.error("Audit report could not be loaded.")
             else:
+                record_activity(
+                    activity_type="audit_opened",
+                    message="Opened audit report in the Studio.",
+                    artifact_path=audit_path,
+                )
                 summary = summarize_audit_report(report)
 
                 if summary.publishable:
@@ -562,6 +599,12 @@ def run_streamlit_app() -> None:
                 if progress is None:
                     st.error("Progress log could not be found.")
                 else:
+                    record_activity(
+                        activity_type="progress_viewed",
+                        message=f"Viewed progress for run {progress.run_id}.",
+                        run_id=progress.run_id,
+                        artifact_path=progress_path,
+                    )
                     summary = summarize_progress(progress)
 
                     st.progress(summary["completion_ratio"])
@@ -590,6 +633,48 @@ def run_streamlit_app() -> None:
 
             except ValueError as error:
                 st.error(str(error))
+
+    with tab_activity:
+        st.subheader("Operator Activity Log")
+
+        activities = read_activity_log(limit=200)
+
+        col_query, col_type = st.columns([3, 1])
+
+        with col_query:
+            activity_query = st.text_input("Search activity")
+
+        with col_type:
+            activity_type = st.selectbox(
+                "Activity type",
+                options=["all", *sorted(VALID_ACTIVITY_TYPES)],
+            )
+
+        visible_activities = filter_activities(
+            activities,
+            activity_type=activity_type,
+            query=activity_query,
+        )
+
+        if not visible_activities:
+            st.info("No operator activity recorded yet.")
+        else:
+            for activity in visible_activities:
+                with st.container(border=True):
+                    st.write(f"**{activity.activity_type.replace('_', ' ').title()}**")
+                    st.write(activity.message)
+                    st.caption(activity.created_at)
+
+                    details = {
+                        "request_id": activity.request_id,
+                        "inquiry_id": activity.inquiry_id,
+                        "run_id": activity.run_id,
+                        "artifact_path": activity.artifact_path,
+                        "metadata": activity.metadata or {},
+                    }
+
+                    with st.expander("Details"):
+                        st.json(details)
 
 
 if __name__ == "__main__":
