@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from scripts.smoke_evaluation_suite_summary import write_suite_summary
+
 
 def run_command(command: list[str]) -> None:
     result = subprocess.run(
@@ -90,6 +92,13 @@ def main(argv: Optional[list[str]] = None) -> int:
         ]
     )
 
+    summary_path = output_dir / "summary.md"
+    write_suite_summary(
+        output_dir=output_dir,
+        summary_path=summary_path,
+    )
+
+    print(f"Smoke suite summary written to: {summary_path}")
     print("Evaluation smoke suite passed.")
     print(f"Output directory: {output_dir}")
 

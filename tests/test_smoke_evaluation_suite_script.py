@@ -44,3 +44,8 @@ def test_smoke_evaluation_suite_runs_all_smoke_scripts(tmp_path):
     assert (malformed_dir / "validation_report.json").exists()
     assert (malformed_dir / "validation_summary.md").exists()
     assert (malformed_dir / "evaluation_artifact_index.json").exists()
+    assert (output_dir / "summary.md").exists()
+
+    summary = (output_dir / "summary.md").read_text(encoding="utf-8")
+    assert "# Evaluation Smoke Suite Summary" in summary
+    assert "| Passing artifact | PASS | PASS | Passes evaluation |" in summary
