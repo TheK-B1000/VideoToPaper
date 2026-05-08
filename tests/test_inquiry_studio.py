@@ -215,6 +215,13 @@ def test_load_audit_report_returns_none_when_missing(tmp_path: Path):
     assert report is None
 
 
+def test_load_audit_report_returns_none_for_blank_or_directory_path(tmp_path: Path):
+    assert load_audit_report("") is None
+    assert load_audit_report("   ") is None
+    assert load_audit_report(".") is None
+    assert load_audit_report(tmp_path) is None
+
+
 def test_paper_exists_detects_existing_html_file(tmp_path: Path):
     paper_path = tmp_path / "paper.html"
     paper_path.write_text("<html></html>", encoding="utf-8")

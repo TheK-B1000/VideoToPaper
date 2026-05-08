@@ -549,9 +549,16 @@ def load_audit_report(path: str | Path | None) -> dict[str, Any] | None:
     if path is None:
         return None
 
-    audit_path = Path(path)
+    if isinstance(path, str):
+        stripped = path.strip()
+        if not stripped:
+            return None
+        audit_path = Path(stripped)
+    else:
+        audit_path = Path(path)
 
-    if not audit_path.exists():
+    if not audit_path.exists() or not audit_path.is_file():
+        # Path("") becomes "." which exists as a directory — opening it raises PermissionError.
         return None
 
     return _load_json(audit_path)
