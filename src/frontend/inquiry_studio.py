@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
+from src.frontend.run_progress import load_run_progress, summarize_progress
+
 
 YOUTUBE_ID_PATTERN = re.compile(
     r"(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([A-Za-z0-9_-]{11})"
@@ -266,7 +268,9 @@ def run_streamlit_app() -> None:
             except ValueError as error:
                 st.error(str(error))
 
-    tab_library, tab_audit = st.tabs(["Inquiry Library", "Audit Inspector"])
+    tab_library, tab_audit, tab_progress = st.tabs(
+        ["Inquiry Library", "Audit Inspector", "Run Progress"]
+    )
 
     records = discover_inquiries(library_dir)
 
@@ -344,6 +348,50 @@ def run_streamlit_app() -> None:
                 st.error("Audit report could not be loaded.")
             else:
                 st.json(report)
+
+    with tab_progress:
+        st.subheader("Run Progress")
+
+        progress_path = st.text_input(
+            "Progress log path",
+            placeholder="logs/runs/latest_progress.json",
+        )
+
+        if st.button("Load Progress"):
+            try:
+                progress = load_run_progress(progress_path)
+
+                if progress is None:
+                    st.error("Progress log could not be found.")
+                else:
+                    summary = summarize_progress(progress)
+
+                    st.progress(summary["completion_ratio"])
+                    st.write(f"**Run ID:** {summary['run_id']}")
+                    st.write(f"**Status:** {summary['status']}")
+                    st.write(f"**Current step:** {summary['current_step'] or 'None'}")
+                    st.write(f"**Elapsed seconds:** {summary['elapsed_seconds']}")
+
+                    metric_cols = st.columns(5)
+                    metric_cols[0].metric("Completed", summary["completed_steps"])
+                    metric_cols[1].metric("Running", summary["running_steps"])
+                    metric_cols[2].metric("Queued", summary["queued_steps"])
+                    metric_cols[3].metric("Skipped", summary["skipped_steps"])
+                    metric_cols[4].metric("Failed", summary["failed_steps"])
+
+                    for step in progress.steps:
+                        with st.container(border=True):
+                            st.write(f"**{step.name}**")
+                            st.write(f"Status: `{step.status}`")
+
+                            if step.elapsed_seconds is not None:
+                                st.write(f"Elapsed: {step.elapsed_seconds}s")
+
+                            if step.message:
+                                st.write(step.message)
+
+            except ValueError as error:
+                st.error(str(error))
 
 
 if __name__ == "__main__":
