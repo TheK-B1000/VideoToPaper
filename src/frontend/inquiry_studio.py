@@ -14,6 +14,11 @@ from src.frontend.run_queue import (
 )
 from src.frontend.local_runner import launch_local_run
 from src.frontend.queue_status import mark_request_queued
+from src.frontend.rerun_request import (
+    RerunOverrides,
+    create_rerun_from_inquiry_record,
+    save_rerun_request,
+)
 from src.frontend.run_request import (
     DEFAULT_PIPELINE_STAGES,
     create_inquiry_run_request,
@@ -351,12 +356,53 @@ def run_streamlit_app() -> None:
                             st.write("Audit: not available")
 
                     with cols[2]:
-                        st.button(
-                            "Re-run",
-                            key=f"rerun-{record.inquiry_id}",
-                            use_container_width=True,
-                            help="Backend wiring comes next.",
-                        )
+                        with st.expander("Create rerun request"):
+                            rerun_depth = st.slider(
+                                "Rerun retrieval depth",
+                                min_value=1,
+                                max_value=10,
+                                value=int(record.parameters.get("retrieval_depth", 3)),
+                                key=f"rerun-depth-{record.inquiry_id}",
+                            )
+
+                            rerun_tiers = st.multiselect(
+                                "Rerun source tiers",
+                                options=[1, 2, 3],
+                                default=record.parameters.get("source_tiers", [1, 2]),
+                                key=f"rerun-tiers-{record.inquiry_id}",
+                            )
+
+                            rerun_reason = st.text_area(
+                                "Reason",
+                                value="Adjust retrieval settings and rerun inquiry.",
+                                key=f"rerun-reason-{record.inquiry_id}",
+                            )
+
+                            if st.button(
+                                "Create Rerun Request",
+                                key=f"create-rerun-{record.inquiry_id}",
+                                use_container_width=True,
+                            ):
+                                try:
+                                    rerun_request = create_rerun_from_inquiry_record(
+                                        record,
+                                        overrides=RerunOverrides(
+                                            retrieval_depth=rerun_depth,
+                                            source_tiers=rerun_tiers,
+                                            reason=rerun_reason,
+                                        ),
+                                    )
+
+                                    rerun_path = save_rerun_request(
+                                        rerun_request,
+                                        output_dir="data/run_requests",
+                                    )
+
+                                    st.success(f"Rerun request saved to {rerun_path}")
+                                    st.json(rerun_request.to_dict())
+
+                                except ValueError as error:
+                                    st.error(str(error))
 
                     with st.expander("Run parameters"):
                         st.json(record.parameters)
