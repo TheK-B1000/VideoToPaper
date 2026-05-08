@@ -7,6 +7,11 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from src.frontend.run_progress import load_run_progress, summarize_progress
+from src.frontend.run_queue import (
+    discover_run_requests,
+    filter_queued_requests,
+    summarize_queue,
+)
 from src.frontend.run_request import (
     DEFAULT_PIPELINE_STAGES,
     create_inquiry_run_request,
@@ -289,8 +294,8 @@ def run_streamlit_app() -> None:
             except ValueError as error:
                 st.error(str(error))
 
-    tab_library, tab_audit, tab_progress = st.tabs(
-        ["Inquiry Library", "Audit Inspector", "Run Progress"]
+    tab_library, tab_requests, tab_audit, tab_progress = st.tabs(
+        ["Inquiry Library", "Run Requests", "Audit Inspector", "Run Progress"]
     )
 
     records = discover_inquiries(library_dir)
@@ -353,6 +358,75 @@ def run_streamlit_app() -> None:
 
                     with st.expander("Run parameters"):
                         st.json(record.parameters)
+
+    with tab_requests:
+        st.subheader("Run Request Queue")
+
+        queued_requests = discover_run_requests("data/run_requests")
+        queue_summary = summarize_queue(queued_requests)
+
+        metric_cols = st.columns(6)
+        metric_cols[0].metric("Total", queue_summary["total"])
+        metric_cols[1].metric("Executable", queue_summary["executable"])
+        metric_cols[2].metric("Pending", queue_summary["pending"])
+        metric_cols[3].metric("Running", queue_summary["running"])
+        metric_cols[4].metric("Completed", queue_summary["completed"])
+        metric_cols[5].metric("Failed", queue_summary["failed"])
+
+        col_query, col_status = st.columns([3, 1])
+
+        with col_query:
+            request_query = st.text_input("Search request, URL, or video id")
+
+        with col_status:
+            request_status = st.selectbox(
+                "Queue status",
+                options=["all", "pending", "queued", "running", "completed", "failed"],
+            )
+
+        visible_requests = filter_queued_requests(
+            queued_requests,
+            query=request_query,
+            status=request_status,
+        )
+
+        if not visible_requests:
+            st.info("No run requests found yet.")
+        else:
+            for item in visible_requests:
+                with st.container(border=True):
+                    st.markdown(f"### {item.request_id}")
+                    st.write(f"**Status:** {item.status}")
+                    st.write(f"**Video ID:** {item.request.video_id}")
+                    st.write(f"**Created:** {item.created_at}")
+                    st.write(f"**Source:** {item.youtube_url}")
+                    st.write(f"**Request file:** `{item.request_path}`")
+
+                    cols = st.columns(3)
+
+                    with cols[0]:
+                        st.button(
+                            "Ready to Run" if item.is_executable else "Not Runnable",
+                            disabled=not item.is_executable,
+                            key=f"ready-{item.request_id}",
+                            use_container_width=True,
+                            help="Actual backend execution wiring comes next.",
+                        )
+
+                    with cols[1]:
+                        if item.progress_path:
+                            st.write(f"Progress: `{item.progress_path}`")
+                        else:
+                            st.write("Progress: not started")
+
+                    with cols[2]:
+                        if item.result_inquiry_id:
+                            st.write(f"Result: `{item.result_inquiry_id}`")
+                        else:
+                            st.write("Result: none yet")
+
+                    with st.expander("Request payload"):
+                        st.json(item.request.to_dict())
 
     with tab_audit:
         st.subheader("Audit Report Viewer")
