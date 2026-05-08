@@ -766,3 +766,49 @@ def test_video_summary_returns_404_for_unknown_video(tmp_path, monkeypatch):
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Video not found: video_missing"
+
+
+def test_submit_inquiry_run_returns_progress_endpoint_payload(tmp_path, monkeypatch):
+    monkeypatch.setenv("INQUIRY_ENGINE_SIMULATE_PROGRESS", "false")
+
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    body = {
+        "request_id": "request_backend_smoke",
+        "created_at": "2026-01-01T00:00:00+00:00",
+        "youtube_url": "https://www.youtube.com/watch?v=ABC123xyz_9",
+        "video_id": "ABC123xyz_9",
+        "claim_type_filter": ["empirical_technical"],
+        "retrieval_depth": 3,
+        "source_tiers": [1, 2],
+        "stages": ["source_ingestion", "claim_inventory"],
+        "metadata": {"created_from": "test"},
+    }
+
+    submit = client.post("/inquiries/run", json=body)
+
+    assert submit.status_code == 202
+    envelope = submit.json()
+    assert envelope["request_id"] == "request_backend_smoke"
+    assert envelope["run_id"].startswith("run_be_")
+
+    progress_resp = client.get(f"/runs/{envelope['run_id']}/progress")
+    assert progress_resp.status_code == 200
+
+    progress = progress_resp.json()
+    assert progress["run_id"] == envelope["run_id"]
+    assert progress["status"] == "queued"
+    assert [s["name"] for s in progress["steps"]] == [
+        "source_ingestion",
+        "claim_inventory",
+    ]
+
+
+def test_inquiry_run_progress_returns_404_when_unknown(tmp_path, monkeypatch):
+    monkeypatch.setenv("INQUIRY_ENGINE_SIMULATE_PROGRESS", "false")
+
+    client = _make_test_client(tmp_path, monkeypatch)
+
+    response = client.get("/runs/run_be_deadbeef00000000/progress")
+
+    assert response.status_code == 404

@@ -185,3 +185,18 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_event_type
 
 CREATE INDEX IF NOT EXISTS idx_audit_events_created_at
     ON audit_events(created_at);
+
+CREATE TABLE IF NOT EXISTS inquiry_engine_runs (
+    run_id TEXT PRIMARY KEY,
+    request_id TEXT NOT NULL,
+    video_id TEXT NOT NULL,
+    youtube_url TEXT NOT NULL,
+    request_json JSONB NOT NULL,
+    progress_json JSONB NOT NULL,
+    simulate_progress BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_inquiry_engine_runs_request_id
+    ON inquiry_engine_runs(request_id);
