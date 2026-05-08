@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from html import escape
 from pathlib import Path
-from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 
@@ -213,7 +212,7 @@ def _group_evidence_by_claim(
 def _render_header(document: PaperDocument) -> str:
     video = document.video
     speaker_parts = [video.speaker_name, video.speaker_credentials]
-    speaker_line = " · ".join(part for part in speaker_parts if part)
+    speaker_line = " | ".join(part for part in speaker_parts if part)
 
     speaker_html = (
         f'<p class="speaker">Speaker: {escape(speaker_line)}</p>'
@@ -302,7 +301,7 @@ def _render_evidence_review(
             f"""
             <p class="verdict">
               Verdict: <strong>{escape(adjudication.verdict)}</strong>
-              · Confidence: <strong>{escape(adjudication.confidence)}</strong>
+              &middot; Confidence: <strong>{escape(adjudication.confidence)}</strong>
             </p>
             """
             if adjudication
@@ -453,13 +452,13 @@ def _render_references(records: list[PaperEvidenceRecord]) -> str:
 
 
 def _render_evidence_item(record: PaperEvidenceRecord) -> str:
-    finding = f" — {escape(record.key_finding)}" if record.key_finding else ""
+    finding = f" - {escape(record.key_finding)}" if record.key_finding else ""
 
     return f"""
     <li>
       <a href="{escape(record.url)}">{escape(record.title)}</a>
       <span class="meta">
-        [{escape(record.stance)} · tier {record.tier}]
+        [{escape(record.stance)} &middot; tier {record.tier}]
       </span>
       {finding}
     </li>
@@ -472,12 +471,16 @@ def _claim_embed_iframe(src: str, title: str) -> str:
 
     return f"""
     <iframe
-      src="{escape(src)}"
+      src="{_escape_url_attribute(src)}"
       title="{escape(title)}"
       loading="lazy"
       allowfullscreen>
     </iframe>
     """
+
+
+def _escape_url_attribute(url: str) -> str:
+    return escape(url, quote=True).replace("&amp;", "&")
 
 
 def _base_css() -> str:
