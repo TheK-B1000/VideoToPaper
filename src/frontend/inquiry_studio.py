@@ -39,6 +39,7 @@ from src.frontend.run_request import (
 from src.frontend.studio_config import ensure_studio_directories, load_studio_config
 from src.frontend.studio_health import run_studio_health_checks
 from src.frontend.studio_readme import write_studio_readme
+from src.frontend.studio_smoke import run_studio_smoke_test
 
 
 YOUTUBE_ID_PATTERN = re.compile(
@@ -865,6 +866,29 @@ def run_streamlit_app() -> None:
             )
 
             st.success(f"README written to {readme_path}")
+
+        st.divider()
+        st.subheader("Smoke Test")
+
+        if st.button("Run Studio Smoke Test"):
+            result = run_studio_smoke_test(config=studio_config)
+
+            if result.passed:
+                st.success("Studio smoke test passed.")
+            else:
+                st.error("Studio smoke test failed.")
+
+            if result.errors:
+                st.subheader("Errors")
+                for error in result.errors:
+                    st.error(error)
+
+            st.subheader("Checks")
+            for check in result.checks:
+                st.write(f"- {check}")
+
+            with st.expander("Raw smoke result"):
+                st.json(result.to_dict())
 
     with tab_backend:
         st.subheader("Backend Connection")
