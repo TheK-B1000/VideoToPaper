@@ -102,7 +102,10 @@ def _run_source_ingestion() -> None:
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any] | None:
-    parser = argparse.ArgumentParser(description="VideoToPaper pipeline entrypoints")
+    parser = argparse.ArgumentParser(
+        description="VideoToPaper pipeline entrypoints",
+        allow_abbrev=False,
+    )
     parser.add_argument(
         "--stage",
         choices=(
