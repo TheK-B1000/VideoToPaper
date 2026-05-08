@@ -11,6 +11,11 @@ from src.evaluation.evaluation_harness import (
     EvaluationReport,
     run_evaluation_harness,
 )
+from src.evaluation.evaluation_manifest import (
+    build_evaluation_manifest,
+    utc_now_iso,
+    write_evaluation_manifest,
+)
 
 
 @dataclass(frozen=True)
@@ -18,6 +23,7 @@ class EvaluationRunResult:
     report: EvaluationReport
     audit_report_path: Path
     audit_summary_path: Optional[Path] = None
+    manifest_path: Optional[Path] = None
 
     @property
     def publishable(self) -> bool:
@@ -29,12 +35,17 @@ def run_paper_evaluation(
     audit_report_path: Union[str, Path],
     config: Optional[EvaluationConfig] = None,
     audit_summary_path: Optional[Union[str, Path]] = None,
+    manifest_path: Optional[Union[str, Path]] = None,
+    paper_artifact_path: Optional[Union[str, Path]] = None,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> EvaluationRunResult:
     """
     Evaluate a generated paper artifact and write its audit artifacts to disk.
 
-    The JSON report is always written. The Markdown summary is optional.
+    The JSON report is always written. The Markdown summary and manifest are optional.
     """
+    started_at = utc_now_iso()
+
     report = run_evaluation_harness(
         paper_artifact=paper_artifact,
         config=config,
@@ -54,8 +65,29 @@ def run_paper_evaluation(
             output_path=audit_summary_path,
         )
 
+    finished_at = utc_now_iso()
+
+    written_manifest_path: Optional[Path] = None
+
+    if manifest_path is not None:
+        manifest = build_evaluation_manifest(
+            paper_artifact_path=paper_artifact_path,
+            audit_report_path=written_report_path,
+            audit_summary_path=written_summary_path,
+            publishable=report.publishable,
+            started_at=started_at,
+            finished_at=finished_at,
+            metadata=metadata,
+        )
+
+        written_manifest_path = write_evaluation_manifest(
+            manifest=manifest,
+            output_path=manifest_path,
+        )
+
     return EvaluationRunResult(
         report=report,
         audit_report_path=written_report_path,
         audit_summary_path=written_summary_path,
+        manifest_path=written_manifest_path,
     )

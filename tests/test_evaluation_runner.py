@@ -122,3 +122,34 @@ def test_run_paper_evaluation_can_write_markdown_summary(tmp_path):
     assert "# Inquiry Audit Summary" in summary
     assert "**Publishable:** PASS" in summary
     assert "| Clips within tolerance | 100% |" in summary
+
+
+def test_run_paper_evaluation_can_write_manifest(tmp_path):
+    paper_artifact = make_clean_paper_artifact()
+    paper_artifact_path = tmp_path / "paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    audit_summary_path = tmp_path / "audit_summary.md"
+    manifest_path = tmp_path / "manifest.json"
+
+    result = run_paper_evaluation(
+        paper_artifact=paper_artifact,
+        paper_artifact_path=paper_artifact_path,
+        audit_report_path=audit_report_path,
+        audit_summary_path=audit_summary_path,
+        manifest_path=manifest_path,
+        metadata={"run_id": "run_001"},
+    )
+
+    assert result.publishable is True
+    assert result.manifest_path == manifest_path
+    assert manifest_path.exists()
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert manifest["paper_artifact_path"] == str(paper_artifact_path)
+    assert manifest["audit_report_path"] == str(audit_report_path)
+    assert manifest["audit_summary_path"] == str(audit_summary_path)
+    assert manifest["publishable"] is True
+    assert manifest["metadata"]["run_id"] == "run_001"
+    assert manifest["started_at"]
+    assert manifest["finished_at"]

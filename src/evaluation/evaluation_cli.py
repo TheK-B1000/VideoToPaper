@@ -49,6 +49,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--manifest",
+        required=False,
+        help="Optional path where the evaluation run manifest should be written.",
+    )
+
+    parser.add_argument(
+        "--run-id",
+        required=False,
+        help="Optional run identifier to store in the manifest metadata.",
+    )
+
+    parser.add_argument(
         "--clip-tolerance-seconds",
         type=float,
         default=1.0,
@@ -78,6 +90,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     paper_artifact_path = Path(args.paper_artifact)
     audit_report_path = Path(args.audit_report)
     audit_summary_path = Path(args.audit_summary) if args.audit_summary else None
+    manifest_path = Path(args.manifest) if args.manifest else None
 
     paper_artifact = load_paper_artifact(paper_artifact_path)
 
@@ -86,10 +99,17 @@ def main(argv: Optional[list[str]] = None) -> int:
         minimum_balanced_retrieval_ratio=args.minimum_balanced_retrieval_ratio,
     )
 
+    metadata = {}
+    if args.run_id:
+        metadata["run_id"] = args.run_id
+
     result = run_paper_evaluation(
         paper_artifact=paper_artifact,
+        paper_artifact_path=paper_artifact_path,
         audit_report_path=audit_report_path,
         audit_summary_path=audit_summary_path,
+        manifest_path=manifest_path,
+        metadata=metadata,
         config=config,
     )
 
@@ -99,6 +119,9 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     if result.audit_summary_path is not None:
         print(f"Audit summary written to: {result.audit_summary_path}")
+
+    if result.manifest_path is not None:
+        print(f"Evaluation manifest written to: {result.manifest_path}")
 
     print(f"Evaluation result: {status}")
 

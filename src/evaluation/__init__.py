@@ -6,6 +6,12 @@ from src.evaluation.evaluation_harness import (
     EvaluationReport,
     run_evaluation_harness,
 )
+from src.evaluation.evaluation_manifest import (
+    EvaluationManifest,
+    build_evaluation_manifest,
+    load_evaluation_manifest,
+    write_evaluation_manifest,
+)
 from src.evaluation.evaluation_runner import EvaluationRunResult, run_paper_evaluation
 from src.evaluation.publishability_gate import (
     PublishabilityDecision,
@@ -19,17 +25,21 @@ from src.evaluation.sample_artifacts import (
 
 __all__ = [
     "EvaluationConfig",
+    "EvaluationManifest",
     "EvaluationReport",
     "EvaluationRunResult",
     "PublishabilityDecision",
+    "build_evaluation_manifest",
     "build_publishable_sample_artifact",
     "build_unpublishable_sample_artifact",
     "decide_publishability",
     "load_audit_report",
+    "load_evaluation_manifest",
     "render_audit_summary",
     "run_evaluation_harness",
     "run_paper_evaluation",
     "write_audit_report",
     "write_audit_summary",
+    "write_evaluation_manifest",
     "write_sample_artifact",
 ]

@@ -189,3 +189,43 @@ def test_main_can_write_markdown_summary_file(tmp_path, capsys):
 
     assert "# Inquiry Audit Summary" in summary
     assert "**Publishable:** PASS" in summary
+
+
+def test_main_can_write_manifest_file(tmp_path, capsys):
+    artifact_path = tmp_path / "paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    audit_summary_path = tmp_path / "audit_summary.md"
+    manifest_path = tmp_path / "manifest.json"
+
+    artifact_path.write_text(
+        json.dumps(make_clean_paper_artifact()),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--paper-artifact",
+            str(artifact_path),
+            "--audit-report",
+            str(audit_report_path),
+            "--audit-summary",
+            str(audit_summary_path),
+            "--manifest",
+            str(manifest_path),
+            "--run-id",
+            "run_001",
+        ]
+    )
+
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert manifest_path.exists()
+    assert "Evaluation manifest written to:" in captured.out
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert manifest["paper_artifact_path"] == str(artifact_path)
+    assert manifest["audit_report_path"] == str(audit_report_path)
+    assert manifest["audit_summary_path"] == str(audit_summary_path)
+    assert manifest["metadata"]["run_id"] == "run_001"
