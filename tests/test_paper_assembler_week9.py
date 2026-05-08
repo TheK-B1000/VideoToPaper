@@ -47,7 +47,7 @@ def _document() -> PaperDocument:
     )
 
 
-def test_assemble_html_paper_injects_week9_interactive_assets() -> None:
+def test_assemble_html_paper_injects_interactive_assets() -> None:
     html = assemble_html_paper(_document())
 
     assert '<script id="inquiry-interactive-data" type="application/json">' in html

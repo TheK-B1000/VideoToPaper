@@ -1,5 +1,5 @@
 """
-Generate a self-contained Week 9 sample HTML paper fixture.
+Generate a self-contained interactive sample HTML paper fixture.
 
 Use this file for manual browser testing of interactive components without a
 server or framework.
@@ -21,7 +21,7 @@ from src.html.paper_assembler import PaperDocument, write_html_paper
 from src.html.section_builders import InteractiveSectionInput, build_interactive_section_sequence
 
 
-DEFAULT_OUTPUT_PATH = Path("data/outputs/week9_sample_interactive_paper.html")
+DEFAULT_OUTPUT_PATH = Path("data/outputs/sample_interactive_paper_fixture.html")
 
 
 def build_sample_document() -> PaperDocument:
@@ -166,7 +166,7 @@ def build_sample_document() -> PaperDocument:
     )
 
     return PaperDocument(
-        title="Inquiry Engine Week 9 Interactive Fixture",
+        title="Inquiry Engine Interactive Fixture",
         abstract=(
             "Self-contained interactive fixture for testing claim cards, evidence filters, "
             "and reading-list controls in a local browser."
@@ -201,7 +201,7 @@ def generate_sample_paper_fixture(
 
 def main(argv: list[str] | None = None) -> Path:
     parser = argparse.ArgumentParser(
-        description="Generate a local Week 9 interactive paper fixture."
+        description="Generate a local interactive paper fixture."
     )
     parser.add_argument(
         "--output-path",

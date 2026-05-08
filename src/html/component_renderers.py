@@ -1,5 +1,5 @@
 """
-HTML renderers for Week 9 interactive Inquiry Engine components.
+HTML renderers for interactive Inquiry Engine components.
 
 These render semantic, progressively-enhanced HTML that is hydrated by the
 vanilla JavaScript bundle in src/html/interactive_components.py.

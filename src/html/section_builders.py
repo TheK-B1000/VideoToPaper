@@ -1,5 +1,5 @@
 """
-Section builders for Week 9 interactive Inquiry Engine papers.
+Section builders for interactive Inquiry Engine papers.
 
 These helpers convert structured view models into PaperSection objects.
 The assembler should not need to know how claim cards, evidence panels,
@@ -25,7 +25,7 @@ from src.html.paper_assembler import PaperSection
 @dataclass(frozen=True)
 class InteractivePaperSections:
     """
-    Week 9 interactive sections for the generated paper.
+    Interactive sections for the generated paper.
     """
 
     claims: PaperSection
@@ -36,7 +36,7 @@ class InteractivePaperSections:
 @dataclass(frozen=True)
 class InteractiveSectionInput:
     """
-    Structured data required to build Week 9 paper sections.
+    Structured data required to build interactive paper sections.
     """
 
     claim_cards: Sequence[ClaimCardViewModel] = field(default_factory=list)
@@ -128,7 +128,7 @@ def build_interactive_sections(
     section_input: InteractiveSectionInput,
 ) -> InteractivePaperSections:
     """
-    Build all Week 9 interactive sections from structured data.
+    Build all interactive sections from structured data.
     """
 
     return InteractivePaperSections(
@@ -142,7 +142,7 @@ def build_interactive_section_sequence(
     section_input: InteractiveSectionInput,
 ) -> list[PaperSection]:
     """
-    Return Week 9 sections in the expected paper order.
+    Return sections in the expected paper order.
 
     This is useful when assembling the final PaperDocument.
     """

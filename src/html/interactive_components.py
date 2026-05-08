@@ -1,7 +1,7 @@
 """
 Interactive component bundle for generated Inquiry Engine papers.
 
-Week 9 goal:
+Module goals:
 - Keep generated HTML self-contained.
 - Use vanilla JavaScript only.
 - Preserve readability when JavaScript is disabled.
@@ -75,7 +75,7 @@ def render_json_island(
 
 def render_interactive_css() -> str:
     """
-    Return inline CSS for Week 9 interactive components.
+    Return inline CSS for interactive components.
 
     Design goals:
     - restrained and readable
@@ -187,7 +187,7 @@ def render_interactive_css() -> str:
 
 def render_interactive_js() -> str:
     """
-    Return self-contained vanilla JavaScript for Week 9 components.
+    Return self-contained vanilla JavaScript for interactive components.
 
     Components hydrated:
     - ClaimCard
@@ -389,7 +389,7 @@ def render_interactive_js() -> str:
 
 def render_interactive_assets(payload: Mapping[str, Any]) -> InteractiveAssets:
     """
-    Render all Week 9 interactive assets.
+    Render all interactive assets.
     """
 
     return InteractiveAssets(

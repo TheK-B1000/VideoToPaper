@@ -251,7 +251,7 @@ def _parse_limitations(evidence_integration: dict[str, Any]) -> list[str]:
 def _build_further_reading(
     evidence_records: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    # Keep this simple for Week 8. Week 9 can add filtering and source-tier UI.
+    # Keep this simple for now; a later pass can add filtering and source-tier UI.
     return sorted(
         evidence_records,
         key=lambda record: (record.get("tier", 999), record.get("title", "")),

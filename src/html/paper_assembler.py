@@ -2,7 +2,7 @@
 HTML paper assembler for the Inquiry Engine.
 
 This module assembles a self-contained interactive HTML paper.
-Week 9 adds interactive assets:
+It includes interactive assets:
 - JSON island
 - inline component CSS
 - inline vanilla JavaScript
@@ -144,7 +144,7 @@ def render_base_css() -> str:
     """
     Base paper CSS.
 
-    Week 9 component CSS is injected separately by render_interactive_assets().
+    Interactive component CSS is injected separately by render_interactive_assets().
     """
 
     return """
