@@ -50,6 +50,11 @@ from src.evaluation.evaluation_artifact_index import (
     write_evaluation_artifact_index,
 )
 from src.evaluation.evaluation_runner import EvaluationRunResult, run_paper_evaluation
+from src.evaluation.paper_artifact_exporter import (
+    build_paper_artifact,
+    load_paper_artifact,
+    write_paper_artifact,
+)
 from src.evaluation.paper_artifact_validator import (
     ArtifactValidationResult,
     validate_paper_artifact,
@@ -87,6 +92,7 @@ __all__ = [
     "build_evaluation_artifact_index",
     "build_default_evaluation_dev_log",
     "build_evaluation_manifest",
+    "build_paper_artifact",
     "build_publishable_sample_artifact",
     "build_unpublishable_sample_artifact",
     "build_validation_report_payload",
@@ -95,6 +101,7 @@ __all__ = [
     "load_evaluation_artifact_index",
     "load_evaluation_manifest",
     "load_evaluation_runtime_config",
+    "load_paper_artifact",
     "load_validation_report",
     "render_audit_summary",
     "render_evaluation_architecture_doc",
@@ -117,6 +124,7 @@ __all__ = [
     "write_evaluation_readme_section",
     "write_evaluation_artifact_index",
     "write_evaluation_manifest",
+    "write_paper_artifact",
     "write_sample_artifact",
     "write_validation_report",
     "write_validation_summary",

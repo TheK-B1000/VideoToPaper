@@ -28,6 +28,7 @@ def test_run_command_raises_for_failed_command():
 def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
     smoke_output_dir = tmp_path / "smoke_suite"
     docs_output_dir = tmp_path / "docs"
+    status_output = tmp_path / "docs" / "evaluation_module_status.md"
 
     exit_code = main(
         [
@@ -35,6 +36,8 @@ def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
             str(smoke_output_dir),
             "--docs-output-dir",
             str(docs_output_dir),
+            "--status-output",
+            str(status_output),
             "--run-prefix",
             "verify_test",
         ]
@@ -69,6 +72,7 @@ def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
     assert (docs_output_dir / "evaluation_dev_log.md").exists()
     assert (docs_output_dir / "evaluation_completion_checklist.md").exists()
     assert (docs_output_dir / "evaluation_handoff_note.md").exists()
+    assert status_output.exists()
 
     summary = (smoke_output_dir / "summary.md").read_text(encoding="utf-8")
     architecture = (docs_output_dir / "evaluation_architecture.md").read_text(
@@ -77,7 +81,9 @@ def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
     handoff = (docs_output_dir / "evaluation_handoff_note.md").read_text(
         encoding="utf-8"
     )
+    status = status_output.read_text(encoding="utf-8")
 
     assert "# Evaluation Smoke Suite Summary" in summary
     assert "# Evaluation System Architecture" in architecture
     assert "# Evaluation Module Handoff Note" in handoff
+    assert "Module Ready: YES" in status

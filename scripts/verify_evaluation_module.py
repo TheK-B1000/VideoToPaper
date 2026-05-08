@@ -55,6 +55,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Prefix used for smoke suite run IDs.",
     )
 
+    parser.add_argument(
+        "--status-output",
+        default=None,
+        help="Optional path where evaluation module status Markdown should be written.",
+    )
+
     return parser
 
 
@@ -113,9 +119,34 @@ def main(argv: Optional[list[str]] = None) -> int:
     for artifact in expected_smoke_artifacts + expected_docs:
         assert_exists(artifact)
 
+    if args.status_output:
+        status_output = Path(args.status_output)
+        status_output.parent.mkdir(parents=True, exist_ok=True)
+        status_output.write_text(
+            "\n".join(
+                [
+                    "# Evaluation Module Status",
+                    "",
+                    "Module Ready: YES",
+                    "",
+                    "Verified smoke outputs and closeout documentation.",
+                    "",
+                    "Required docs:",
+                    *[
+                        f"- {path.name}"
+                        for path in expected_docs
+                    ],
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
     print("Evaluation module verification passed.")
     print(f"Smoke outputs: {smoke_output_dir}")
     print(f"Closeout docs: {docs_output_dir}")
+    if args.status_output:
+        print(f"Status report: {args.status_output}")
 
     return 0
 

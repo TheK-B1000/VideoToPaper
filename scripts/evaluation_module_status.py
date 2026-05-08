@@ -14,6 +14,14 @@ REQUIRED_EVALUATION_FILES = (
     "src/evaluation/evaluation_handoff_note.py",
 )
 
+REQUIRED_DOC_ARTIFACTS = [
+    "evaluation_readme_section.md",
+    "evaluation_architecture.md",
+    "evaluation_dev_log.md",
+    "evaluation_completion_checklist.md",
+    "evaluation_handoff_note.md",
+]
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
