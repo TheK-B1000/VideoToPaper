@@ -1,4 +1,6 @@
 import argparse
+from pathlib import Path
+from typing import Any
 
 from src.data.json_store import load_json
 from src.ops.run_tracker import (
@@ -90,7 +92,7 @@ def _run_source_ingestion() -> None:
         print(f"Run log saved to: {save_run_path}")
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> dict[str, Any] | None:
     parser = argparse.ArgumentParser(description="VideoToPaper pipeline entrypoints")
     parser.add_argument(
         "--stage",
@@ -100,11 +102,13 @@ def main() -> None:
             "speaker_perspective",
             "steelman",
             "evidence_retrieval",
+            "evidence_integration",
         ),
         default="source_ingestion",
         help=(
             "Pipeline stage (default: Week 1 source ingestion demo). "
-            "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval."
+            "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval. "
+            "Week 7: evidence_integration."
         ),
     )
     parser.add_argument(
@@ -124,6 +128,26 @@ def main() -> None:
         "--output-path",
         default=None,
         help="Path where the stage output JSON should be written when applicable.",
+    )
+    parser.add_argument(
+        "--evidence-records-path",
+        default=None,
+        help="Path to the Week 5 evidence records JSON file (Week 7 evidence_integration).",
+    )
+    parser.add_argument(
+        "--run-log-dir",
+        default=None,
+        help="Directory where MLOps run logs are written (Week 7 evidence_integration).",
+    )
+    parser.add_argument(
+        "--allow-skewed-adjudication",
+        action="store_true",
+        help="Allow adjudication even when retrieval is skewed (Week 7 evidence_integration).",
+    )
+    parser.add_argument(
+        "--use-llm-narratives",
+        action="store_true",
+        help="Enable LLM-backed evidence narratives when a client is wired in (Week 7).",
     )
     parser.add_argument(
         "--source",
@@ -152,7 +176,58 @@ def main() -> None:
         default=None,
         help="Fail evidence retrieval when balance audit is not publishable.",
     )
-    args, forwarded = parser.parse_known_args()
+    args, forwarded = parser.parse_known_args(argv)
+
+    if args.stage == "evidence_integration":
+        from src.pipelines.run_evidence_integration_pipeline import (
+            run_evidence_integration_pipeline,
+        )
+
+        if forwarded:
+            parser.error(
+                "unrecognized arguments for evidence_integration: {}".format(
+                    " ".join(forwarded)
+                )
+            )
+
+        result = run_evidence_integration_pipeline(
+            claim_inventory_path=Path(
+                args.claim_inventory_path
+                or "data/processed/claim_inventory.json"
+            ),
+            evidence_records_path=Path(
+                args.evidence_records_path
+                or "data/processed/evidence_records.json"
+            ),
+            output_path=Path(
+                args.output_path or "data/processed/adjudications.json"
+            ),
+            run_log_dir=Path(args.run_log_dir or "logs/runs"),
+            allow_skewed_adjudication=args.allow_skewed_adjudication,
+            use_llm_narratives=args.use_llm_narratives,
+        )
+
+        print(
+            "Evidence adjudications written to: "
+            f"{result['metrics']['adjudications_written']} record(s)"
+        )
+        print(
+            f"Output path: {args.output_path or 'data/processed/adjudications.json'}"
+        )
+        print(f"Run log: {result['run_log_path']}")
+
+        if not result["validation"]["is_valid"]:
+            print(
+                "Validation warning: "
+                f"{result['validation']['issue_count']} issue(s) found."
+            )
+
+        if not result["cherry_picking_guard"]["publishable_for_week8"]:
+            print(
+                "Cherry-picking guard warning: output is not publishable for Week 8 yet."
+            )
+
+        return result
 
     if args.stage == "claim_inventory":
         from src.pipelines.claim_inventory_pipeline import main as claim_inventory_main
@@ -196,15 +271,21 @@ def main() -> None:
         args.config_path is not None
         or args.claim_inventory_path is not None
         or args.output_path is not None
+        or args.evidence_records_path is not None
+        or args.run_log_dir is not None
+        or args.allow_skewed_adjudication
+        or args.use_llm_narratives
         or args.dry_run is not None
         or args.source is not None
         or args.per_query_limit is not None
         or args.fail_on_unbalanced is not None
     ):
         parser.error(
-            "--config-path, --claim-inventory-path, --output-path, --dry-run/--no-dry-run, "
-            "--source, --per-query-limit, and --fail-on-unbalanced are only valid with "
-            "claim_inventory, speaker_perspective, steelman, or evidence_retrieval."
+            "--config-path, --claim-inventory-path, --output-path, --evidence-records-path, "
+            "--run-log-dir, --allow-skewed-adjudication, --use-llm-narratives, "
+            "--dry-run/--no-dry-run, --source, --per-query-limit, and --fail-on-unbalanced "
+            "are only valid with claim_inventory, speaker_perspective, steelman, "
+            "evidence_retrieval, or evidence_integration."
         )
 
     _run_source_ingestion()
