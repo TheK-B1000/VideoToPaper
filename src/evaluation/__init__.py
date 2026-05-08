@@ -6,6 +6,10 @@ from src.evaluation.evaluation_config import (
     EvaluationRuntimeConfig,
     load_evaluation_runtime_config,
 )
+from src.evaluation.evaluation_readme_section import (
+    render_evaluation_readme_section,
+    write_evaluation_readme_section,
+)
 from src.evaluation.evaluation_harness import (
     EvaluationConfig,
     EvaluationReport,
@@ -68,6 +72,7 @@ __all__ = [
     "load_evaluation_runtime_config",
     "load_validation_report",
     "render_audit_summary",
+    "render_evaluation_readme_section",
     "render_validation_summary",
     "run_evaluation_harness",
     "run_paper_evaluation",
@@ -75,6 +80,7 @@ __all__ = [
     "validate_paper_artifact",
     "write_audit_report",
     "write_audit_summary",
+    "write_evaluation_readme_section",
     "write_evaluation_artifact_index",
     "write_evaluation_manifest",
     "write_sample_artifact",
