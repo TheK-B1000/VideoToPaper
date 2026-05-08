@@ -25,6 +25,10 @@ It now supports:
 - CLI and main-stage entry points.
 - Sample artifact generation.
 - Positive, negative, and malformed smoke tests.
+- Paper artifact export from assembler-style JSON parts.
+- Export-and-evaluate bridge pipeline.
+- Assembler fixture generation for integration testing.
+- Export-and-evaluate smoke verification.
 - Closeout documentation and module status reporting.
 
 ## Verification Command
@@ -49,7 +53,7 @@ docs/evaluation/evaluation_module_status.md
 
 The status report should say:
 
-Module Ready: YES
+**Module Ready:** YES
 
 ## Main Entry Points
 
@@ -94,6 +98,10 @@ A malformed artifact should produce validation diagnostics and stop before audit
 A structurally valid but low-quality artifact should produce audit diagnostics and fail publishability.
 
 ## Next Engineering Step
+
+Replace assembler fixtures with the real paper assembler output.
+
+The bridge is already in place. The next task is for the real paper assembler to emit the same JSON parts currently produced by the assembler fixture generator.
 
 You can now use the combined export-and-evaluate stage:
 

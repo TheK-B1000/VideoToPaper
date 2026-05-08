@@ -20,7 +20,7 @@ def test_render_evaluation_architecture_doc_includes_major_sections():
 def test_render_evaluation_architecture_doc_includes_data_flow():
     doc = render_evaluation_architecture_doc()
 
-    assert "Generated Paper Artifact JSON" in doc
+    assert "Assembler Output JSON Parts" in doc
     assert "Paper Artifact Validator" in doc
     assert "Four-Axis Evaluation Harness" in doc
     assert "Publishability Gate" in doc
@@ -55,7 +55,7 @@ def test_write_evaluation_architecture_doc_creates_markdown_file(tmp_path):
     content = output_path.read_text(encoding="utf-8")
 
     assert "# Evaluation System Architecture" in content
-    assert "Generated Paper Artifact JSON" in content
+    assert "Assembler Output JSON Parts" in content
 
 
 def test_write_evaluation_architecture_doc_accepts_custom_content(tmp_path):
@@ -67,3 +67,14 @@ def test_write_evaluation_architecture_doc_accepts_custom_content(tmp_path):
     )
 
     assert output_path.read_text(encoding="utf-8") == "# Custom Architecture\n"
+
+
+def test_render_evaluation_architecture_doc_includes_export_layer():
+    doc = render_evaluation_architecture_doc()
+
+    assert "## Export Layer" in doc
+    assert "Assembler Output JSON Parts" in doc
+    assert "Paper Artifact Exporter" in doc
+    assert "Evaluator-Ready Paper Artifact JSON" in doc
+    assert "paper_artifact.json" in doc
+    assert "python main.py --stage export_and_evaluate" in doc

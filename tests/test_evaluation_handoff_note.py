@@ -10,7 +10,7 @@ def test_render_evaluation_handoff_note_includes_status_and_next_step():
     assert "# Evaluation Module Handoff Note" in note
     assert "The evaluation module is ready to connect to real paper assembler output." in note
     assert "## Next Engineering Step" in note
-    assert "Connect the evaluator to the real paper assembler output." in note
+    assert "Replace assembler fixtures with the real paper assembler output." in note
 
 
 def test_render_evaluation_handoff_note_includes_verification_command():
@@ -33,10 +33,9 @@ def test_render_evaluation_handoff_note_includes_design_boundary():
 def test_render_evaluation_handoff_note_includes_runner_example():
     note = render_evaluation_handoff_note()
 
-    assert "from src.evaluation.evaluation_runner import run_paper_evaluation" in note
-    assert "run_paper_evaluation(" in note
-    assert "paper_artifact_path=" in note
-    assert "audit_report_path=" in note
+    assert "python main.py --stage export_and_evaluate" in note
+    assert "--claims data/outputs/claims.json" in note
+    assert "--paper-artifact data/outputs/paper_artifact.json" in note
 
 
 def test_write_evaluation_handoff_note_creates_markdown_file(tmp_path):
@@ -62,3 +61,12 @@ def test_write_evaluation_handoff_note_accepts_custom_content(tmp_path):
     )
 
     assert output_path.read_text(encoding="utf-8") == "# Custom Handoff\n"
+
+
+def test_render_evaluation_handoff_note_mentions_export_bridge():
+    note = render_evaluation_handoff_note()
+
+    assert "Paper artifact export from assembler-style JSON parts." in note
+    assert "Export-and-evaluate bridge pipeline." in note
+    assert "Assembler fixture generation for integration testing." in note
+    assert "python main.py --stage export_and_evaluate" in note

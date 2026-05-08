@@ -25,6 +25,11 @@ Use this checklist before closing the evaluation module.
 - [ ] Evaluation artifact index exists.
 - [ ] Evaluation CLI is wired into the main stage runner.
 - [ ] Sample artifact CLI is wired into the main stage runner.
+- [ ] Paper artifact exporter exists.
+- [ ] Paper artifact export CLI is wired into the main stage runner.
+- [ ] Export-and-evaluate pipeline exists.
+- [ ] Assembler fixture generator exists.
+- [ ] Export-and-evaluate smoke script exists.
 - [ ] README documentation generator exists.
 - [ ] Development log generator exists.
 
@@ -43,6 +48,11 @@ Use this checklist before closing the evaluation module.
 - [ ] CLI paths can override config paths.
 - [ ] Main stage runner can execute evaluation.
 - [ ] Main stage runner can generate sample artifacts.
+- [ ] Assembler-style fixture files can be exported into `paper_artifact.json`.
+- [ ] Exported paper artifacts pass structural validation.
+- [ ] Export-and-evaluate pipeline produces audit artifacts.
+- [ ] Export-and-evaluate smoke test passes.
+- [ ] Module status report tracks export bridge artifacts.
 - [ ] README docs generator writes Markdown.
 - [ ] Development log generator writes Markdown.
 
@@ -70,6 +80,37 @@ Run the malformed-artifact validation-failure smoke script:
 python scripts/smoke_evaluation_validation_failure.py \
   --output-dir data/outputs/smoke_evaluation_validation_failure \
   --run-prefix local_eval_validation_failure
+```
+
+Run the export-and-evaluate bridge smoke test:
+
+```bash
+python scripts/smoke_export_and_evaluate.py \
+  --output-dir data/outputs/smoke_export_and_evaluate \
+  --run-id export_eval_smoke_001
+```
+
+## Manual Commands
+
+Generate assembler-style fixtures:
+
+```bash
+python main.py --stage assembler_fixture \
+  --output-dir data/outputs/assembler_fixture
+```
+
+Export and evaluate assembler-style fixtures:
+
+```bash
+python main.py --stage export_and_evaluate \
+  --claims data/outputs/assembler_fixture/claims.json \
+  --speaker-perspective data/outputs/assembler_fixture/speaker_perspective.json \
+  --adjudications data/outputs/assembler_fixture/adjudications.json \
+  --evidence-records data/outputs/assembler_fixture/evidence_records.json \
+  --paper-artifact data/outputs/assembler_fixture/paper_artifact.json \
+  --config-path configs/evaluation_config.json \
+  --run-id assembler_fixture_eval_001 \
+  --print-summary
 ```
 
 ## Close Criteria

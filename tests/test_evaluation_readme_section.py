@@ -14,3 +14,12 @@ def test_render_evaluation_readme_section_includes_smoke_workflow():
     )
     assert "A malformed artifact fails validation before audit generation." in section
     assert "`data/outputs/smoke_evaluation_suite/summary.md`" in section
+
+
+def test_render_evaluation_readme_section_includes_export_bridge_commands():
+    section = render_evaluation_readme_section()
+
+    assert "python main.py --stage export_and_evaluate" in section
+    assert "python main.py --stage assembler_fixture" in section
+    assert "python scripts/smoke_export_and_evaluate.py" in section
+    assert "assembler-style outputs" in section

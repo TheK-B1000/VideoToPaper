@@ -21,6 +21,39 @@ It evaluates four publishability axes:
 | Citation integrity | Rendered references resolve to retrieved evidence records. |
 | Clip-anchor accuracy | Rendered clip timestamps stay within configured anchor tolerance. |
 
+### Run Evaluation
+
+```bash
+python main.py --stage evaluation \\
+  --paper-artifact data/outputs/sample_paper_artifact.json \\
+  --config-path configs/evaluation_config.json \\
+  --run-id local_eval_001 \\
+  --print-summary
+```
+
+### Export and Evaluate Assembler Output
+
+If the paper assembler produces separate JSON files, export them into the evaluator contract and run evaluation in one command:
+
+```bash
+python main.py --stage export_and_evaluate \\
+  --claims data/outputs/assembler_fixture/claims.json \\
+  --speaker-perspective data/outputs/assembler_fixture/speaker_perspective.json \\
+  --adjudications data/outputs/assembler_fixture/adjudications.json \\
+  --evidence-records data/outputs/assembler_fixture/evidence_records.json \\
+  --paper-artifact data/outputs/assembler_fixture/paper_artifact.json \\
+  --config-path configs/evaluation_config.json \\
+  --run-id assembler_eval_001 \\
+  --print-summary
+```
+
+Generate assembler-style fixture files for local testing:
+
+```bash
+python main.py --stage assembler_fixture \\
+  --output-dir data/outputs/assembler_fixture
+```
+
 ### Generate Sample Artifacts
 
 ```bash
@@ -39,6 +72,16 @@ python scripts/smoke_evaluation_suite.py \\
   --output-dir data/outputs/smoke_evaluation_suite \\
   --run-prefix local_eval_suite
 ```
+
+### Run Export-And-Evaluate Smoke Test
+
+```bash
+python scripts/smoke_export_and_evaluate.py \\
+  --output-dir data/outputs/smoke_export_and_evaluate \\
+  --run-id export_eval_smoke_001
+```
+
+This verifies the bridge from assembler-style outputs to evaluator-ready paper artifact to audit report.
 
 The smoke suite verifies three scenarios:
 

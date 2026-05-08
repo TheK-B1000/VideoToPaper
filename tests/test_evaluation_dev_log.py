@@ -82,3 +82,13 @@ def test_write_evaluation_dev_log_accepts_custom_log(tmp_path):
 
     assert "# Custom Evaluation Notes" in content
     assert "- Added a custom diagnostic." in content
+
+
+def test_build_default_evaluation_dev_log_mentions_export_bridge():
+    log = build_default_evaluation_dev_log()
+    rendered = render_evaluation_dev_log(log)
+
+    assert "paper artifact exporter" in rendered
+    assert "export-and-evaluate pipeline" in rendered
+    assert "assembler-style fixtures" in rendered
+    assert "real paper assembler output" in rendered

@@ -24,7 +24,13 @@ Those questions are intentionally separated. A malformed artifact should fail va
 ## Data Flow
 
 ```text
-Generated Paper Artifact JSON
+Assembler Output JSON Parts
+        |
+        v
+Paper Artifact Exporter
+        |
+        v
+Evaluator-Ready Paper Artifact JSON
         |
         v
 Paper Artifact Validator
@@ -61,6 +67,25 @@ It verifies:
 - Rendered clips reference known claims.
 
 If validation fails, evaluation stops. No audit report, audit summary, or manifest should be produced.
+
+## Export Layer
+
+The export layer converts assembler-style output files into the evaluator-ready artifact contract.
+
+Expected assembler-style inputs:
+
+- `claims.json`
+- `speaker_perspective.json`
+- `adjudications.json`
+- `evidence_records.json`
+- Optional `references.json`
+- Optional `rendered_clips.json`
+
+The exporter writes:
+
+- `paper_artifact.json`
+
+This artifact becomes the input to validation and evaluation.
 
 ## Evaluation Layer
 
@@ -109,6 +134,20 @@ python main.py --stage evaluation \
   --paper-artifact data/outputs/sample_paper_artifact.json \
   --config-path configs/evaluation_config.json \
   --run-id local_eval_001 \
+  --print-summary
+```
+
+Export and evaluate assembler-style output:
+
+```bash
+python main.py --stage export_and_evaluate \
+  --claims data/outputs/assembler_fixture/claims.json \
+  --speaker-perspective data/outputs/assembler_fixture/speaker_perspective.json \
+  --adjudications data/outputs/assembler_fixture/adjudications.json \
+  --evidence-records data/outputs/assembler_fixture/evidence_records.json \
+  --paper-artifact data/outputs/assembler_fixture/paper_artifact.json \
+  --config-path configs/evaluation_config.json \
+  --run-id assembler_eval_001 \
   --print-summary
 ```
 

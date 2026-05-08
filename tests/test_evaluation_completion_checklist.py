@@ -25,3 +25,14 @@ def test_write_evaluation_completion_checklist_writes_markdown(tmp_path):
     content = output_path.read_text(encoding="utf-8")
     assert "# Evaluation Module Completion Checklist" in content
     assert "## Close Criteria" in content
+
+
+def test_render_evaluation_completion_checklist_includes_export_bridge():
+    checklist = render_evaluation_completion_checklist()
+
+    assert "Paper artifact exporter exists." in checklist
+    assert "Export-and-evaluate pipeline exists." in checklist
+    assert "Assembler fixture generator exists." in checklist
+    assert "python scripts/smoke_export_and_evaluate.py" in checklist
+    assert "python main.py --stage export_and_evaluate" in checklist
+    assert "python main.py --stage assembler_fixture" in checklist
