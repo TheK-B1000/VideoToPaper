@@ -116,3 +116,64 @@ Interactive HTML Paper
 Four-Axis Evaluation
   ↓
 Inquiry Studio
+  ↓
+Operator Workflows + Reruns + Audits + Status
+```
+
+## Tech stack
+
+{_markdown_bullets(selected_tech_stack)}
+
+## Demo workflow
+
+1. Pick a YouTube source.
+2. Run the pipeline from ingestion through evaluation.
+3. Open the generated HTML paper and verify clip-anchored citations.
+4. Review the audit report and validation summaries.
+5. Use Inquiry Studio for reruns, progress checks, backend submission, and imports.
+
+## Portfolio highlights
+
+- End-to-end applied AI system with traceable artifacts.
+- Practical frontend + backend integration path.
+- Built-in quality gates, validation, and publishability checks.
+- Strong emphasis on source integrity and evidence balance.
+
+## Repository artifacts
+
+- `docs/engineering_decisions.md` explains major architecture choices and tradeoffs.
+- `docs/inquiry_studio.md` documents the operator surface and workflows.
+- `data/processed` and `data/outputs` contain pipeline artifacts.
+- `logs/runs` and `logs/budget` preserve runtime and governance context.
+
+## Closing
+
+{project_name} is designed to be inspectable, not mystical. The portfolio value is not just model usage, but disciplined pipeline engineering: provenance, evaluability, and operator control.
+"""
+
+    return PortfolioReadme(
+        title=f"{project_name} Portfolio README",
+        content=content,
+    )
+
+
+def write_portfolio_readme(
+    *,
+    output_path: str | Path = "docs/portfolio_readme.md",
+    project_name: str = "The Inquiry Engine",
+    features: list[str] | None = None,
+    tech_stack: list[str] | None = None,
+) -> Path:
+    readme = build_portfolio_readme(
+        project_name=project_name,
+        features=features,
+        tech_stack=tech_stack,
+    )
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(readme.content, encoding="utf-8")
+    return path
+
+
+def _markdown_bullets(items: list[str]) -> str:
+    return "\n".join(f"- {item}" for item in items)
