@@ -6,6 +6,10 @@ from src.evaluation.evaluation_config import (
     EvaluationRuntimeConfig,
     load_evaluation_runtime_config,
 )
+from src.evaluation.evaluation_completion_checklist import (
+    render_evaluation_completion_checklist,
+    write_evaluation_completion_checklist,
+)
 from src.evaluation.evaluation_dev_log import (
     EvaluationDevLog,
     build_default_evaluation_dev_log,
@@ -80,6 +84,7 @@ __all__ = [
     "load_evaluation_runtime_config",
     "load_validation_report",
     "render_audit_summary",
+    "render_evaluation_completion_checklist",
     "render_evaluation_dev_log",
     "render_evaluation_readme_section",
     "render_validation_summary",
@@ -89,6 +94,7 @@ __all__ = [
     "validate_paper_artifact",
     "write_audit_report",
     "write_audit_summary",
+    "write_evaluation_completion_checklist",
     "write_evaluation_dev_log",
     "write_evaluation_readme_section",
     "write_evaluation_artifact_index",
