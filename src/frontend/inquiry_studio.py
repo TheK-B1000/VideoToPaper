@@ -14,6 +14,7 @@ from src.frontend.run_queue import (
 )
 from src.frontend.local_runner import launch_local_run
 from src.frontend.audit_summary import summarize_audit_report
+from src.frontend.backend_client import BackendClient, BackendClientConfig
 from src.frontend.operator_activity import (
     VALID_ACTIVITY_TYPES,
     filter_activities,
@@ -33,6 +34,7 @@ from src.frontend.run_request import (
     save_run_request,
 )
 from src.frontend.studio_config import ensure_studio_directories, load_studio_config
+from src.frontend.studio_health import run_studio_health_checks
 
 
 YOUTUBE_ID_PATTERN = re.compile(
@@ -319,13 +321,15 @@ def run_streamlit_app() -> None:
             except ValueError as error:
                 st.error(str(error))
 
-    tab_library, tab_requests, tab_audit, tab_progress, tab_activity = st.tabs(
+    tab_library, tab_requests, tab_audit, tab_progress, tab_activity, tab_health, tab_backend = st.tabs(
         [
             "Inquiry Library",
             "Run Requests",
             "Audit Inspector",
             "Run Progress",
             "Activity Log",
+            "Health Check",
+            "Backend",
         ]
     )
 
@@ -691,6 +695,70 @@ def run_streamlit_app() -> None:
 
                     with st.expander("Details"):
                         st.json(details)
+
+    with tab_health:
+        st.subheader("Studio Health Check")
+
+        health_report = run_studio_health_checks(studio_config)
+
+        if health_report.is_ready:
+            st.success("Studio status: ready")
+        else:
+            st.error("Studio status: needs attention")
+
+        metric_cols = st.columns(3)
+        metric_cols[0].metric("Passing", health_report.passing_count)
+        metric_cols[1].metric("Warnings", health_report.warning_count)
+        metric_cols[2].metric("Failing", health_report.failing_count)
+
+        for check in health_report.checks:
+            with st.container(border=True):
+                st.write(f"**{check.name}**")
+                st.write(f"Status: `{check.status}`")
+                st.write(check.message)
+
+                if check.path:
+                    st.caption(check.path)
+
+        with st.expander("Raw health report"):
+            st.json(health_report.to_dict())
+
+    with tab_backend:
+        st.subheader("Backend Connection")
+
+        backend_base_url = st.text_input(
+            "Backend base URL",
+            value=getattr(studio_config, "backend_base_url", None)
+            or "http://127.0.0.1:8000",
+        )
+
+        timeout_seconds = st.number_input(
+            "Timeout seconds",
+            min_value=1.0,
+            max_value=60.0,
+            value=float(getattr(studio_config, "backend_timeout_seconds", 10.0)),
+        )
+
+        if st.button("Check Backend Health"):
+            try:
+                client = BackendClient(
+                    BackendClientConfig(
+                        base_url=backend_base_url,
+                        timeout_seconds=timeout_seconds,
+                    )
+                )
+
+                response = client.health_check()
+
+                if response.ok:
+                    st.success("Backend is reachable.")
+                else:
+                    st.error(response.error_message or "Backend health check failed.")
+
+                st.json(response.data)
+
+            except ValueError as error:
+                st.error(str(error))
 
 
 if __name__ == "__main__":
