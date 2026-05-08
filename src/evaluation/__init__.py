@@ -55,6 +55,7 @@ from src.evaluation.paper_artifact_exporter import (
     load_paper_artifact,
     write_paper_artifact,
 )
+from src.evaluation.paper_artifact_export_cli import main as paper_artifact_export_cli_main
 from src.evaluation.paper_artifact_validator import (
     ArtifactValidationResult,
     validate_paper_artifact,
@@ -103,6 +104,7 @@ __all__ = [
     "load_evaluation_runtime_config",
     "load_paper_artifact",
     "load_validation_report",
+    "paper_artifact_export_cli_main",
     "render_audit_summary",
     "render_evaluation_architecture_doc",
     "render_evaluation_completion_checklist",

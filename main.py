@@ -33,6 +33,9 @@ from src.pipelines.run_evaluation_handoff_pipeline import (
     run_evaluation_handoff_pipeline,
 )
 from src.pipelines.run_html_paper_pipeline import run_html_paper_pipeline
+from src.pipelines.run_paper_artifact_export_pipeline import (
+    run_paper_artifact_export_pipeline,
+)
 from src.pipelines.run_sample_artifact_pipeline import run_sample_artifact_pipeline
 from src.source.ingestion import ingest_source
 
@@ -141,6 +144,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "evaluation_docs",
             "evaluation_dev_log",
             "evaluation_handoff",
+            "paper_artifact_export",
             "sample_artifact",
         ),
         default="source_ingestion",
@@ -456,6 +460,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
     if args.stage == "evaluation_handoff":
         return run_evaluation_handoff_pipeline(forwarded)
+
+    if args.stage == "paper_artifact_export":
+        return run_paper_artifact_export_pipeline(forwarded)
 
     if args.stage == "sample_artifact":
         return run_sample_artifact_pipeline(forwarded)
