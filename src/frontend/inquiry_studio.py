@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import json
-import re
-from dataclasses import dataclass
+from html import escape
 from pathlib import Path
 from typing import Any, Iterable
 
+from src.frontend.models.inquiry import (
+    InquiryRecord,
+    RunParameters,
+    build_run_parameters,
+    parse_youtube_video_id,
+)
 from src.frontend.run_progress import load_run_progress, summarize_progress
 from src.frontend.run_queue import (
     discover_run_requests,
@@ -40,102 +45,449 @@ from src.frontend.studio_config import ensure_studio_directories, load_studio_co
 from src.frontend.studio_health import run_studio_health_checks
 from src.frontend.studio_readme import write_studio_readme
 from src.frontend.studio_smoke import run_studio_smoke_test
-
-
-YOUTUBE_ID_PATTERN = re.compile(
-    r"(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([A-Za-z0-9_-]{11})"
+from src.frontend.state import (
+    DEFAULT_BACKEND_BASE_URL,
+    LastAction,
+    STUDIO_SESSION_KEYS,
+    get_last_action,
+    initialize_studio_state,
+    persist_studio_state_to_query_params,
+    record_last_action,
 )
 
-
-@dataclass(frozen=True)
-class RunParameters:
-    youtube_url: str
-    video_id: str
-    claim_type_filter: list[str]
-    retrieval_depth: int
-    source_tiers: list[int]
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "youtube_url": self.youtube_url,
-            "video_id": self.video_id,
-            "claim_type_filter": self.claim_type_filter,
-            "retrieval_depth": self.retrieval_depth,
-            "source_tiers": self.source_tiers,
-        }
+STUDIO_ENVIRONMENT = "Local"
 
 
-@dataclass(frozen=True)
-class InquiryRecord:
-    inquiry_id: str
-    title: str
-    youtube_url: str
-    status: str
-    created_at: str
-    paper_path: str | None
-    audit_report_path: str | None
-    parameters: dict[str, Any]
+STATUS_TONES = {
+    "pass": "success",
+    "ready": "success",
+    "healthy": "success",
+    "publishable": "success",
+    "completed": "success",
+    "queued": "warning",
+    "pending": "warning",
+    "running": "info",
+    "warning": "warning",
+    "needs_attention": "danger",
+    "not_publishable": "danger",
+    "success": "success",
+    "failed": "danger",
+    "fail": "danger",
+    "info": "info",
+    "error": "danger",
+}
 
-    @classmethod
-    def from_manifest(cls, manifest_path: Path) -> "InquiryRecord":
-        data = _load_json(manifest_path)
+METRIC_TONES = {"success", "warning", "danger", "info", "neutral"}
 
-        return cls(
-            inquiry_id=str(data.get("inquiry_id", manifest_path.parent.name)),
-            title=str(data.get("title", "Untitled inquiry")),
-            youtube_url=str(data.get("youtube_url", "")),
-            status=str(data.get("status", "unknown")),
-            created_at=str(data.get("created_at", "")),
-            paper_path=_optional_string(data.get("paper_path")),
-            audit_report_path=_optional_string(data.get("audit_report_path")),
-            parameters=dict(data.get("parameters", {})),
+
+def render_studio_css() -> str:
+    return """
+<style>
+  :root {
+    --studio-primary: #1f4f46;
+    --studio-primary-strong: #173d36;
+    --studio-accent: #d99735;
+    --studio-bg: #f6f7f4;
+    --studio-surface: #ffffff;
+    --studio-ink: #111827;
+    --studio-muted: #4b5563;
+    --studio-line: rgba(17, 24, 39, 0.12);
+    --studio-success: #16794c;
+    --studio-warning: #a16207;
+    --studio-danger: #b42318;
+    --studio-info: #1d4ed8;
+  }
+
+  .block-container {
+    padding-top: 1.4rem;
+    padding-bottom: 3rem;
+  }
+
+  div[data-testid="stTabs"] button {
+    font-weight: 700;
+    min-height: 46px;
+  }
+
+  div[data-testid="stButton"] button,
+  div[data-testid="stLinkButton"] a {
+    min-height: 42px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+
+  .studio-brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--studio-line);
+    border-radius: 16px;
+    background: var(--studio-surface);
+    margin-bottom: 1rem;
+  }
+
+  .studio-brand-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .studio-mark {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: var(--studio-primary);
+    color: white;
+    font-size: 1.45rem;
+  }
+
+  /* Streamlit theme CSS often wins on bare h1/p; scope + !important keeps header readable. */
+  [data-testid="stMarkdownContainer"] .studio-brand-row .studio-title,
+  .studio-brand-row .studio-title {
+    margin: 0;
+    color: var(--studio-ink) !important;
+    font-size: 1.55rem;
+    line-height: 1.1;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em;
+  }
+
+  [data-testid="stMarkdownContainer"] .studio-brand-row .studio-subtitle,
+  .studio-brand-row .studio-subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--studio-muted) !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .studio-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .studio-badge,
+  .state-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid var(--studio-line);
+    padding: 0.26rem 0.62rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .studio-badge {
+    background: #f8fafc;
+    color: var(--studio-ink);
+  }
+
+  .state-chip--success {
+    color: var(--studio-success);
+    background: #ecfdf3;
+    border-color: rgba(22, 121, 76, 0.2);
+  }
+
+  .state-chip--warning {
+    color: var(--studio-warning);
+    background: #fffbeb;
+    border-color: rgba(161, 98, 7, 0.22);
+  }
+
+  .state-chip--danger {
+    color: var(--studio-danger);
+    background: #fff1f0;
+    border-color: rgba(180, 35, 24, 0.22);
+  }
+
+  .state-chip--info {
+    color: var(--studio-info);
+    background: #eff6ff;
+    border-color: rgba(29, 78, 216, 0.2);
+  }
+
+  .state-chip--neutral {
+    color: var(--studio-muted);
+    background: #f3f4f6;
+  }
+
+  .studio-hero {
+    border: 1px solid rgba(31, 79, 70, 0.18);
+    border-radius: 18px;
+    padding: 1.35rem;
+    background:
+      linear-gradient(135deg, rgba(31, 79, 70, 0.1), rgba(217, 151, 53, 0.12)),
+      var(--studio-surface);
+    margin-bottom: 1rem;
+  }
+
+  [data-testid="stMarkdownContainer"] .studio-hero h2,
+  .studio-hero h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.55rem;
+    color: var(--studio-ink) !important;
+    font-weight: 800 !important;
+  }
+
+  [data-testid="stMarkdownContainer"] .studio-hero > p,
+  .studio-hero > p {
+    color: var(--studio-muted) !important;
+    margin: 0.25rem 0;
+    font-weight: 500;
+  }
+
+  .micro-guide {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .micro-step,
+  .empty-state,
+  .last-action-panel,
+  .summary-panel {
+    border: 1px solid var(--studio-line);
+    border-radius: 14px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .micro-step strong,
+  .empty-state strong,
+  .last-action-panel strong,
+  .summary-panel strong {
+    color: var(--studio-ink);
+  }
+
+  .last-action-panel {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.75rem 0 1rem;
+  }
+
+  .last-action-panel p {
+    margin: 0.25rem 0 0;
+    color: var(--studio-muted);
+  }
+
+  .last-action-meta {
+    font-size: 0.86rem;
+    color: var(--studio-muted);
+  }
+
+  .card-heading {
+    margin: 0 0 0.35rem;
+    font-size: 1.08rem;
+    color: var(--studio-ink);
+  }
+
+  .card-copy,
+  .empty-copy {
+    color: var(--studio-muted);
+    margin: 0.2rem 0 0;
+  }
+
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin: 0.85rem 0 1rem;
+  }
+
+  .metric-card {
+    border: 1px solid var(--studio-line);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    background: var(--studio-surface);
+  }
+
+  .metric-card__label {
+    color: var(--studio-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .metric-card__value {
+    font-size: 1.65rem;
+    line-height: 1.15;
+    font-weight: 850;
+    color: var(--studio-ink);
+    margin-top: 0.25rem;
+  }
+
+  .metric-card__detail {
+    color: var(--studio-muted);
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+  }
+
+  .metric-card--success {
+    border-color: rgba(22, 121, 76, 0.24);
+  }
+
+  .metric-card--warning {
+    border-color: rgba(161, 98, 7, 0.24);
+  }
+
+  .metric-card--danger {
+    border-color: rgba(180, 35, 24, 0.24);
+  }
+
+  .metric-card--info {
+    border-color: rgba(29, 78, 216, 0.22);
+  }
+
+  @media (max-width: 720px) {
+    .studio-brand-row,
+    .studio-brand-left {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .studio-badge-row {
+      justify-content: flex-start;
+    }
+
+    .micro-guide {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+""".strip()
+
+
+def render_brand_header_html(
+    *,
+    title: str = "Inquiry Studio",
+    subtitle: str = "Operate the video-to-paper engine from one local cockpit.",
+    environment: str = STUDIO_ENVIRONMENT,
+) -> str:
+    return f"""
+<div class="studio-brand-row">
+  <div class="studio-brand-left">
+    <div class="studio-mark">🔎</div>
+    <div>
+      <h1 class="studio-title">{escape(title)}</h1>
+      <p class="studio-subtitle">{escape(subtitle)}</p>
+    </div>
+  </div>
+  <div class="studio-badge-row">
+    <span class="studio-badge">{escape(environment)}</span>
+  </div>
+</div>
+""".strip()
+
+
+def render_hero_html() -> str:
+    return """
+<section class="studio-hero">
+  <h2>Create inquiry in 60 seconds</h2>
+  <p>Paste a source video, choose retrieval settings, then launch or queue the run.</p>
+  <div class="micro-guide">
+    <div class="micro-step"><strong>1. Source</strong><p class="card-copy">Add a YouTube URL and claim filters.</p></div>
+    <div class="micro-step"><strong>2. Queue</strong><p class="card-copy">Create a stable run request artifact.</p></div>
+    <div class="micro-step"><strong>3. Inspect</strong><p class="card-copy">Review paper, audit, progress, and health outputs.</p></div>
+  </div>
+</section>
+""".strip()
+
+
+def render_state_chip(status: str, label: str | None = None) -> str:
+    normalized = status.strip().lower().replace(" ", "_")
+    tone = STATUS_TONES.get(normalized, "neutral")
+    visible_label = (label or status).upper()
+
+    return (
+        f'<span class="state-chip state-chip--{tone}">'
+        f"{escape(visible_label)}"
+        "</span>"
+    )
+
+
+def render_metric_cards(metrics: Iterable[dict[str, Any]]) -> str:
+    cards = []
+
+    for metric in metrics:
+        tone = str(metric.get("tone", "neutral")).strip().lower().replace(" ", "_")
+
+        if tone not in METRIC_TONES:
+            tone = "neutral"
+
+        label = escape(str(metric.get("label", "")))
+        value = escape(str(metric.get("value", "")))
+        detail = escape(str(metric.get("detail", "")))
+
+        cards.append(
+            f"""
+<div class="metric-card metric-card--{tone}">
+  <div class="metric-card__label">{label}</div>
+  <div class="metric-card__value">{value}</div>
+  <div class="metric-card__detail">{detail}</div>
+</div>
+""".strip()
         )
 
-
-def parse_youtube_video_id(url: str) -> str:
-    """
-    Extract an 11-character YouTube video id from a supported YouTube URL.
-    """
-    match = YOUTUBE_ID_PATTERN.search(url.strip())
-
-    if not match:
-        raise ValueError("Could not parse a valid YouTube video id from the URL.")
-
-    return match.group(1)
+    return f'<div class="metric-row">{"".join(cards)}</div>'
 
 
-def build_run_parameters(
+def render_empty_state_html(
     *,
-    youtube_url: str,
-    claim_type_filter: Iterable[str],
-    retrieval_depth: int,
-    source_tiers: Iterable[int],
-) -> RunParameters:
-    """
-    Validate operator inputs and convert them into a stable run config.
-    """
-    video_id = parse_youtube_video_id(youtube_url)
+    icon: str,
+    title: str,
+    body: str,
+    action: str,
+) -> str:
+    return f"""
+<div class="empty-state">
+  <strong>{escape(icon)} {escape(title)}</strong>
+  <p class="empty-copy">{escape(body)}</p>
+  <p class="empty-copy"><strong>Next action:</strong> {escape(action)}</p>
+</div>
+""".strip()
 
-    if retrieval_depth < 1:
-        raise ValueError("retrieval_depth must be at least 1.")
 
-    normalized_tiers = sorted(set(int(tier) for tier in source_tiers))
+def render_last_action_panel_html(action: LastAction | None) -> str:
+    if action is None:
+        return ""
 
-    if not normalized_tiers:
-        raise ValueError("At least one source tier must be selected.")
+    meta_parts = []
 
-    if any(tier < 1 or tier > 3 for tier in normalized_tiers):
-        raise ValueError("source_tiers must only contain tiers 1, 2, or 3.")
+    if action.created_at:
+        meta_parts.append(escape(action.created_at))
 
-    normalized_claim_types = sorted(set(claim_type_filter))
+    if action.artifact_path:
+        meta_parts.append(f"Artifact: {escape(action.artifact_path)}")
 
-    return RunParameters(
-        youtube_url=youtube_url.strip(),
-        video_id=video_id,
-        claim_type_filter=normalized_claim_types,
-        retrieval_depth=retrieval_depth,
-        source_tiers=normalized_tiers,
+    meta_html = (
+        f'<p class="last-action-meta">{" · ".join(meta_parts)}</p>'
+        if meta_parts
+        else ""
     )
+
+    return f"""
+<div class="last-action-panel">
+  <div>
+    <strong>{escape(action.title)}</strong>
+    <p>{escape(action.message)}</p>
+    {meta_html}
+  </div>
+  <div>{render_state_chip(action.status)}</div>
+</div>
+""".strip()
 
 
 def discover_inquiries(library_dir: str | Path) -> list[InquiryRecord]:
@@ -242,11 +594,131 @@ def run_streamlit_app() -> None:
         page_icon="🔎",
         layout="wide",
     )
+    st.markdown(render_studio_css(), unsafe_allow_html=True)
+
     studio_config = load_studio_config()
     ensure_studio_directories(studio_config)
+    state_defaults = {
+        "audit_report_path": studio_config.default_audit_report_path or "",
+        "progress_log_path": studio_config.default_progress_log_path or "",
+        "backend_base_url": getattr(
+            studio_config,
+            "backend_base_url",
+            None,
+        )
+        or DEFAULT_BACKEND_BASE_URL,
+    }
+    initialize_studio_state(
+        st.session_state,
+        st.query_params,
+        defaults=state_defaults,
+    )
 
-    st.title("Inquiry Studio")
-    st.caption("Operate the video-to-paper engine from one local cockpit.")
+    st.markdown(render_brand_header_html(), unsafe_allow_html=True)
+    st.markdown(render_hero_html(), unsafe_allow_html=True)
+
+    last_action = get_last_action(st.session_state)
+
+    if last_action:
+        st.markdown(
+            render_last_action_panel_html(last_action),
+            unsafe_allow_html=True,
+        )
+
+    cta_prepare, cta_smoke, cta_backend = st.columns(3)
+
+    with cta_prepare:
+        if st.button("Prepare Request", use_container_width=True):
+            st.info("Use the New Inquiry controls in the sidebar to create a run request.")
+            action = record_last_action(
+                st.session_state,
+                title="Request prep opened",
+                message="Use the sidebar controls to create a stable run request.",
+                status="info",
+            )
+            st.markdown(render_last_action_panel_html(action), unsafe_allow_html=True)
+
+    with cta_smoke:
+        if st.button("Run Smoke Test", use_container_width=True):
+            smoke_result = run_studio_smoke_test(config=studio_config)
+
+            if smoke_result.passed:
+                st.success("Studio smoke test passed.")
+                st.markdown(
+                    render_state_chip("pass", "passed"),
+                    unsafe_allow_html=True,
+                )
+                action_status = "success"
+            else:
+                st.error("Studio smoke test failed.")
+                st.markdown(
+                    render_state_chip("fail", "failed"),
+                    unsafe_allow_html=True,
+                )
+                action_status = "failed"
+
+            action = record_last_action(
+                st.session_state,
+                title="Smoke test finished",
+                message="Studio smoke test completed.",
+                status=action_status,
+                details={
+                    "checks": len(smoke_result.checks),
+                    "errors": len(smoke_result.errors),
+                },
+            )
+            st.markdown(render_last_action_panel_html(action), unsafe_allow_html=True)
+
+            with st.expander("Developer Details: smoke result"):
+                st.json(smoke_result.to_dict())
+
+    with cta_backend:
+        if st.button("Check Backend", use_container_width=True):
+            try:
+                client = BackendClient(
+                    BackendClientConfig(
+                        base_url=st.session_state[
+                            STUDIO_SESSION_KEYS["backend_base_url"]
+                        ],
+                        timeout_seconds=float(
+                            getattr(studio_config, "backend_timeout_seconds", 10.0)
+                        ),
+                    )
+                )
+                response = client.health_check()
+
+                if response.ok:
+                    st.success("Backend is reachable.")
+                    st.markdown(
+                        render_state_chip("healthy"),
+                        unsafe_allow_html=True,
+                    )
+                    action_status = "success"
+                else:
+                    st.error(response.error_message or "Backend health check failed.")
+                    st.markdown(
+                        render_state_chip("failed"),
+                        unsafe_allow_html=True,
+                    )
+                    action_status = "failed"
+
+                action = record_last_action(
+                    st.session_state,
+                    title="Backend health checked",
+                    message=(
+                        "Backend is reachable."
+                        if response.ok
+                        else response.error_message or "Backend health check failed."
+                    ),
+                    status=action_status,
+                    details={"base_url": client.config.base_url},
+                )
+                st.markdown(render_last_action_panel_html(action), unsafe_allow_html=True)
+
+                with st.expander("Developer Details: backend health"):
+                    st.json(response.data)
+            except ValueError as error:
+                st.error(str(error))
 
     library_dir = Path(studio_config.inquiry_library_dir)
 
@@ -322,47 +794,78 @@ def run_streamlit_app() -> None:
                 )
 
                 st.success(f"Run request saved to {output_path}")
-                st.json(request.to_dict())
+                action = record_last_action(
+                    st.session_state,
+                    title="Run request created",
+                    message=f"Created request for video {request.video_id}.",
+                    status="success",
+                    details={"request_id": request.request_id},
+                    artifact_path=output_path.as_posix(),
+                )
+                st.markdown(render_last_action_panel_html(action), unsafe_allow_html=True)
+
+                with st.expander("Developer Details: run request payload"):
+                    st.json(request.to_dict())
             except ValueError as error:
                 st.error(str(error))
 
     tab_library, tab_requests, tab_audit, tab_progress, tab_activity, tab_health, tab_backend = st.tabs(
         [
-            "Inquiry Library",
-            "Run Requests",
-            "Audit Inspector",
-            "Run Progress",
-            "Activity Log",
-            "Health Check",
-            "Backend",
+            "🔎 Inquiry Library",
+            "▶ Run Requests",
+            "⚠ Audit Inspector",
+            "📈 Run Progress",
+            "📄 Activity Log",
+            "✅ Health Check",
+            "🔗 Backend",
         ]
     )
 
     records = discover_inquiries(library_dir)
 
     with tab_library:
-        st.subheader("Past Inquiries")
+        st.markdown("### 🔎 Inquiry Library")
+        with st.container(border=True):
+            st.markdown("#### Browse generated papers")
+            st.write(
+                "Search previous inquiries, open finished papers, inspect audits, or create a rerun request."
+            )
 
         col_query, col_status = st.columns([3, 1])
 
         with col_query:
-            query = st.text_input("Search title or URL")
+            query = st.text_input(
+                "Search title or URL",
+                key=STUDIO_SESSION_KEYS["library_query"],
+            )
 
         with col_status:
             status = st.selectbox(
                 "Status",
                 options=["all", "completed", "failed", "running", "queued"],
+                key=STUDIO_SESSION_KEYS["library_status"],
             )
 
         visible_records = filter_inquiries(records, query=query, status=status)
 
         if not visible_records:
-            st.info("No inquiries found yet. Add manifest files under data/inquiries/.")
+            st.markdown(
+                render_empty_state_html(
+                    icon="🔎",
+                    title="No inquiries indexed yet",
+                    body=(
+                        "This library reads saved inquiry manifests from "
+                        f"{studio_config.inquiry_library_dir}."
+                    ),
+                    action="Create a run request, launch it, then return here after the run writes a manifest.",
+                ),
+                unsafe_allow_html=True,
+            )
         else:
             for record in visible_records:
                 with st.container(border=True):
                     st.markdown(f"### {record.title}")
-                    st.write(f"**Status:** {record.status}")
+                    st.markdown(render_state_chip(record.status), unsafe_allow_html=True)
                     st.write(f"**Created:** {record.created_at}")
                     st.write(f"**Source:** {record.youtube_url}")
 
@@ -448,37 +951,104 @@ def run_streamlit_app() -> None:
                                     )
 
                                     st.success(f"Rerun request saved to {rerun_path}")
-                                    st.json(rerun_request.to_dict())
+                                    action = record_last_action(
+                                        st.session_state,
+                                        title="Rerun request created",
+                                        message=(
+                                            "Created a rerun request from "
+                                            f"{record.inquiry_id}."
+                                        ),
+                                        status="success",
+                                        details={
+                                            "request_id": rerun_request.request_id,
+                                            "inquiry_id": record.inquiry_id,
+                                        },
+                                        artifact_path=rerun_path.as_posix(),
+                                    )
+                                    st.markdown(
+                                        render_last_action_panel_html(action),
+                                        unsafe_allow_html=True,
+                                    )
+
+                                    with st.expander(
+                                        "Developer Details: rerun request payload"
+                                    ):
+                                        st.json(rerun_request.to_dict())
 
                                 except ValueError as error:
                                     st.error(str(error))
 
-                    with st.expander("Run parameters"):
+                    with st.expander("Developer Details: run parameters"):
                         st.json(record.parameters)
 
     with tab_requests:
-        st.subheader("Run Request Queue")
+        st.markdown("### ▶ Run Requests")
+        with st.container(border=True):
+            st.markdown("#### Queue and launch work")
+            st.write(
+                "Review request artifacts, launch local runs, or submit an executable request to the backend."
+            )
 
         queued_requests = discover_run_requests(studio_config.run_requests_dir)
         queue_summary = summarize_queue(queued_requests)
 
-        metric_cols = st.columns(6)
-        metric_cols[0].metric("Total", queue_summary["total"])
-        metric_cols[1].metric("Executable", queue_summary["executable"])
-        metric_cols[2].metric("Pending", queue_summary["pending"])
-        metric_cols[3].metric("Running", queue_summary["running"])
-        metric_cols[4].metric("Completed", queue_summary["completed"])
-        metric_cols[5].metric("Failed", queue_summary["failed"])
+        st.markdown(
+            render_metric_cards(
+                [
+                    {
+                        "label": "Total",
+                        "value": queue_summary["total"],
+                        "detail": "requests found",
+                        "tone": "neutral",
+                    },
+                    {
+                        "label": "Executable",
+                        "value": queue_summary["executable"],
+                        "detail": "ready to launch",
+                        "tone": "success",
+                    },
+                    {
+                        "label": "Pending",
+                        "value": queue_summary["pending"],
+                        "detail": "waiting in queue",
+                        "tone": "warning",
+                    },
+                    {
+                        "label": "Running",
+                        "value": queue_summary["running"],
+                        "detail": "runs active",
+                        "tone": "info",
+                    },
+                    {
+                        "label": "Completed",
+                        "value": queue_summary["completed"],
+                        "detail": "finished runs",
+                        "tone": "success",
+                    },
+                    {
+                        "label": "Failed",
+                        "value": queue_summary["failed"],
+                        "detail": "needs attention",
+                        "tone": "danger",
+                    },
+                ]
+            ),
+            unsafe_allow_html=True,
+        )
 
         col_query, col_status = st.columns([3, 1])
 
         with col_query:
-            request_query = st.text_input("Search request, URL, or video id")
+            request_query = st.text_input(
+                "Search request, URL, or video id",
+                key=STUDIO_SESSION_KEYS["request_query"],
+            )
 
         with col_status:
             request_status = st.selectbox(
                 "Queue status",
                 options=["all", "pending", "queued", "running", "completed", "failed"],
+                key=STUDIO_SESSION_KEYS["request_status"],
             )
 
         visible_requests = filter_queued_requests(
@@ -488,12 +1058,23 @@ def run_streamlit_app() -> None:
         )
 
         if not visible_requests:
-            st.info("No run requests found yet.")
+            st.markdown(
+                render_empty_state_html(
+                    icon="▶",
+                    title="No run requests yet",
+                    body=(
+                        "Run requests appear here after the sidebar form writes "
+                        f"JSON files into {studio_config.run_requests_dir}."
+                    ),
+                    action="Use Prepare Request, then save a run request from the sidebar.",
+                ),
+                unsafe_allow_html=True,
+            )
         else:
             for item in visible_requests:
                 with st.container(border=True):
                     st.markdown(f"### {item.request_id}")
-                    st.write(f"**Status:** {item.status}")
+                    st.markdown(render_state_chip(item.status), unsafe_allow_html=True)
                     st.write(f"**Video ID:** {item.request.video_id}")
                     st.write(f"**Created:** {item.created_at}")
                     st.write(f"**Source:** {item.youtube_url}")
@@ -530,7 +1111,21 @@ def run_streamlit_app() -> None:
 
                                 st.success(f"Run launched: {launch.run_id}")
                                 st.write(f"Progress log: `{launch.progress_path}`")
-                                st.json(launch.to_dict())
+                                action = record_last_action(
+                                    st.session_state,
+                                    title="Local run launched",
+                                    message=f"Started local run {launch.run_id}.",
+                                    status="success",
+                                    details={"request_id": item.request_id},
+                                    artifact_path=launch.progress_path,
+                                )
+                                st.markdown(
+                                    render_last_action_panel_html(action),
+                                    unsafe_allow_html=True,
+                                )
+
+                                with st.expander("Developer Details: launch payload"):
+                                    st.json(launch.to_dict())
                             except ValueError as error:
                                 st.error(str(error))
                             except FileExistsError:
@@ -548,12 +1143,9 @@ def run_streamlit_app() -> None:
                             try:
                                 client = BackendClient(
                                     BackendClientConfig(
-                                        base_url=getattr(
-                                            studio_config,
-                                            "backend_base_url",
-                                            None,
-                                        )
-                                        or "http://127.0.0.1:8000",
+                                        base_url=st.session_state[
+                                            STUDIO_SESSION_KEYS["backend_base_url"]
+                                        ],
                                         timeout_seconds=float(
                                             getattr(
                                                 studio_config,
@@ -586,10 +1178,30 @@ def run_streamlit_app() -> None:
                                     )
 
                                     st.success(result.message)
+                                    action_status = "success"
                                 else:
                                     st.error(result.message)
+                                    action_status = "failed"
 
-                                st.json(result.to_dict())
+                                action = record_last_action(
+                                    st.session_state,
+                                    title="Backend submission finished",
+                                    message=result.message,
+                                    status=action_status,
+                                    details={
+                                        "request_id": item.request_id,
+                                        "run_id": result.run_id,
+                                    },
+                                )
+                                st.markdown(
+                                    render_last_action_panel_html(action),
+                                    unsafe_allow_html=True,
+                                )
+
+                                with st.expander(
+                                    "Developer Details: backend submission response"
+                                ):
+                                    st.json(result.to_dict())
 
                             except ValueError as error:
                                 st.error(str(error))
@@ -606,16 +1218,21 @@ def run_streamlit_app() -> None:
                         else:
                             st.write("Result: none yet")
 
-                    with st.expander("Request payload"):
+                    with st.expander("Developer Details: request payload"):
                         st.json(item.request.to_dict())
 
     with tab_audit:
-        st.subheader("Audit Report Viewer")
+        st.markdown("### ⚠ Audit Inspector")
+        with st.container(border=True):
+            st.markdown("#### Open Audit")
+            st.write(
+                "Load an audit JSON file and scan publishability, blocking issues, and axis-level scores first."
+            )
 
         audit_path = st.text_input(
             "Audit report path",
-            value=studio_config.default_audit_report_path or "",
             placeholder="data/inquiries/inquiry_001/audit_report.json",
+            key=STUDIO_SESSION_KEYS["audit_report_path"],
         )
 
         if st.button("Load Audit Report"):
@@ -634,18 +1251,52 @@ def run_streamlit_app() -> None:
 
                 if summary.publishable:
                     st.success("Audit status: publishable")
+                    st.markdown(
+                        render_state_chip("publishable"),
+                        unsafe_allow_html=True,
+                    )
+                    action_status = "success"
                 else:
                     st.error("Audit status: not publishable")
+                    st.markdown(
+                        render_state_chip("not_publishable", "not publishable"),
+                        unsafe_allow_html=True,
+                    )
+                    action_status = "failed"
 
-                axis_cols = st.columns(4)
+                action = record_last_action(
+                    st.session_state,
+                    title="Audit report opened",
+                    message=(
+                        "Audit report is publishable."
+                        if summary.publishable
+                        else "Audit report has blocking findings."
+                    ),
+                    status=action_status,
+                    details={
+                        "blocking_issues": len(summary.blocking_issues),
+                        "warnings": len(summary.warning_issues),
+                    },
+                    artifact_path=audit_path,
+                )
+                st.markdown(render_last_action_panel_html(action), unsafe_allow_html=True)
 
-                for index, axis in enumerate(summary.axes):
-                    with axis_cols[index]:
-                        st.metric(
-                            label=axis.axis.replace("_", " ").title(),
-                            value=axis.status.upper(),
-                            delta=axis.score,
-                        )
+                st.markdown(
+                    render_metric_cards(
+                        [
+                            {
+                                "label": axis.axis.replace("_", " ").title(),
+                                "value": axis.status.upper(),
+                                "detail": axis.score,
+                                "tone": "success"
+                                if axis.status.lower() in {"pass", "passed"}
+                                else "danger",
+                            }
+                            for axis in summary.axes
+                        ]
+                    ),
+                    unsafe_allow_html=True,
+                )
 
                 if summary.blocking_issues:
                     st.subheader("Blocking Issues")
@@ -657,16 +1308,21 @@ def run_streamlit_app() -> None:
                     for issue in summary.warning_issues:
                         st.warning(issue)
 
-                with st.expander("Raw audit report"):
+                with st.expander("Developer Details: raw audit report"):
                     st.json(report)
 
     with tab_progress:
-        st.subheader("Run Progress")
+        st.markdown("### 📈 Run Progress")
+        with st.container(border=True):
+            st.markdown("#### Inspect Run")
+            st.write(
+                "Load a progress log or sync a backend run to see current status before opening raw payloads."
+            )
 
         progress_path = st.text_input(
             "Progress log path",
-            value=studio_config.default_progress_log_path or "",
             placeholder="logs/runs/latest_progress.json",
+            key=STUDIO_SESSION_KEYS["progress_log_path"],
         )
 
         if st.button("Load Progress"):
@@ -687,21 +1343,77 @@ def run_streamlit_app() -> None:
 
                     st.progress(summary["completion_ratio"])
                     st.write(f"**Run ID:** {summary['run_id']}")
-                    st.write(f"**Status:** {summary['status']}")
+                    st.markdown(
+                        render_state_chip(str(summary["status"])),
+                        unsafe_allow_html=True,
+                    )
                     st.write(f"**Current step:** {summary['current_step'] or 'None'}")
                     st.write(f"**Elapsed seconds:** {summary['elapsed_seconds']}")
+                    action = record_last_action(
+                        st.session_state,
+                        title="Progress log loaded",
+                        message=f"Loaded progress for run {summary['run_id']}.",
+                        status=(
+                            "failed"
+                            if int(summary["failed_steps"]) > 0
+                            else "success"
+                        ),
+                        details={
+                            "completed_steps": summary["completed_steps"],
+                            "failed_steps": summary["failed_steps"],
+                        },
+                        artifact_path=progress_path,
+                    )
+                    st.markdown(
+                        render_last_action_panel_html(action),
+                        unsafe_allow_html=True,
+                    )
 
-                    metric_cols = st.columns(5)
-                    metric_cols[0].metric("Completed", summary["completed_steps"])
-                    metric_cols[1].metric("Running", summary["running_steps"])
-                    metric_cols[2].metric("Queued", summary["queued_steps"])
-                    metric_cols[3].metric("Skipped", summary["skipped_steps"])
-                    metric_cols[4].metric("Failed", summary["failed_steps"])
+                    st.markdown(
+                        render_metric_cards(
+                            [
+                                {
+                                    "label": "Completed",
+                                    "value": summary["completed_steps"],
+                                    "detail": "steps finished",
+                                    "tone": "success",
+                                },
+                                {
+                                    "label": "Running",
+                                    "value": summary["running_steps"],
+                                    "detail": "steps active",
+                                    "tone": "info",
+                                },
+                                {
+                                    "label": "Queued",
+                                    "value": summary["queued_steps"],
+                                    "detail": "waiting",
+                                    "tone": "warning",
+                                },
+                                {
+                                    "label": "Skipped",
+                                    "value": summary["skipped_steps"],
+                                    "detail": "not run",
+                                    "tone": "neutral",
+                                },
+                                {
+                                    "label": "Failed",
+                                    "value": summary["failed_steps"],
+                                    "detail": "blocking issues",
+                                    "tone": "danger",
+                                },
+                            ]
+                        ),
+                        unsafe_allow_html=True,
+                    )
 
                     for step in progress.steps:
                         with st.container(border=True):
                             st.write(f"**{step.name}**")
-                            st.write(f"Status: `{step.status}`")
+                            st.markdown(
+                                render_state_chip(step.status),
+                                unsafe_allow_html=True,
+                            )
 
                             if step.elapsed_seconds is not None:
                                 st.write(f"Elapsed: {step.elapsed_seconds}s")
@@ -718,18 +1430,16 @@ def run_streamlit_app() -> None:
         backend_run_id = st.text_input(
             "Backend run id",
             placeholder="run_001",
+            key=STUDIO_SESSION_KEYS["backend_run_id"],
         )
 
         if st.button("Sync from Backend"):
             try:
                 client = BackendClient(
                     BackendClientConfig(
-                        base_url=getattr(
-                            studio_config,
-                            "backend_base_url",
-                            None,
-                        )
-                        or "http://127.0.0.1:8000",
+                        base_url=st.session_state[
+                            STUDIO_SESSION_KEYS["backend_base_url"]
+                        ],
                         timeout_seconds=float(
                             getattr(
                                 studio_config,
@@ -753,8 +1463,43 @@ def run_streamlit_app() -> None:
 
                     st.progress(summary["completion_ratio"])
                     st.write(f"**Run ID:** {summary['run_id']}")
-                    st.write(f"**Status:** {summary['status']}")
+                    st.markdown(
+                        render_state_chip(str(summary["status"])),
+                        unsafe_allow_html=True,
+                    )
                     st.write(f"**Current step:** {summary['current_step'] or 'None'}")
+
+                    st.markdown(
+                        render_metric_cards(
+                            [
+                                {
+                                    "label": "Completed",
+                                    "value": summary["completed_steps"],
+                                    "detail": "steps finished",
+                                    "tone": "success",
+                                },
+                                {
+                                    "label": "Running",
+                                    "value": summary["running_steps"],
+                                    "detail": "steps active",
+                                    "tone": "info",
+                                },
+                                {
+                                    "label": "Queued",
+                                    "value": summary["queued_steps"],
+                                    "detail": "waiting",
+                                    "tone": "warning",
+                                },
+                                {
+                                    "label": "Failed",
+                                    "value": summary["failed_steps"],
+                                    "detail": "blocking issues",
+                                    "tone": "danger",
+                                },
+                            ]
+                        ),
+                        unsafe_allow_html=True,
+                    )
 
                     if result.snapshot_path:
                         st.write(f"Snapshot saved to: `{result.snapshot_path}`")
@@ -766,18 +1511,55 @@ def run_streamlit_app() -> None:
                         artifact_path=result.snapshot_path,
                         log_path=studio_config.operator_activity_log_path,
                     )
+                    action = record_last_action(
+                        st.session_state,
+                        title="Backend progress synced",
+                        message=f"Synced progress for run {result.run_id}.",
+                        status=(
+                            "failed"
+                            if int(summary["failed_steps"]) > 0
+                            else "success"
+                        ),
+                        details={
+                            "completed_steps": summary["completed_steps"],
+                            "failed_steps": summary["failed_steps"],
+                        },
+                        artifact_path=result.snapshot_path,
+                    )
+                    st.markdown(
+                        render_last_action_panel_html(action),
+                        unsafe_allow_html=True,
+                    )
 
-                    with st.expander("Synced progress payload"):
+                    with st.expander("Developer Details: synced progress payload"):
                         st.json(result.to_dict())
                 else:
                     st.error(result.message)
-                    st.json(result.to_dict())
+                    action = record_last_action(
+                        st.session_state,
+                        title="Backend progress sync failed",
+                        message=result.message,
+                        status="failed",
+                        details={"run_id": result.run_id},
+                    )
+                    st.markdown(
+                        render_last_action_panel_html(action),
+                        unsafe_allow_html=True,
+                    )
+
+                    with st.expander("Developer Details: backend sync response"):
+                        st.json(result.to_dict())
 
             except ValueError as error:
                 st.error(str(error))
 
     with tab_activity:
-        st.subheader("Operator Activity Log")
+        st.markdown("### 📄 Activity Log")
+        with st.container(border=True):
+            st.markdown("#### Recent operator actions")
+            st.write(
+                "Scan requests, launches, imports, documentation generation, and progress views from one log."
+            )
 
         activities = read_activity_log(
             studio_config.operator_activity_log_path,
@@ -787,12 +1569,24 @@ def run_streamlit_app() -> None:
         col_query, col_type = st.columns([3, 1])
 
         with col_query:
-            activity_query = st.text_input("Search activity")
+            activity_query = st.text_input(
+                "Search activity",
+                key=STUDIO_SESSION_KEYS["activity_query"],
+            )
 
         with col_type:
+            activity_type_options = ["all", *sorted(VALID_ACTIVITY_TYPES)]
+
+            if (
+                st.session_state[STUDIO_SESSION_KEYS["activity_type"]]
+                not in activity_type_options
+            ):
+                st.session_state[STUDIO_SESSION_KEYS["activity_type"]] = "all"
+
             activity_type = st.selectbox(
                 "Activity type",
-                options=["all", *sorted(VALID_ACTIVITY_TYPES)],
+                options=activity_type_options,
+                key=STUDIO_SESSION_KEYS["activity_type"],
             )
 
         visible_activities = filter_activities(
@@ -802,11 +1596,26 @@ def run_streamlit_app() -> None:
         )
 
         if not visible_activities:
-            st.info("No operator activity recorded yet.")
+            st.markdown(
+                render_empty_state_html(
+                    icon="📄",
+                    title="No operator activity yet",
+                    body=(
+                        "The activity log records request creation, launch actions, "
+                        "audit opens, imports, and documentation generation."
+                    ),
+                    action="Create a request or open an audit to write the first activity event.",
+                ),
+                unsafe_allow_html=True,
+            )
         else:
             for activity in visible_activities:
                 with st.container(border=True):
                     st.write(f"**{activity.activity_type.replace('_', ' ').title()}**")
+                    st.markdown(
+                        render_state_chip(activity.activity_type, activity.activity_type),
+                        unsafe_allow_html=True,
+                    )
                     st.write(activity.message)
                     st.caption(activity.created_at)
 
@@ -818,34 +1627,68 @@ def run_streamlit_app() -> None:
                         "metadata": activity.metadata or {},
                     }
 
-                    with st.expander("Details"):
+                    with st.expander("Developer Details"):
                         st.json(details)
 
     with tab_health:
-        st.subheader("Studio Health Check")
+        st.markdown("### ✅ Studio Health Check")
+        with st.container(border=True):
+            st.markdown("#### Preflight readiness")
+            st.write(
+                "Confirm required folders, request writes, run-log writes, and optional default files before launching work."
+            )
 
         health_report = run_studio_health_checks(studio_config)
 
         if health_report.is_ready:
             st.success("Studio status: ready")
+            st.markdown(
+                render_state_chip("ready"),
+                unsafe_allow_html=True,
+            )
         else:
             st.error("Studio status: needs attention")
+            st.markdown(
+                render_state_chip("needs_attention", "needs attention"),
+                unsafe_allow_html=True,
+            )
 
-        metric_cols = st.columns(3)
-        metric_cols[0].metric("Passing", health_report.passing_count)
-        metric_cols[1].metric("Warnings", health_report.warning_count)
-        metric_cols[2].metric("Failing", health_report.failing_count)
+        st.markdown(
+            render_metric_cards(
+                [
+                    {
+                        "label": "Passing",
+                        "value": health_report.passing_count,
+                        "detail": "healthy checks",
+                        "tone": "success",
+                    },
+                    {
+                        "label": "Warnings",
+                        "value": health_report.warning_count,
+                        "detail": "optional issues",
+                        "tone": "warning",
+                    },
+                    {
+                        "label": "Failing",
+                        "value": health_report.failing_count,
+                        "detail": "blocking issues",
+                        "tone": "danger",
+                    },
+                ]
+            ),
+            unsafe_allow_html=True,
+        )
 
         for check in health_report.checks:
             with st.container(border=True):
                 st.write(f"**{check.name}**")
-                st.write(f"Status: `{check.status}`")
+                st.markdown(render_state_chip(check.status), unsafe_allow_html=True)
                 st.write(check.message)
 
                 if check.path:
                     st.caption(check.path)
 
-        with st.expander("Raw health report"):
+        with st.expander("Developer Details: raw health report"):
             st.json(health_report.to_dict())
 
         st.divider()
@@ -875,28 +1718,57 @@ def run_streamlit_app() -> None:
 
             if result.passed:
                 st.success("Studio smoke test passed.")
+                st.markdown(
+                    render_state_chip("pass", "passed"),
+                    unsafe_allow_html=True,
+                )
             else:
                 st.error("Studio smoke test failed.")
+                st.markdown(
+                    render_state_chip("fail", "failed"),
+                    unsafe_allow_html=True,
+                )
 
             if result.errors:
                 st.subheader("Errors")
                 for error in result.errors:
                     st.error(error)
 
-            st.subheader("Checks")
-            for check in result.checks:
-                st.write(f"- {check}")
+            st.markdown(
+                render_metric_cards(
+                    [
+                        {
+                            "label": "Checks",
+                            "value": len(result.checks),
+                            "detail": "preflight checks run",
+                            "tone": "success" if result.passed else "warning",
+                        },
+                        {
+                            "label": "Errors",
+                            "value": len(result.errors),
+                            "detail": "blocking issues",
+                            "tone": "danger" if result.errors else "success",
+                        },
+                    ]
+                ),
+                unsafe_allow_html=True,
+            )
 
-            with st.expander("Raw smoke result"):
+            with st.expander("Developer Details: smoke checks"):
                 st.json(result.to_dict())
 
+
     with tab_backend:
-        st.subheader("Backend Connection")
+        st.markdown("### 🔗 Backend")
+        with st.container(border=True):
+            st.markdown("#### Backend connection")
+            st.write(
+                "Check the backend health endpoint, then import a completed inquiry into the local library."
+            )
 
         backend_base_url = st.text_input(
             "Backend base URL",
-            value=getattr(studio_config, "backend_base_url", None)
-            or "http://127.0.0.1:8000",
+            key=STUDIO_SESSION_KEYS["backend_base_url"],
         )
 
         timeout_seconds = st.number_input(
@@ -919,10 +1791,19 @@ def run_streamlit_app() -> None:
 
                 if response.ok:
                     st.success("Backend is reachable.")
+                    st.markdown(
+                        render_state_chip("healthy"),
+                        unsafe_allow_html=True,
+                    )
                 else:
                     st.error(response.error_message or "Backend health check failed.")
+                    st.markdown(
+                        render_state_chip("failed"),
+                        unsafe_allow_html=True,
+                    )
 
-                st.json(response.data)
+                with st.expander("Developer Details: backend health response"):
+                    st.json(response.data)
 
             except ValueError as error:
                 st.error(str(error))
@@ -939,12 +1820,9 @@ def run_streamlit_app() -> None:
             try:
                 client = BackendClient(
                     BackendClientConfig(
-                        base_url=getattr(
-                            studio_config,
-                            "backend_base_url",
-                            None,
-                        )
-                        or "http://127.0.0.1:8000",
+                        base_url=st.session_state[
+                            STUDIO_SESSION_KEYS["backend_base_url"]
+                        ],
                         timeout_seconds=float(
                             getattr(
                                 studio_config,
@@ -963,6 +1841,10 @@ def run_streamlit_app() -> None:
 
                 if result.imported:
                     st.success(result.message)
+                    st.markdown(
+                        render_state_chip("completed", "imported"),
+                        unsafe_allow_html=True,
+                    )
 
                     record_activity(
                         activity_type="inquiry_imported",
@@ -974,8 +1856,13 @@ def run_streamlit_app() -> None:
                     )
                 else:
                     st.error(result.message)
+                    st.markdown(
+                        render_state_chip("failed", "not imported"),
+                        unsafe_allow_html=True,
+                    )
 
-                st.json(result.to_dict())
+                with st.expander("Developer Details: import response"):
+                    st.json(result.to_dict())
 
             except ValueError as error:
                 st.error(str(error))

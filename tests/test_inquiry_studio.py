@@ -10,7 +10,15 @@ from src.frontend.inquiry_studio import (
     load_audit_report,
     paper_exists,
     parse_youtube_video_id,
+    render_brand_header_html,
+    render_empty_state_html,
+    render_hero_html,
+    render_last_action_panel_html,
+    render_metric_cards,
+    render_state_chip,
+    render_studio_css,
 )
+from src.frontend.state import LastAction
 
 
 def test_parse_youtube_video_id_from_watch_url():
@@ -214,3 +222,107 @@ def test_paper_exists_detects_existing_html_file(tmp_path: Path):
     assert paper_exists(paper_path) is True
     assert paper_exists(tmp_path / "missing.html") is False
     assert paper_exists(None) is False
+
+
+def test_render_studio_css_includes_design_tokens_and_card_classes():
+    css = render_studio_css()
+
+    assert "--studio-primary" in css
+    assert "--studio-accent" in css
+    assert ".studio-hero" in css
+    assert ".metric-card" in css
+    assert ".state-chip" in css
+
+
+def test_render_brand_header_html_includes_title_and_environment():
+    html = render_brand_header_html(
+        title="Studio <Test>",
+        subtitle="Local operator shell",
+        environment="Local",
+    )
+
+    assert "Studio &lt;Test&gt;" in html
+    assert "Local operator shell" in html
+    assert "Local" in html
+    assert "Build " not in html
+
+
+def test_render_hero_html_includes_micro_guide():
+    html = render_hero_html()
+
+    assert "Create inquiry in 60 seconds" in html
+    assert "1. Source" in html
+    assert "2. Queue" in html
+    assert "3. Inspect" in html
+
+
+def test_render_state_chip_uses_semantic_tones_and_escapes_label():
+    completed = render_state_chip("completed")
+    failed = render_state_chip("failed")
+    unsafe = render_state_chip("unknown", "<script>")
+
+    assert "state-chip--success" in completed
+    assert "COMPLETED" in completed
+    assert "state-chip--danger" in failed
+    assert "&lt;SCRIPT&gt;" in unsafe
+    assert "<script>" not in unsafe
+
+
+def test_render_metric_cards_normalizes_tone_and_escapes_text():
+    html = render_metric_cards(
+        [
+            {
+                "label": "Warnings",
+                "value": 2,
+                "detail": "2 blocking <issues>",
+                "tone": "warning",
+            },
+            {
+                "label": "Unsafe",
+                "value": "<bad>",
+                "detail": "ignored class",
+                "tone": "unexpected tone",
+            },
+        ]
+    )
+
+    assert "metric-card--warning" in html
+    assert "metric-card--neutral" in html
+    assert "2 blocking &lt;issues&gt;" in html
+    assert "&lt;bad&gt;" in html
+    assert "metric-card--unexpected tone" not in html
+
+
+def test_render_empty_state_html_explains_next_action_and_escapes_text():
+    html = render_empty_state_html(
+        icon="?",
+        title="Nothing <yet>",
+        body="Create a request.",
+        action="Use <Prepare Request>.",
+    )
+
+    assert "Nothing &lt;yet&gt;" in html
+    assert "Create a request." in html
+    assert "Next action:" in html
+    assert "Use &lt;Prepare Request&gt;." in html
+
+
+def test_render_last_action_panel_html_shows_status_and_artifact():
+    html = render_last_action_panel_html(
+        LastAction(
+            title="Run launched <ok>",
+            message="Progress log ready.",
+            status="success",
+            artifact_path="logs/runs/run_001/progress.json",
+            created_at="2026-05-08T12:00:00Z",
+        )
+    )
+
+    assert "Run launched &lt;ok&gt;" in html
+    assert "Progress log ready." in html
+    assert "state-chip--success" in html
+    assert "logs/runs/run_001/progress.json" in html
+
+
+def test_render_last_action_panel_html_returns_empty_string_without_action():
+    assert render_last_action_panel_html(None) == ""
