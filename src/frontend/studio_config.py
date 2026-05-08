@@ -17,6 +17,8 @@ class StudioConfig:
     operator_activity_log_path: str
     default_audit_report_path: str | None = None
     default_progress_log_path: str | None = None
+    backend_base_url: str | None = None
+    backend_timeout_seconds: float = 10.0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -26,6 +28,8 @@ class StudioConfig:
             "operator_activity_log_path": self.operator_activity_log_path,
             "default_audit_report_path": self.default_audit_report_path,
             "default_progress_log_path": self.default_progress_log_path,
+            "backend_base_url": self.backend_base_url,
+            "backend_timeout_seconds": self.backend_timeout_seconds,
         }
 
 
@@ -37,6 +41,8 @@ def default_studio_config() -> StudioConfig:
         operator_activity_log_path="logs/operator_activity.jsonl",
         default_audit_report_path=None,
         default_progress_log_path="logs/runs/latest_progress.json",
+        backend_base_url="http://127.0.0.1:8000",
+        backend_timeout_seconds=10.0,
     )
 
 
@@ -84,6 +90,8 @@ def studio_config_from_dict(data: dict[str, Any]) -> StudioConfig:
         default_progress_log_path=_optional_string(
             merged.get("default_progress_log_path"),
         ),
+        backend_base_url=_optional_string(merged.get("backend_base_url")),
+        backend_timeout_seconds=float(merged.get("backend_timeout_seconds", 10.0)),
     )
 
 

@@ -3,6 +3,8 @@
   "run_requests_dir": "data/run_requests",
   "runs_dir": "logs/runs",
   "operator_activity_log_path": "logs/operator_activity.jsonl",
+  "backend_base_url": "http://127.0.0.1:8000",
+  "backend_timeout_seconds": 10.0,
   "default_audit_report_path": null,
   "default_progress_log_path": "logs/runs/latest_progress.json"
 }
