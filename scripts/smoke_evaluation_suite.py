@@ -6,7 +6,10 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from scripts.smoke_evaluation_suite_summary import write_suite_summary
+try:
+    from scripts.smoke_evaluation_suite_summary import write_suite_summary
+except ModuleNotFoundError:  # pragma: no cover - script-path execution fallback
+    from smoke_evaluation_suite_summary import write_suite_summary
 
 
 def run_command(command: list[str]) -> None:
