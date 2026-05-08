@@ -69,6 +69,70 @@ def test_write_audit_report_creates_json_file(tmp_path):
     assert payload["evidence_balance"]["cherry_picking_score"] == "low"
     assert payload["citation_integrity"]["fabricated_references"] == 0
     assert payload["clip_anchor_accuracy"]["clips_within_tolerance"] == "100%"
+    assert payload["publishability_decision"]["publishable"] is True
+    assert payload["publishability_decision"]["blocking_axes"] == []
+    assert payload["publishability_decision"]["reasons"] == [
+        "All evaluation gates passed."
+    ]
+
+
+def test_write_audit_report_includes_blocking_reasons(tmp_path):
+    report = EvaluationReport(
+        steelman_accuracy=AxisResult(
+            score="100%",
+            passed=True,
+            details={
+                "verbatim_anchored_assertions": "100%",
+                "qualifications_preserved": "100%",
+                "hedge_drift_detected": False,
+                "missing_anchors": [],
+            },
+        ),
+        evidence_balance=AxisResult(
+            score="0%",
+            passed=False,
+            details={
+                "claims_with_balanced_retrieval": "0%",
+                "cherry_picking_score": "high",
+                "false_consensus_count": 1,
+                "skewed_claims": ["claim_001"],
+            },
+        ),
+        citation_integrity=AxisResult(
+            score="100%",
+            passed=True,
+            details={
+                "references_resolved": "100%",
+                "fabricated_references": 0,
+                "unresolved_references": [],
+            },
+        ),
+        clip_anchor_accuracy=AxisResult(
+            score="100%",
+            passed=True,
+            details={
+                "clips_within_tolerance": "100%",
+                "tolerance_seconds": 1.0,
+                "drift_detected": [],
+            },
+        ),
+        publishable=False,
+    )
+
+    output_path = tmp_path / "audit_report.json"
+
+    write_audit_report(report, output_path)
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert payload["publishability_decision"]["publishable"] is False
+    assert payload["publishability_decision"]["blocking_axes"] == [
+        "evidence_balance"
+    ]
+    assert (
+        "1 claim(s) present a strong verdict despite skewed retrieval."
+        in payload["publishability_decision"]["reasons"]
+    )
 
 
 def test_write_audit_report_creates_parent_directories(tmp_path):

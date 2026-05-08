@@ -5,6 +5,10 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 from src.evaluation.evaluation_harness import EvaluationReport
+from src.evaluation.publishability_gate import (
+    attach_publishability_decision,
+    decide_publishability,
+)
 
 
 def write_audit_report(
@@ -14,13 +18,17 @@ def write_audit_report(
     """
     Write an evaluation report to disk as formatted JSON.
 
-    The report is intentionally written as plain JSON so it can be inspected
-    by humans, loaded by the backend, or displayed later in the operator UI.
+    The report includes both raw metric results and a human-readable
+    publishability decision.
     """
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    payload: Dict[str, Any] = report.to_dict()
+    decision = decide_publishability(report)
+    payload: Dict[str, Any] = attach_publishability_decision(
+        report.to_dict(),
+        decision,
+    )
 
     path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False),
