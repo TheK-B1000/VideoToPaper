@@ -153,10 +153,28 @@ def main(argv: Optional[list[str]] = None) -> int:
         else None
     )
     validation_report_path = (
-        Path(args.validation_report) if args.validation_report else None
+        Path(
+            args.validation_report
+            or (
+                runtime_config.outputs.validation_report_path
+                if runtime_config
+                else "data/outputs/validation_report.json"
+            )
+        )
+        if (args.validation_report or runtime_config)
+        else None
     )
     validation_summary_path = (
-        Path(args.validation_summary) if args.validation_summary else None
+        Path(
+            args.validation_summary
+            or (
+                runtime_config.outputs.validation_summary_path
+                if runtime_config
+                else "data/outputs/validation_summary.md"
+            )
+        )
+        if (args.validation_summary or runtime_config)
+        else None
     )
 
     paper_artifact = load_paper_artifact(paper_artifact_path)

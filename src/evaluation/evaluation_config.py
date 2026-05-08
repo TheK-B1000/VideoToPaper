@@ -13,6 +13,8 @@ class EvaluationOutputConfig:
     audit_report_path: str = "data/outputs/audit_report.json"
     audit_summary_path: Optional[str] = "data/outputs/audit_summary.md"
     manifest_path: Optional[str] = "data/outputs/evaluation_manifest.json"
+    validation_report_path: Optional[str] = "data/outputs/validation_report.json"
+    validation_summary_path: Optional[str] = "data/outputs/validation_summary.md"
 
 
 @dataclass(frozen=True)
@@ -57,6 +59,14 @@ def load_evaluation_runtime_config(
         manifest_path=output_payload.get(
             "manifest_path",
             "data/outputs/evaluation_manifest.json",
+        ),
+        validation_report_path=output_payload.get(
+            "validation_report_path",
+            "data/outputs/validation_report.json",
+        ),
+        validation_summary_path=output_payload.get(
+            "validation_summary_path",
+            "data/outputs/validation_summary.md",
         ),
     )
 

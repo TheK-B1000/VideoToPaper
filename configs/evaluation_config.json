@@ -6,7 +6,9 @@
   "outputs": {
     "audit_report_path": "data/outputs/audit_report.json",
     "audit_summary_path": "data/outputs/audit_summary.md",
-    "manifest_path": "data/outputs/evaluation_manifest.json"
+    "manifest_path": "data/outputs/evaluation_manifest.json",
+    "validation_report_path": "data/outputs/validation_report.json",
+    "validation_summary_path": "data/outputs/validation_summary.md"
   },
   "metadata": {
     "component": "paper_evaluation",

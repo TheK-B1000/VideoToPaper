@@ -383,3 +383,62 @@ def test_main_can_print_validation_summary_when_artifact_is_malformed(tmp_path, 
 
     assert "# Paper Artifact Validation Summary" in captured.out
     assert "**Valid:** FAIL" in captured.out
+
+
+def test_main_uses_configured_validation_outputs_when_artifact_is_malformed(tmp_path):
+    artifact = make_clean_paper_artifact()
+    del artifact["claims"][0]["anchor_clip"]
+
+    artifact_path = tmp_path / "bad_paper_artifact.json"
+    audit_report_path = tmp_path / "audit_report.json"
+    audit_summary_path = tmp_path / "audit_summary.md"
+    manifest_path = tmp_path / "manifest.json"
+    validation_report_path = tmp_path / "configured_validation_report.json"
+    validation_summary_path = tmp_path / "configured_validation_summary.md"
+    config_path = tmp_path / "evaluation_config.json"
+
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    config_path.write_text(
+        json.dumps(
+            {
+                "evaluation": {
+                    "clip_tolerance_seconds": 1.0,
+                    "minimum_balanced_retrieval_ratio": 0.8,
+                },
+                "outputs": {
+                    "audit_report_path": str(audit_report_path),
+                    "audit_summary_path": str(audit_summary_path),
+                    "manifest_path": str(manifest_path),
+                    "validation_report_path": str(validation_report_path),
+                    "validation_summary_path": str(validation_summary_path),
+                },
+                "metadata": {
+                    "source": "configured_validation_test",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Paper artifact validation failed"):
+        main(
+            [
+                "--paper-artifact",
+                str(artifact_path),
+                "--config-path",
+                str(config_path),
+            ]
+        )
+
+    assert not audit_report_path.exists()
+    assert validation_report_path.exists()
+    assert validation_summary_path.exists()
+
+    validation_payload = json.loads(validation_report_path.read_text(encoding="utf-8"))
+    validation_summary = validation_summary_path.read_text(encoding="utf-8")
+
+    assert validation_payload["valid"] is False
+    assert validation_payload["error_count"] >= 1
+    assert "# Paper Artifact Validation Summary" in validation_summary
+    assert "**Valid:** FAIL" in validation_summary
