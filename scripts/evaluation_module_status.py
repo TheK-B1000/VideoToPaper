@@ -11,6 +11,7 @@ REQUIRED_EVALUATION_FILES = (
     "src/evaluation/evaluation_dev_log.py",
     "src/evaluation/evaluation_completion_checklist.py",
     "src/evaluation/evaluation_closeout_bundle.py",
+    "src/evaluation/evaluation_handoff_note.py",
 )
 
 

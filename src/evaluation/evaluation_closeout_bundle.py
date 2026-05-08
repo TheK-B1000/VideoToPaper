@@ -9,6 +9,7 @@ from src.evaluation.evaluation_completion_checklist import (
     write_evaluation_completion_checklist,
 )
 from src.evaluation.evaluation_dev_log import write_evaluation_dev_log
+from src.evaluation.evaluation_handoff_note import write_evaluation_handoff_note
 from src.evaluation.evaluation_readme_section import write_evaluation_readme_section
 
 
@@ -18,6 +19,7 @@ class EvaluationCloseoutBundle:
     architecture_doc_path: Path
     dev_log_path: Path
     checklist_path: Path
+    handoff_note_path: Path
 
     def to_dict(self) -> Dict[str, str]:
         return {
@@ -25,6 +27,7 @@ class EvaluationCloseoutBundle:
             "architecture_doc_path": str(self.architecture_doc_path),
             "dev_log_path": str(self.dev_log_path),
             "checklist_path": str(self.checklist_path),
+            "handoff_note_path": str(self.handoff_note_path),
         }
 
 
@@ -52,10 +55,14 @@ def write_evaluation_closeout_bundle(
     checklist_path = write_evaluation_completion_checklist(
         base_dir / "evaluation_completion_checklist.md"
     )
+    handoff_note_path = write_evaluation_handoff_note(
+        base_dir / "evaluation_handoff_note.md"
+    )
 
     return EvaluationCloseoutBundle(
         readme_section_path=readme_section_path,
         architecture_doc_path=architecture_doc_path,
         dev_log_path=dev_log_path,
         checklist_path=checklist_path,
+        handoff_note_path=handoff_note_path,
     )

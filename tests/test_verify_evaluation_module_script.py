@@ -68,11 +68,16 @@ def test_verify_evaluation_module_runs_smoke_suite_and_closeout(tmp_path):
     assert (docs_output_dir / "evaluation_architecture.md").exists()
     assert (docs_output_dir / "evaluation_dev_log.md").exists()
     assert (docs_output_dir / "evaluation_completion_checklist.md").exists()
+    assert (docs_output_dir / "evaluation_handoff_note.md").exists()
 
     summary = (smoke_output_dir / "summary.md").read_text(encoding="utf-8")
     architecture = (docs_output_dir / "evaluation_architecture.md").read_text(
         encoding="utf-8"
     )
+    handoff = (docs_output_dir / "evaluation_handoff_note.md").read_text(
+        encoding="utf-8"
+    )
 
     assert "# Evaluation Smoke Suite Summary" in summary
     assert "# Evaluation System Architecture" in architecture
+    assert "# Evaluation Module Handoff Note" in handoff

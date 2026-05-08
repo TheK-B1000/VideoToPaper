@@ -16,3 +16,4 @@ def test_run_evaluation_closeout_pipeline_writes_bundle(tmp_path):
     assert (tmp_path / "evaluation_architecture.md").exists()
     assert (tmp_path / "evaluation_dev_log.md").exists()
     assert (tmp_path / "evaluation_completion_checklist.md").exists()
+    assert (tmp_path / "evaluation_handoff_note.md").exists()

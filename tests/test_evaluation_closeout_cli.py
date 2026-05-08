@@ -18,3 +18,4 @@ def test_evaluation_closeout_cli_writes_bundle(tmp_path, capsys):
     assert (tmp_path / "evaluation_architecture.md").exists()
     assert (tmp_path / "evaluation_dev_log.md").exists()
     assert (tmp_path / "evaluation_completion_checklist.md").exists()
+    assert (tmp_path / "evaluation_handoff_note.md").exists()

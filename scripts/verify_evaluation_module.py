@@ -107,6 +107,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         docs_output_dir / "evaluation_architecture.md",
         docs_output_dir / "evaluation_dev_log.md",
         docs_output_dir / "evaluation_completion_checklist.md",
+        docs_output_dir / "evaluation_handoff_note.md",
     ]
 
     for artifact in expected_smoke_artifacts + expected_docs:

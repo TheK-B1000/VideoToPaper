@@ -33,6 +33,10 @@ from src.evaluation.evaluation_harness import (
     EvaluationReport,
     run_evaluation_harness,
 )
+from src.evaluation.evaluation_handoff_note import (
+    render_evaluation_handoff_note,
+    write_evaluation_handoff_note,
+)
 from src.evaluation.evaluation_manifest import (
     EvaluationManifest,
     build_evaluation_manifest,
@@ -96,6 +100,7 @@ __all__ = [
     "render_evaluation_architecture_doc",
     "render_evaluation_completion_checklist",
     "render_evaluation_dev_log",
+    "render_evaluation_handoff_note",
     "render_evaluation_readme_section",
     "render_validation_summary",
     "run_evaluation_harness",
@@ -108,6 +113,7 @@ __all__ = [
     "write_evaluation_closeout_bundle",
     "write_evaluation_completion_checklist",
     "write_evaluation_dev_log",
+    "write_evaluation_handoff_note",
     "write_evaluation_readme_section",
     "write_evaluation_artifact_index",
     "write_evaluation_manifest",

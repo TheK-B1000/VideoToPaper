@@ -29,6 +29,9 @@ from src.pipelines.run_evaluation_closeout_pipeline import (
 )
 from src.pipelines.run_evaluation_dev_log_pipeline import run_evaluation_dev_log_pipeline
 from src.pipelines.run_evaluation_docs_pipeline import run_evaluation_docs_pipeline
+from src.pipelines.run_evaluation_handoff_pipeline import (
+    run_evaluation_handoff_pipeline,
+)
 from src.pipelines.run_html_paper_pipeline import run_html_paper_pipeline
 from src.pipelines.run_sample_artifact_pipeline import run_sample_artifact_pipeline
 from src.source.ingestion import ingest_source
@@ -137,6 +140,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "evaluation_closeout",
             "evaluation_docs",
             "evaluation_dev_log",
+            "evaluation_handoff",
             "sample_artifact",
         ),
         default="source_ingestion",
@@ -433,7 +437,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         return
 
     if args.stage == "evaluation":
-        raise SystemExit(run_evaluation_pipeline(forwarded))
+        return run_evaluation_pipeline(forwarded)
 
     if args.stage == "evaluation_architecture":
         return run_evaluation_architecture_pipeline(forwarded)
@@ -449,6 +453,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
     if args.stage == "evaluation_dev_log":
         return run_evaluation_dev_log_pipeline(forwarded)
+
+    if args.stage == "evaluation_handoff":
+        return run_evaluation_handoff_pipeline(forwarded)
 
     if args.stage == "sample_artifact":
         return run_sample_artifact_pipeline(forwarded)
@@ -583,4 +590,6 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
 
 if __name__ == "__main__":
-    main()
+    result = main()
+    if isinstance(result, int):
+        raise SystemExit(result)
