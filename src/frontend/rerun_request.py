@@ -1,27 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
-from src.frontend.run_request import (
-    InquiryRunRequest,
-    create_inquiry_run_request,
-    save_run_request,
-)
+from src.frontend.models.run import InquiryRunRequest, RerunOverrides
+from src.frontend.run_request import create_inquiry_run_request, save_run_request
 
 if TYPE_CHECKING:
-    from src.frontend.inquiry_studio import InquiryRecord
-
-
-@dataclass(frozen=True)
-class RerunOverrides:
-    claim_type_filter: list[str] | None = None
-    retrieval_depth: int | None = None
-    source_tiers: list[int] | None = None
-    stages: list[str] | None = None
-    reason: str | None = None
-    metadata: dict[str, Any] | None = None
+    from src.frontend.models.inquiry import InquiryRecord
 
 
 def create_rerun_from_inquiry_record(

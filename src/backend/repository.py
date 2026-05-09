@@ -4,7 +4,7 @@ import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from src.backend.db import connect_sqlite
@@ -786,6 +786,85 @@ class BackendRepository:
             has_generated_paper=paper_count > 0,
             has_evidence=evidence_count > 0,
         )
+
+    def create_inquiry_engine_run(
+        self,
+        *,
+        run_id: str,
+        request_id: str,
+        video_id: str,
+        youtube_url: str,
+        request_dict: Dict[str, Any],
+        progress_dict: Dict[str, Any],
+        simulate_progress: bool = True,
+    ) -> None:
+        now = _now_iso()
+        with connect_sqlite(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO inquiry_engine_runs (
+                    run_id,
+                    request_id,
+                    video_id,
+                    youtube_url,
+                    request_json,
+                    progress_json,
+                    simulate_progress,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                """,
+                (
+                    run_id,
+                    request_id,
+                    video_id,
+                    youtube_url,
+                    _json_dumps(request_dict),
+                    _json_dumps(progress_dict),
+                    1 if simulate_progress else 0,
+                    now,
+                    now,
+                ),
+            )
+
+    def get_inquiry_engine_run_bundle(
+        self,
+        run_id: str,
+    ) -> Optional[Tuple[Dict[str, Any], bool]]:
+        with connect_sqlite(self.db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT progress_json, simulate_progress
+                FROM inquiry_engine_runs
+                WHERE run_id = ?;
+                """,
+                (run_id,),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return _json_loads(row["progress_json"]), bool(row["simulate_progress"])
+
+    def update_inquiry_engine_run_progress(
+        self,
+        run_id: str,
+        progress_dict: Dict[str, Any],
+    ) -> bool:
+        now = _now_iso()
+
+        with connect_sqlite(self.db_path) as conn:
+            cursor = conn.execute(
+                """
+                UPDATE inquiry_engine_runs
+                SET progress_json = ?, updated_at = ?
+                WHERE run_id = ?;
+                """,
+                (_json_dumps(progress_dict), now, run_id),
+            )
+
+            return cursor.rowcount > 0
 
     @staticmethod
     def _row_to_speaker(row: sqlite3.Row) -> SpeakerRead:

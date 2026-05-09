@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
+
+from src.frontend.models.activity import OperatorActivity
 
 
 VALID_ACTIVITY_TYPES = {
@@ -21,54 +22,37 @@ VALID_ACTIVITY_TYPES = {
 }
 
 
-@dataclass(frozen=True)
-class OperatorActivity:
-    activity_id: str
-    activity_type: str
-    created_at: str
-    message: str
-    request_id: str | None = None
-    inquiry_id: str | None = None
-    run_id: str | None = None
-    artifact_path: str | None = None
-    metadata: dict[str, Any] | None = None
+def activity_from_dict(data: dict[str, Any]) -> OperatorActivity:
+    activity_type = str(data.get("activity_type", "")).strip()
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "activity_id": self.activity_id,
-            "activity_type": self.activity_type,
-            "created_at": self.created_at,
-            "message": self.message,
-            "request_id": self.request_id,
-            "inquiry_id": self.inquiry_id,
-            "run_id": self.run_id,
-            "artifact_path": self.artifact_path,
-            "metadata": self.metadata or {},
-        }
+    if activity_type not in VALID_ACTIVITY_TYPES:
+        raise ValueError(f"Invalid activity type: {activity_type}")
 
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "OperatorActivity":
-        activity_type = str(data.get("activity_type", "")).strip()
+    message = str(data.get("message", "")).strip()
 
-        if activity_type not in VALID_ACTIVITY_TYPES:
-            raise ValueError(f"Invalid activity type: {activity_type}")
+    if not message:
+        raise ValueError("Operator activity is missing a message.")
 
-        message = str(data.get("message", "")).strip()
+    return OperatorActivity(
+        activity_id=str(data.get("activity_id", "")),
+        activity_type=activity_type,
+        created_at=str(data.get("created_at", "")),
+        message=message,
+        request_id=_optional_string(data.get("request_id")),
+        inquiry_id=_optional_string(data.get("inquiry_id")),
+        run_id=_optional_string(data.get("run_id")),
+        artifact_path=_optional_string(data.get("artifact_path")),
+        metadata=dict(data.get("metadata", {})),
+    )
 
-        if not message:
-            raise ValueError("Operator activity is missing a message.")
 
-        return cls(
-            activity_id=str(data.get("activity_id", "")),
-            activity_type=activity_type,
-            created_at=str(data.get("created_at", "")),
-            message=message,
-            request_id=_optional_string(data.get("request_id")),
-            inquiry_id=_optional_string(data.get("inquiry_id")),
-            run_id=_optional_string(data.get("run_id")),
-            artifact_path=_optional_string(data.get("artifact_path")),
-            metadata=dict(data.get("metadata", {})),
-        )
+def _operator_activity_from_dict(
+    cls, data: dict[str, Any]
+) -> OperatorActivity:
+    return activity_from_dict(data)
+
+
+OperatorActivity.from_dict = classmethod(_operator_activity_from_dict)  # type: ignore[attr-defined]
 
 
 def create_activity(
@@ -165,7 +149,7 @@ def read_activity_log(
             try:
                 data = json.loads(clean_line)
                 if isinstance(data, dict):
-                    activities.append(OperatorActivity.from_dict(data))
+                    activities.append(activity_from_dict(data))
             except (json.JSONDecodeError, TypeError, ValueError):
                 continue
 

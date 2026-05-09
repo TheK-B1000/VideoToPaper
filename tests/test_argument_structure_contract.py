@@ -11,36 +11,39 @@ def test_argument_structure_outputs_include_required_validation_contract(tmp_pat
     config_path = tmp_path / "argument_config.json"
     runs_dir = tmp_path / "runs"
 
+    segments = [
+        {
+            "segment_id": "seg_0001",
+            "source_text": "The key point is that retrieval can fail silently. ",
+            "clean_text": "The key point is that retrieval can fail silently.",
+            "start_seconds": 0.0,
+            "end_seconds": 8.0,
+        },
+        {
+            "segment_id": "seg_0002",
+            "source_text": "For example, a chunk can miss important context. ",
+            "clean_text": "For example, a chunk can miss important context.",
+            "start_seconds": 8.0,
+            "end_seconds": 16.0,
+        },
+        {
+            "segment_id": "seg_0003",
+            "source_text": "However, overlap helps preserve meaning.",
+            "clean_text": "However, overlap helps preserve meaning.",
+            "start_seconds": 16.0,
+            "end_seconds": 24.0,
+        },
+    ]
+    cursor = 0
+    for seg in segments:
+        text = seg["source_text"]
+        seg["char_start"] = cursor
+        cursor += len(text)
+        seg["char_end"] = cursor
+
     transcript_data = {
-        "segments": [
-            {
-                "segment_id": "seg_0001",
-                "source_text": "The key point is that retrieval can fail silently. ",
-                "clean_text": "The key point is that retrieval can fail silently.",
-                "char_start": 0,
-                "char_end": 54,
-                "start_seconds": 0.0,
-                "end_seconds": 8.0,
-            },
-            {
-                "segment_id": "seg_0002",
-                "source_text": "For example, a chunk can miss important context. ",
-                "clean_text": "For example, a chunk can miss important context.",
-                "char_start": 54,
-                "char_end": 105,
-                "start_seconds": 8.0,
-                "end_seconds": 16.0,
-            },
-            {
-                "segment_id": "seg_0003",
-                "source_text": "However, overlap helps preserve meaning.",
-                "clean_text": "However, overlap helps preserve meaning.",
-                "char_start": 105,
-                "char_end": 146,
-                "start_seconds": 16.0,
-                "end_seconds": 24.0,
-            },
-        ]
+        "source_text": "".join(seg["source_text"] for seg in segments),
+        "segments": segments,
     }
 
     config_data = {

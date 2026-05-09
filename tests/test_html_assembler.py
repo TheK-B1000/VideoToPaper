@@ -98,7 +98,11 @@ def test_assemble_html_paper_contains_required_sections_and_embed() -> None:
     assert 'id="references"' in html
 
     assert "https://www.youtube-nocookie.com/embed/ABC123?start=252&end=263&rel=0" in html
+    assert 'name="referrer" content="strict-origin-when-cross-origin"' in html
+    assert 'referrerpolicy="strict-origin-when-cross-origin"' in html
+    assert "encrypted-media" in html
     assert "Source Attribution" in html
+    assert "embed-hint" in html
     assert "Dr. Jane Smith" in html
 
 

@@ -5,10 +5,7 @@ from src.argument.argument_map_fallback import ensure_argument_map_has_supportin
 from src.argument.argument_map_validator import validate_argument_map
 from src.argument.chunk_validator import validate_chunks
 from src.argument.chunker import chunk_transcript_segments
-from src.argument.source_alignment_validator import (
-    build_full_source_text_from_segments,
-    validate_chunk_source_alignment,
-)
+from src.argument.source_alignment_validator import validate_chunk_source_alignment
 from src.core.config import load_config
 from src.data.json_store import load_json, save_json
 from src.ops.run_tracker import (
@@ -54,10 +51,18 @@ def run_argument_structure(config_path: str = "configs/argument_config.json") ->
 
         segments = _extract_segments(transcript_data)
 
-        full_source_text = build_full_source_text_from_segments(segments)
+        full_source_text = transcript_data.get("source_text")
+        if not isinstance(full_source_text, str):
+            raise TypeError(
+                "Processed transcript must include top-level string field "
+                "'source_text' when chunking."
+            )
+        if not full_source_text.strip():
+            raise ValueError("Processed transcript 'source_text' must not be empty.")
 
         chunks = chunk_transcript_segments(
             segments=segments,
+            full_source_text=full_source_text,
             max_chunk_chars=chunking_config["max_chunk_chars"],
             min_chunk_chars=chunking_config["min_chunk_chars"],
             overlap_segments=chunking_config.get("overlap_segments", 0),

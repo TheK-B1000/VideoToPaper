@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import os
 import re
+import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -90,11 +93,93 @@ def extract_html_title(path: str | Path) -> str | None:
 
 def build_file_url(path: str | Path) -> str:
     """
-    Convert a local path into a browser-openable file URL.
+    Convert a local path into a ``file://`` URI.
 
-    Streamlit link_button can display this, and local operators can copy/open it.
+    Note: Browsers usually **block** following ``file://`` links from an ``http://``
+    origin (e.g. Streamlit on localhost), so prefer :func:`open_local_html_in_default_app`.
     """
     return Path(path).resolve().as_uri()
+
+
+def open_local_html_in_default_app(path: str | Path) -> bool:
+    """
+    Open a local HTML file using the OS default handler (browser).
+
+    Used from Inquiry Studio because ``st.link_button(..., file://...)`` is blocked
+    by browser security when the app is served over HTTP.
+
+    On Windows, ``cmd /c start`` is preferred—some setups ignore ``os.startfile``
+    for HTML associations.
+    """
+    resolved = Path(path).resolve()
+
+    if not resolved.is_file():
+        return False
+
+    if sys.platform == "win32":
+        try:
+            subprocess.run(
+                [
+                    "cmd",
+                    "/c",
+                    "start",
+                    "",
+                    str(resolved),
+                ],
+                check=False,
+                timeout=60,
+                cwd=str(resolved.parent),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+            )
+            return True
+        except (OSError, subprocess.TimeoutExpired):
+            os.startfile(str(resolved))  # type: ignore[attr-defined]
+            return True
+
+    import webbrowser
+
+    return bool(webbrowser.open(resolved.as_uri()))
+
+
+def reveal_file_in_os_file_manager(path: str | Path) -> bool:
+    """
+    Focus the file in Explorer (Windows), Finder reveal (macOS), or open parent folder (Linux).
+    """
+    resolved = Path(path).resolve()
+
+    if not resolved.is_file():
+        return False
+
+    if sys.platform == "win32":
+        subprocess.run(
+            ["explorer", "/select,", str(resolved)],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
+        return True
+
+    if sys.platform == "darwin":
+        subprocess.run(
+            ["open", "-R", str(resolved)],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
+        return True
+
+    subprocess.run(
+        ["xdg-open", str(resolved.parent)],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        stdin=subprocess.DEVNULL,
+    )
+    return True
 
 
 def collect_paper_artifacts(paths: list[str | Path | None]) -> list[PaperArtifact]:

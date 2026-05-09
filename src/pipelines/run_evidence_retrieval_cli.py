@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,8 @@ from src.core.evidence_retrieval import (
     generate_balanced_queries,
 )
 from src.core.evidence_retrieval_output import validate_evidence_retrieval_output
+from src.pipelines.evidence_retrieval_flatten import flatten_evidence_records
+from src.core.dotenv_bootstrap import try_load_dotenv
 from src.pipelines.run_evidence_retrieval import (
     ClaimForRetrieval,
     EvidenceRetrievalPipeline,
@@ -314,6 +317,8 @@ def run_evidence_retrieval_cli(
     Values can come from explicit CLI args or the ``evidence_retrieval`` section
     inside ``configs/argument_config.json``.
     """
+    try_load_dotenv()
+
     config = _load_evidence_retrieval_config(config_path)
 
     resolved_claim_inventory_path = _resolve_setting(
@@ -371,6 +376,15 @@ def run_evidence_retrieval_cli(
         )
     )
 
+    if not resolved_dry_run:
+        ss_hint = ""
+        if not os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip():
+            ss_hint = (
+                " SEMANTIC_SCHOLAR_API_KEY is unset; Semantic Scholar uses public "
+                "rate limits (set the key for higher throughput)."
+            )
+        print(f"Live evidence retrieval against OpenAlex / Semantic Scholar.{ss_hint}")
+
     input_path = Path(str(resolved_claim_inventory_path))
     destination = Path(str(resolved_output_path))
 
@@ -421,6 +435,14 @@ def run_evidence_retrieval_cli(
 
     destination.write_text(
         json.dumps(output_payload, indent=2),
+        encoding="utf-8",
+    )
+
+    flat_path = destination.with_name("evidence_records.json")
+    flat_records = flatten_evidence_records(output_payload)
+    flat_path.parent.mkdir(parents=True, exist_ok=True)
+    flat_path.write_text(
+        json.dumps(flat_records, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
 

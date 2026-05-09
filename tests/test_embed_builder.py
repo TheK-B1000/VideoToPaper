@@ -6,9 +6,10 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from src.core.embed_builder import (
+    canonical_youtube_watch_url,
     extract_youtube_video_id,
     build_embed_base_url,
-    build_embed_url
+    build_embed_url,
 )
 
 
@@ -24,6 +25,13 @@ def test_extract_youtube_video_id_from_watch_url():
 def test_extract_youtube_video_id_from_short_url():
     url = "https://youtu.be/ABC123XYZ89"
     assert extract_youtube_video_id(url) == "ABC123XYZ89"
+
+
+def test_canonical_youtube_watch_url():
+    assert (
+        canonical_youtube_watch_url("https://youtu.be/ABC123XYZ89")
+        == "https://www.youtube.com/watch?v=ABC123XYZ89"
+    )
 
 
 def test_extract_youtube_video_id_rejects_empty_string():
@@ -71,6 +79,7 @@ def test_build_embed_url_rejects_bad_time_order():
 test_extract_youtube_video_id_from_raw_id()
 test_extract_youtube_video_id_from_watch_url()
 test_extract_youtube_video_id_from_short_url()
+test_canonical_youtube_watch_url()
 test_extract_youtube_video_id_rejects_empty_string()
 test_extract_youtube_video_id_rejects_non_string()
 test_build_embed_base_url()

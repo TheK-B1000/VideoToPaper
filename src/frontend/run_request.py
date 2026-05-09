@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
+
+from src.frontend.models.run import InquiryRunRequest
 
 DEFAULT_PIPELINE_STAGES = [
     "source_ingestion",
@@ -20,36 +21,6 @@ DEFAULT_PIPELINE_STAGES = [
 ]
 
 
-@dataclass(frozen=True)
-class InquiryRunRequest:
-    request_id: str
-    created_at: str
-    youtube_url: str
-    video_id: str
-    claim_type_filter: list[str]
-    retrieval_depth: int
-    source_tiers: list[int]
-    stages: list[str]
-    rerun_of: str | None = None
-    reason: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "request_id": self.request_id,
-            "created_at": self.created_at,
-            "youtube_url": self.youtube_url,
-            "video_id": self.video_id,
-            "claim_type_filter": self.claim_type_filter,
-            "retrieval_depth": self.retrieval_depth,
-            "source_tiers": self.source_tiers,
-            "stages": self.stages,
-            "rerun_of": self.rerun_of,
-            "reason": self.reason,
-            "metadata": self.metadata,
-        }
-
-
 def create_inquiry_run_request(
     *,
     youtube_url: str,
@@ -61,7 +32,7 @@ def create_inquiry_run_request(
     reason: str | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> InquiryRunRequest:
-    from src.frontend.inquiry_studio import build_run_parameters
+    from src.frontend.models.inquiry import build_run_parameters
 
     params = build_run_parameters(
         youtube_url=youtube_url,

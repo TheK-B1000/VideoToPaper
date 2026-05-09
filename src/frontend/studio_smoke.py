@@ -42,7 +42,7 @@ def run_studio_smoke_test(
     config: StudioConfig,
     youtube_url: str = "https://www.youtube.com/watch?v=ABC123xyz_9",
 ) -> StudioSmokeResult:
-    from src.frontend.inquiry_studio import build_run_parameters
+    from src.frontend.models.inquiry import build_run_parameters
 
     checks: list[str] = []
     errors: list[str] = []

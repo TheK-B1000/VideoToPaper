@@ -1,50 +1,14 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from src.frontend.run_request import InquiryRunRequest, run_request_from_dict
+from src.frontend.models.run import InquiryRunRequest, QueuedRunRequest
+from src.frontend.run_request import run_request_from_dict
 
 
 VALID_QUEUE_STATUSES = {"pending", "queued", "running", "completed", "failed"}
-
-
-@dataclass(frozen=True)
-class QueuedRunRequest:
-    request: InquiryRunRequest
-    status: str
-    request_path: str
-    progress_path: str | None = None
-    result_inquiry_id: str | None = None
-    last_updated_at: str | None = None
-
-    @property
-    def request_id(self) -> str:
-        return self.request.request_id
-
-    @property
-    def youtube_url(self) -> str:
-        return self.request.youtube_url
-
-    @property
-    def created_at(self) -> str:
-        return self.request.created_at
-
-    @property
-    def is_executable(self) -> bool:
-        return self.status in {"pending", "queued"}
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "request": self.request.to_dict(),
-            "status": self.status,
-            "request_path": self.request_path,
-            "progress_path": self.progress_path,
-            "result_inquiry_id": self.result_inquiry_id,
-            "last_updated_at": self.last_updated_at,
-        }
 
 
 def discover_run_requests(request_dir: str | Path) -> list[QueuedRunRequest]:

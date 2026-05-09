@@ -118,6 +118,7 @@ def assemble_html_paper(document: PaperDocument) -> str:
   <meta charset="utf-8">
   <title>{escape(document.title)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <style>
     {_base_css()}
   </style>
@@ -229,8 +230,12 @@ def _render_header(document: PaperDocument) -> str:
         <h2>Source Attribution</h2>
         <p>Source video: <a href="{escape(video.url)}">{escape(video.title)}</a></p>
         {speaker_html}
+        <p class="muted embed-hint">
+          Embedded clips may show Error&nbsp;153 if this document is opened as a raw
+          <code>file://</code> URL. Serve it over HTTP (for example run
+          <code>python -m http.server</code> in the outputs folder) or open via Inquiry Studio preview.
+        </p>
       </section>
-    </header>
     """
 
 
@@ -469,11 +474,18 @@ def _claim_embed_iframe(src: str, title: str) -> str:
     if not src.startswith(("http://", "https://")):
         raise HtmlAssemblyError("Inline clip iframe requires a valid embed URL.")
 
+    # referrerpolicy + document referrer help satisfy YouTube embed client-id checks (Error 153).
+    allow = (
+        "accelerometer; autoplay; clipboard-write; encrypted-media; "
+        "gyroscope; picture-in-picture; web-share"
+    )
     return f"""
     <iframe
       src="{_escape_url_attribute(src)}"
       title="{escape(title)}"
       loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="{allow}"
       allowfullscreen>
     </iframe>
     """
@@ -554,6 +566,20 @@ def _base_css() -> str:
     .abstract {
       font-size: 1.12rem;
       color: #2b2b2b;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .embed-hint {
+      margin-top: 12px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
     }
 
     .source-attribution {

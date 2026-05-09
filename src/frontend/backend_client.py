@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib import error, request
 
-from src.frontend.run_request import InquiryRunRequest
+from src.frontend.models.run import InquiryRunRequest
 
 
 @dataclass(frozen=True)

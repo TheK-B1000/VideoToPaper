@@ -191,6 +191,11 @@ def test_pipeline_writes_adjudications_and_skips_non_empirical_claims(tmp_path):
     assert result["validation"]["is_valid"] is True
     assert result["validation"]["issue_count"] == 0
 
+    assert isinstance(result.get("limitations"), list)
+    assert len(result["limitations"]) >= 3
+    disk = json.loads(output_path.read_text(encoding="utf-8"))
+    assert disk["limitations"] == result["limitations"]
+
 
 def test_pipeline_marks_empirical_claim_with_no_evidence_as_insufficient(tmp_path):
     claim_inventory_path = tmp_path / "claim_inventory.json"

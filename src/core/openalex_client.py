@@ -65,14 +65,15 @@ def _normalize_doi(raw_doi: str | None) -> str | None:
 
 
 def parse_openalex_work(raw_work: dict[str, Any]) -> OpenAlexWork:
-    title = raw_work.get("title") or raw_work.get("display_name")
+    title_raw = raw_work.get("title") or raw_work.get("display_name")
+    title = title_raw.strip() if isinstance(title_raw, str) else None
     openalex_id = raw_work.get("id")
-
-    if not title:
-        raise ValueError("OpenAlex work is missing a title.")
 
     if not openalex_id:
         raise ValueError("OpenAlex work is missing an id.")
+
+    if not title:
+        title = "(Untitled)"
 
     doi = _normalize_doi(raw_work.get("doi"))
 

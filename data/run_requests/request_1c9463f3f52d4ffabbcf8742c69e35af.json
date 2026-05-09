@@ -1,0 +1,39 @@
+{
+  "request": {
+    "request_id": "request_1c9463f3f52d4ffabbcf8742c69e35af",
+    "created_at": "2026-05-08T19:16:37.050946+00:00",
+    "youtube_url": "https://www.youtube.com/watch?v=VTM16vxkHHU",
+    "video_id": "VTM16vxkHHU",
+    "claim_type_filter": [
+      "empirical_historical",
+      "empirical_scientific",
+      "empirical_technical"
+    ],
+    "retrieval_depth": 3,
+    "source_tiers": [
+      1,
+      2
+    ],
+    "stages": [
+      "source_ingestion",
+      "argument_structure",
+      "claim_inventory",
+      "steelman",
+      "evidence_retrieval",
+      "evidence_integration",
+      "html_assembly",
+      "interactive_components",
+      "evaluation"
+    ],
+    "rerun_of": null,
+    "reason": null,
+    "metadata": {
+      "created_from": "streamlit_inquiry_studio"
+    }
+  },
+  "status": "queued",
+  "request_path": "data/run_requests/request_1c9463f3f52d4ffabbcf8742c69e35af.json",
+  "progress_path": "logs/runs/run_20260508T191859Z_request_1c9463f3f52d4ffabbcf8742c69e35af/progress.json",
+  "result_inquiry_id": null,
+  "last_updated_at": "2026-05-08T19:18:59.471134+00:00"
+}

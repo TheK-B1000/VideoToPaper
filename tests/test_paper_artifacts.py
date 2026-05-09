@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import patch
 
 from src.frontend.paper_artifacts import (
     build_file_url,
@@ -6,6 +7,7 @@ from src.frontend.paper_artifacts import (
     extract_html_title,
     filter_openable_papers,
     inspect_paper_artifact,
+    open_local_html_in_default_app,
 )
 
 
@@ -113,6 +115,44 @@ def test_build_file_url_returns_file_uri(tmp_path: Path):
 
     assert file_url.startswith("file:")
     assert "paper.html" in file_url
+
+
+def test_open_local_html_in_default_app_returns_false_when_missing(tmp_path: Path):
+    assert open_local_html_in_default_app(tmp_path / "missing.html") is False
+
+
+def test_open_local_html_invokes_cmd_start_on_windows(tmp_path: Path):
+    paper_path = tmp_path / "paper.html"
+    paper_path.write_text("<html></html>", encoding="utf-8")
+
+    with patch("sys.platform", "win32"):
+        with patch("subprocess.run") as mocked_run:
+            assert open_local_html_in_default_app(paper_path) is True
+            mocked_run.assert_called_once()
+            cmd = mocked_run.call_args[0][0]
+            assert cmd[:4] == ["cmd", "/c", "start", ""]
+
+
+def test_open_local_html_invokes_webbrowser_on_linux(tmp_path: Path):
+    paper_path = tmp_path / "paper.html"
+    paper_path.write_text("<html></html>", encoding="utf-8")
+
+    with patch("sys.platform", "linux"):
+        with patch("webbrowser.open", return_value=True) as mocked:
+            assert open_local_html_in_default_app(paper_path) is True
+            mocked.assert_called_once()
+
+
+def test_reveal_file_invokes_explorer_on_windows(tmp_path: Path):
+    from src.frontend.paper_artifacts import reveal_file_in_os_file_manager
+
+    paper_path = tmp_path / "paper.html"
+    paper_path.write_text("<html></html>", encoding="utf-8")
+
+    with patch("sys.platform", "win32"):
+        with patch("subprocess.run") as mocked_run:
+            assert reveal_file_in_os_file_manager(paper_path) is True
+            mocked_run.assert_called_once()
 
 
 def test_collect_and_filter_openable_papers(tmp_path: Path):

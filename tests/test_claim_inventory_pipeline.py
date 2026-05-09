@@ -7,6 +7,8 @@ from src.core.claim_inventory_config import CANONICAL_CLAIM_TYPES
 from src.pipelines.claim_inventory_pipeline import (
     build_source_text_by_chunk_id,
     candidate_claims_from_argument_map,
+    drop_discourse_marker_candidates,
+    is_discourse_only_claim,
     load_argument_map_document,
     load_chunks_payload,
     run_claim_inventory_pipeline,
@@ -15,6 +17,39 @@ from src.pipelines.claim_inventory_pipeline import (
 
 def _write_json(path, obj):
     path.write_text(json.dumps(obj), encoding="utf-8")
+
+
+def test_is_discourse_only_claim_detects_filler_qualifications():
+    assert is_discourse_only_claim(
+        {"claim_type": "interpretive", "verbatim_quote": "However,"}
+    )
+    assert is_discourse_only_claim(
+        {"claim_type": "interpretive", "verbatim_quote": "but"}
+    )
+    assert is_discourse_only_claim(
+        {"claim_type": "anecdotal", "verbatim_quote": "for example"}
+    )
+    assert not is_discourse_only_claim(
+        {
+            "claim_type": "interpretive",
+            "verbatim_quote": (
+                "Humanity each loves the other for the power that has made the Masters."
+            ),
+        }
+    )
+    assert not is_discourse_only_claim(
+        {"claim_type": "empirical_technical", "verbatim_quote": "but"}
+    )
+
+
+def test_drop_discourse_marker_candidates_filters_list():
+    candidates = [
+        {"claim_id": "q1", "claim_type": "interpretive", "verbatim_quote": "but"},
+        {"claim_id": "q2", "claim_type": "interpretive", "verbatim_quote": "Real claim text."},
+    ]
+    kept = drop_discourse_marker_candidates(candidates)
+    assert len(kept) == 1
+    assert kept[0]["claim_id"] == "q2"
 
 
 def _write_minimal_argument_config(

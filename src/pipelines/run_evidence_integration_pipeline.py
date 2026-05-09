@@ -12,6 +12,7 @@ from src.integration.adjudication_builder import build_adjudication_record
 from src.integration.adjudication_validator import validate_adjudications_payload
 from src.integration.cherry_picking_guard import build_cherry_picking_guard_report
 from src.integration.evidence_narrative import generate_evidence_narrative
+from src.integration.integration_limitations import apply_integration_limitations
 
 
 DEFAULT_CLAIM_INVENTORY_PATH = Path("data/processed/claim_inventory.json")
@@ -278,6 +279,11 @@ def run_evidence_integration_pipeline(
 
         validation_report = validate_adjudications_payload(payload)
         payload["validation"] = validation_report
+
+        apply_integration_limitations(
+            payload,
+            evidence_records_override=evidence_records,
+        )
 
         write_json_document(output_path, payload)
 

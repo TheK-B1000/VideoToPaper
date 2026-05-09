@@ -62,4 +62,17 @@ Shipped **`configs/argument_config.json`** keeps **`speaker_perspective.use_llm`
 
 Inspect **`logs/runs`**, **`logs/budget`** ledger lines (**`guard_reason_code`** absent on success, present on guard refusal), and **`data/processed/speaker_perspective.json`**. Do not commit API keys, **`*.local.json`**, or generated logs unless intentional.
 
+### Evidence retrieval (real bibliography vs DryRun placeholders)
+
+Shipped **`configs/argument_config.json`** sets **`evidence_retrieval.dry_run`: false** so Week 5–8 artifacts list **real** OpenAlex / Semantic Scholar metadata where retrieval succeeds.
+
+**Offline / CI stubs:** set **`evidence_retrieval.dry_run`: true** in your config, **or** pass **`python main.py --stage youtube_paper --youtube-url … --stub-evidence-retrieval`** to force DryRun rows for that orchestrated run only.
+
+1. **`youtube_paper`** calls **`run_evidence_retrieval_cli(..., dry_run=stub_evidence_retrieval)`**. The default is **`stub_evidence_retrieval=false`**, which forces **`dry_run=false`** for Week 5 during that run (overriding **`evidence_retrieval.dry_run`** in JSON when it would otherwise be **true**).
+2. **`python main.py --stage evidence_retrieval`** respects **`evidence_retrieval.dry_run`** in config unless you pass **`--dry-run`** / **`--no-dry-run`**.
+3. Optional: **`SEMANTIC_SCHOLAR_API_KEY`** ([Semantic Scholar API](https://www.semanticscholar.org/product/api)) for higher Semantic Scholar limits. OpenAlex needs no key; requests are throttled client-side.
+4. After changing retrieval mode, re-run Week 7 integration and **`assemble_paper`** (or full **`youtube_paper`**) so **`evidence_integration.json`**, **`paper_spec.json`**, and **`inquiry_paper.html`** pick up new **`evidence_records`**.
+
+Quick check: **`python scripts/smoke_evidence_retrieval.py`** expects **`dry_run`: false** and makes real HTTP calls.
+
 Cursor rule: `.cursor/rules/llm-gateway.mdc`.

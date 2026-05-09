@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
+
+from src.frontend.models.audit import AuditAxisSummary, AuditSummary
 
 
 AUDIT_AXES = [
@@ -10,41 +11,6 @@ AUDIT_AXES = [
     "citation_integrity",
     "clip_anchor_accuracy",
 ]
-
-
-@dataclass(frozen=True)
-class AuditAxisSummary:
-    axis: str
-    status: str
-    score: str | None
-    issues: list[str]
-
-    @property
-    def is_passing(self) -> bool:
-        return self.status == "pass"
-
-    @property
-    def is_warning(self) -> bool:
-        return self.status == "warning"
-
-    @property
-    def is_failing(self) -> bool:
-        return self.status == "fail"
-
-
-@dataclass(frozen=True)
-class AuditSummary:
-    publishable: bool
-    axes: list[AuditAxisSummary]
-    blocking_issues: list[str]
-    warning_issues: list[str]
-
-    @property
-    def status_label(self) -> str:
-        if self.publishable:
-            return "publishable"
-
-        return "not_publishable"
 
 
 def summarize_audit_report(report: dict[str, Any]) -> AuditSummary:

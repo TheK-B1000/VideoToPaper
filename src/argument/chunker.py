@@ -1,8 +1,16 @@
+import re
+
 from src.argument.argument_models import TranscriptChunk
+
+
+def _span_char_len(segments: list[dict]) -> int:
+    return int(segments[-1]["char_end"]) - int(segments[0]["char_start"])
 
 
 def chunk_transcript_segments(
     segments: list[dict],
+    full_source_text: str,
+    *,
     max_chunk_chars: int = 1200,
     min_chunk_chars: int = 400,
     overlap_segments: int = 1,
@@ -12,11 +20,15 @@ def chunk_transcript_segments(
     timestamps, and original segment IDs.
 
     This chunker is deterministic and safe for citation work:
-    - It never rewrites source_text.
-    - It preserves raw char_start / char_end offsets.
+    - Chunk ``source_text`` is sliced from ``full_source_text`` using segment offsets,
+      preserving spaces between caption segments (naïve ``"".join`` would glue words).
+    - It preserves raw char_start / char_end offsets on chunks.
     - It preserves video start/end timing.
     - It supports segment-level overlap for future RAG retrieval.
     """
+    if not isinstance(full_source_text, str):
+        raise TypeError("full_source_text must be a string")
+
     _validate_chunking_inputs(
         segments=segments,
         max_chunk_chars=max_chunk_chars,
@@ -29,25 +41,24 @@ def chunk_transcript_segments(
 
     chunks: list[TranscriptChunk] = []
     current_segments: list[dict] = []
-    current_char_count = 0
 
     for segment in segments:
         _validate_segment(segment)
 
-        segment_text = segment["source_text"]
-        segment_length = len(segment_text)
-
-        should_flush = (
-            current_segments
-            and current_char_count + segment_length > max_chunk_chars
-            and current_char_count >= min_chunk_chars
-        )
+        if current_segments:
+            trial = current_segments + [segment]
+            should_flush = _span_char_len(trial) > max_chunk_chars and _span_char_len(
+                current_segments
+            ) >= min_chunk_chars
+        else:
+            should_flush = False
 
         if should_flush:
             chunks.append(
                 _build_chunk(
                     chunk_number=len(chunks) + 1,
                     segments=current_segments,
+                    full_source_text=full_source_text,
                 )
             )
 
@@ -55,26 +66,27 @@ def chunk_transcript_segments(
                 current_segments,
                 overlap_segments,
             )
-            current_char_count = sum(
-                len(overlap_segment["source_text"])
-                for overlap_segment in current_segments
-            )
 
         current_segments.append(segment)
-        current_char_count += segment_length
 
     if current_segments:
         chunks.append(
             _build_chunk(
                 chunk_number=len(chunks) + 1,
                 segments=current_segments,
+                full_source_text=full_source_text,
             )
         )
 
     return chunks
 
 
-def _build_chunk(chunk_number: int, segments: list[dict]) -> TranscriptChunk:
+def _build_chunk(
+    chunk_number: int,
+    segments: list[dict],
+    *,
+    full_source_text: str,
+) -> TranscriptChunk:
     """
     Build one TranscriptChunk from a group of transcript segments.
     """
@@ -83,18 +95,17 @@ def _build_chunk(chunk_number: int, segments: list[dict]) -> TranscriptChunk:
 
     chunk_id = f"chunk_{chunk_number:04d}"
 
-    source_text = "".join(
-        segment["source_text"]
-        for segment in segments
-    )
+    char_start = int(segments[0]["char_start"])
+    char_end = int(segments[-1]["char_end"])
 
-    clean_text = " ".join(
-        segment.get("clean_text", segment["source_text"])
-        for segment in segments
-    ).strip()
+    if char_end > len(full_source_text):
+        raise ValueError(
+            "Chunk char_end extends past full_source_text; offsets may not match artifact."
+        )
 
-    char_start = segments[0]["char_start"]
-    char_end = segments[-1]["char_end"]
+    source_text = full_source_text[char_start:char_end]
+
+    clean_text = re.sub(r"\s+", " ", source_text).strip()
 
     start_seconds = segments[0]["start_seconds"]
     end_seconds = segments[-1]["end_seconds"]

@@ -175,6 +175,48 @@ def test_semantic_scholar_client_rejects_non_positive_limit():
         client.search_papers("multi-agent reinforcement learning", limit=0)
 
 
+def test_semantic_scholar_client_sends_x_api_key_when_provided(tmp_path):
+    captured: dict[str, str] = {}
+
+    body = json.dumps(
+        {
+            "data": [
+                {
+                    "paperId": "pidKey",
+                    "title": "Keyed Request Paper",
+                    "year": 2024,
+                    "abstract": None,
+                    "url": "https://www.semanticscholar.org/paper/pidKey",
+                    "externalIds": {},
+                    "citationCount": None,
+                }
+            ]
+        }
+    ).encode()
+
+    mock_resp = MagicMock()
+    mock_resp.read.return_value = body
+    mock_resp.__enter__.return_value = mock_resp
+    mock_resp.__exit__.return_value = None
+
+    def fake_urlopen(request, timeout=None):
+        captured.update({k: v for k, v in request.header_items()})
+        return mock_resp
+
+    cache = RetrievalCache(cache_dir=tmp_path)
+    with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+        client = SemanticScholarClient(
+            cache=cache,
+            min_request_interval_seconds=0,
+            api_key="secret-ss-key",
+        )
+        papers, status = client.search_papers("unique query for api key header zz01", limit=1)
+
+    assert status == "ok"
+    assert len(papers) == 1
+    assert captured.get("X-api-key") == "secret-ss-key"
+
+
 def test_semantic_scholar_search_retries_after_429_then_returns_papers(tmp_path):
     body_ok = json.dumps(
         {
