@@ -17,13 +17,24 @@ The AI layer comes later. The current goal is to preserve source truth while cre
 
 ## Outputs
 
-Running `main.py` writes:
+Running `main.py` (Week 1 source ingestion) writes paths that match `configs/argument_config.json` Week 2 inputs:
 
 ```text
-data/outputs/video_registry.json
-data/processed/processed_transcript.json
+data/processed/source_registry.json
+data/outputs/processed_transcript.json
+data/raw/raw_transcript.json   # raw segment list input (or fetched when using --youtube-url)
 logs/runs/<run_id>.json
 ```
+
+Full paper from a YouTube URL (uses the same paths after ingestion):
+
+```powershell
+python main.py --stage youtube_paper --youtube-url "https://youtu.be/VIDEO_ID"
+```
+
+**Inquiry Studio library:** Streamlit’s “Inquiry Library” tab only lists runs that have `data/inquiries/<id>/manifest.json`. Successful `youtube_paper` / `assemble_paper` runs register that manifest automatically. If you assembled a paper earlier without this hook, run assembly again or execute:
+
+`python -c "from pathlib import Path; from src.frontend.inquiry_library_manifest import try_register_studio_library_after_assembly; try_register_studio_library_after_assembly(Path('.'))"` from the repo root (with the usual `PYTHONPATH` / venv so `src` imports resolve).
 
 The processed transcript has this shape:
 
@@ -102,6 +113,8 @@ Use the project virtual environment on Windows:
 ```powershell
 .\.venv\Scripts\python.exe main.py
 ```
+
+Week 5 retrieval also writes `evidence_records.json` beside the retrieval JSON (same folder as `evidence_retrieval.output_path`), containing a flattened list for Week 7 integration.
 
 Run all current script-style tests:
 

@@ -51,6 +51,20 @@ def extract_youtube_video_id(video_url_or_id: str) -> str:
     
     raise ValueError(f"could not extract YouTube video ID from: {video_url_or_id}")
 
+def canonical_youtube_watch_url(video_url_or_id: str) -> str:
+    """
+    Normalize any supported YouTube URL or bare ID to a standard watch URL.
+
+    Args:
+        video_url_or_id: YouTube URL or 11-character video ID.
+
+    Returns:
+        ``https://www.youtube.com/watch?v=<id>``
+    """
+    video_id = extract_youtube_video_id(video_url_or_id)
+    return f"https://www.youtube.com/watch?v={video_id}"
+
+
 def build_embed_base_url(video_url_or_id: str) -> str:
     """
     Build a privacy-respecting YouTube embed base URL.

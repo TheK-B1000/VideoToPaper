@@ -12,6 +12,7 @@ from src.core.evidence_retrieval import (
     generate_balanced_queries,
 )
 from src.core.evidence_retrieval_output import validate_evidence_retrieval_output
+from src.pipelines.evidence_retrieval_flatten import flatten_evidence_records
 from src.pipelines.run_evidence_retrieval import (
     ClaimForRetrieval,
     EvidenceRetrievalPipeline,
@@ -421,6 +422,14 @@ def run_evidence_retrieval_cli(
 
     destination.write_text(
         json.dumps(output_payload, indent=2),
+        encoding="utf-8",
+    )
+
+    flat_path = destination.with_name("evidence_records.json")
+    flat_records = flatten_evidence_records(output_payload)
+    flat_path.parent.mkdir(parents=True, exist_ok=True)
+    flat_path.write_text(
+        json.dumps(flat_records, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
 

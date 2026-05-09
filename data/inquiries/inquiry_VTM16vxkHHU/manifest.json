@@ -1,0 +1,17 @@
+{
+  "inquiry_id": "inquiry_VTM16vxkHHU",
+  "title": "Inquiry Paper: There Is But One Religion In All The World - Manly P. Hall",
+  "youtube_url": "https://www.youtube.com/watch?v=VTM16vxkHHU",
+  "status": "completed",
+  "created_at": "2026-05-09T01:28:21.650295+00:00",
+  "paper_path": "data/outputs/inquiry_paper.html",
+  "audit_report_path": "data/outputs/html_audit_report.json",
+  "parameters": {
+    "retrieval_depth": 3,
+    "source_tiers": [
+      1,
+      2
+    ],
+    "claim_type_filter": []
+  }
+}

@@ -147,6 +147,10 @@ def test_run_evidence_retrieval_cli_writes_output_for_empty_inventory(tmp_path):
     assert payload["fail_on_unbalanced"] is False
     assert payload["retrieval_results"] == []
 
+    flat_path = output_path.with_name("evidence_records.json")
+    assert flat_path.exists()
+    assert json.loads(flat_path.read_text(encoding="utf-8")) == []
+
 
 def test_quality_gate_passes_when_disabled_even_if_unbalanced():
     summary = {
@@ -399,6 +403,11 @@ def test_run_evidence_retrieval_cli_dry_run_writes_fake_evidence(tmp_path):
     assert result["claim_id"] == "claim_001"
     assert result["balance_score"] == "balanced"
     assert len(result["evidence_records"]) == 2
+
+    flat_path = output_path.with_name("evidence_records.json")
+    flat_list = json.loads(flat_path.read_text(encoding="utf-8"))
+    assert isinstance(flat_list, list)
+    assert len(flat_list) == 2
 
 
 def test_run_evidence_retrieval_cli_writes_quality_gate_setting(tmp_path):

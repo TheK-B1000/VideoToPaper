@@ -43,6 +43,12 @@ from src.pipelines.run_paper_artifact_export_pipeline import (
     run_paper_artifact_export_pipeline,
 )
 from src.pipelines.run_sample_artifact_pipeline import run_sample_artifact_pipeline
+from src.frontend.inquiry_library_manifest import try_register_studio_library_after_assembly
+from src.pipeline_paths import (
+    WEEK1_PROCESSED_TRANSCRIPT_JSON,
+    WEEK1_RAW_TRANSCRIPT_JSON,
+    WEEK1_SOURCE_REGISTRY_JSON,
+)
 from src.source.ingestion import ingest_source
 
 
@@ -62,12 +68,12 @@ def _inject_pipeline_argv(forwarded: list[str], args: argparse.Namespace, *, ste
     return prefix + list(forwarded)
 
 
-def _run_source_ingestion() -> None:
+def _run_source_ingestion(args: argparse.Namespace) -> None:
     config_path = "configs/default_config.json"
 
-    transcript_path = "data/raw/raw_transcript.json"
-    registry_output_path = "data/outputs/video_registry.json"
-    processed_transcript_output_path = "data/processed/processed_transcript.json"
+    transcript_path = WEEK1_RAW_TRANSCRIPT_JSON
+    registry_output_path = WEEK1_SOURCE_REGISTRY_JSON
+    processed_transcript_output_path = WEEK1_PROCESSED_TRANSCRIPT_JSON
 
     run_log = create_run_log(
         config_path=config_path,
@@ -79,20 +85,39 @@ def _run_source_ingestion() -> None:
     try:
         config = load_json(config_path)
 
-        result = ingest_source(
-            video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            title="What Most People Get Wrong About Reinforcement Learning",
-            duration_seconds=2840,
-            transcript_path=transcript_path,
-            registry_output_path=registry_output_path,
-            processed_transcript_output_path=processed_transcript_output_path,
-            speaker_name="Dr. Jane Smith",
-            speaker_credentials="Professor of Computer Science",
-            speaker_stated_motivations="Concerned about misconceptions in popular AI discourse",
-            speaker_notes="Mock source used for Week 1 ingestion testing",
-            transcript_origin="mock",
-            config=config,
-        )
+        if args.youtube_url:
+            from src.source.youtube_fetch import ingest_kwargs_from_youtube
+
+            youtube_kw = ingest_kwargs_from_youtube(
+                args.youtube_url.strip(),
+                raw_transcript_path=transcript_path,
+                speaker_name=args.speaker_name,
+                speaker_credentials=args.speaker_credentials or "",
+                speaker_stated_motivations=args.speaker_stated_motivations or "",
+                speaker_notes=args.speaker_notes or "",
+            )
+            result = ingest_source(
+                transcript_path=transcript_path,
+                registry_output_path=registry_output_path,
+                processed_transcript_output_path=processed_transcript_output_path,
+                config=config,
+                **youtube_kw,
+            )
+        else:
+            result = ingest_source(
+                video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                title="What Most People Get Wrong About Reinforcement Learning",
+                duration_seconds=2840,
+                transcript_path=transcript_path,
+                registry_output_path=registry_output_path,
+                processed_transcript_output_path=processed_transcript_output_path,
+                speaker_name="Dr. Jane Smith",
+                speaker_credentials="Professor of Computer Science",
+                speaker_stated_motivations="Concerned about misconceptions in popular AI discourse",
+                speaker_notes="Mock source used for Week 1 ingestion testing",
+                transcript_origin="mock",
+                config=config,
+            )
 
         processed_segments = result["transcript_record"]["segments"]
 
@@ -134,6 +159,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         "--stage",
         choices=(
             "source_ingestion",
+            "youtube_paper",
             "claim_inventory",
             "speaker_perspective",
             "steelman",
@@ -158,6 +184,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         default="source_ingestion",
         help=(
             "Pipeline stage (default: Week 1 source ingestion demo). "
+            "youtube_paper: YouTube URL → full HTML paper (requires --youtube-url). "
             "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval. "
             "Week 7: evidence_integration. "
             "Week 8: build_paper_spec, html_paper, assemble_paper, and audit_html_paper."
@@ -231,7 +258,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
     )
     parser.add_argument(
         "--source-registry-path",
-        default="data/processed/source_registry.json",
+        default=WEEK1_SOURCE_REGISTRY_JSON,
         help="Path to the Week 1 source registry JSON file.",
     )
     parser.add_argument(
@@ -284,7 +311,82 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         action="store_true",
         help="Run the Week 8 HTML audit immediately after assembling the paper.",
     )
+    parser.add_argument(
+        "--youtube-url",
+        default=None,
+        help=(
+            "With source_ingestion or youtube_paper: download captions via youtube-transcript-api, "
+            "metadata via yt-dlp, save data/raw/raw_transcript.json, then ingest."
+        ),
+    )
+    parser.add_argument(
+        "--speaker-name",
+        default=None,
+        help=(
+            "With --youtube-url: speaker label for the registry "
+            "(default: YouTube channel name)."
+        ),
+    )
+    parser.add_argument(
+        "--speaker-credentials",
+        default=None,
+        help="With --youtube-url: optional credentials line for the speaker block.",
+    )
+    parser.add_argument(
+        "--speaker-motivations",
+        default=None,
+        dest="speaker_stated_motivations",
+        help="With --youtube-url: optional stated motivations text.",
+    )
+    parser.add_argument(
+        "--speaker-notes",
+        default=None,
+        help="With --youtube-url: optional free-form speaker notes.",
+    )
     args, forwarded = parser.parse_known_args(argv)
+
+    if args.stage == "youtube_paper":
+        if forwarded:
+            parser.error(
+                "unrecognized arguments for youtube_paper: {}".format(" ".join(forwarded))
+            )
+        if not args.youtube_url or not str(args.youtube_url).strip():
+            parser.error("--youtube-url is required for --stage youtube_paper.")
+        from src.pipelines.run_youtube_paper_pipeline import run_youtube_paper_pipeline
+
+        repo_root = Path(__file__).resolve().parent
+        code = run_youtube_paper_pipeline(
+            repo_root=repo_root,
+            youtube_url=str(args.youtube_url).strip(),
+            config_path=args.config_path or "configs/argument_config.json",
+            speaker_name=args.speaker_name,
+            audit_after_assembly=args.audit_after_assembly,
+        )
+        raise SystemExit(code)
+
+    if args.stage != "source_ingestion":
+        if args.youtube_url:
+            parser.error("--youtube-url requires --stage source_ingestion or youtube_paper.")
+        if args.speaker_name is not None:
+            parser.error(
+                "--speaker-name requires --stage source_ingestion (with --youtube-url) "
+                "or youtube_paper."
+            )
+        if args.speaker_credentials is not None:
+            parser.error(
+                "--speaker-credentials requires --stage source_ingestion (with --youtube-url) "
+                "or youtube_paper."
+            )
+        if args.speaker_stated_motivations is not None:
+            parser.error(
+                "--speaker-motivations requires --stage source_ingestion (with --youtube-url) "
+                "or youtube_paper."
+            )
+        if args.speaker_notes is not None:
+            parser.error(
+                "--speaker-notes requires --stage source_ingestion (with --youtube-url) "
+                "or youtube_paper."
+            )
 
     if args.stage == "build_paper_spec":
         if forwarded:
@@ -421,6 +523,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
 
         print(f"Paper assembly run report written to: {run_report_path}")
         print(f"Paper artifact manifest written to: {manifest_path}")
+        try_register_studio_library_after_assembly(Path(__file__).resolve().parent)
         return
 
     if args.stage == "audit_html_paper":
@@ -582,7 +685,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         or args.source is not None
         or args.per_query_limit is not None
         or args.fail_on_unbalanced is not None
-        or args.source_registry_path != "data/processed/source_registry.json"
+        or args.source_registry_path != WEEK1_SOURCE_REGISTRY_JSON
         or args.evidence_integration_path != "data/outputs/evidence_integration.json"
         or args.paper_spec_output_path != "data/outputs/paper_spec.json"
         or args.paper_title is not None
@@ -607,7 +710,17 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             "html_paper, assemble_paper, or audit_html_paper."
         )
 
-    _run_source_ingestion()
+    if not args.youtube_url:
+        if args.speaker_name is not None:
+            parser.error("--speaker-name requires --youtube-url.")
+        if args.speaker_credentials is not None:
+            parser.error("--speaker-credentials requires --youtube-url.")
+        if args.speaker_stated_motivations is not None:
+            parser.error("--speaker-motivations requires --youtube-url.")
+        if args.speaker_notes is not None:
+            parser.error("--speaker-notes requires --youtube-url.")
+
+    _run_source_ingestion(args)
 
 
 if __name__ == "__main__":
