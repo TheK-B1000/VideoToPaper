@@ -1,4 +1,7 @@
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 
 from src.frontend.paper_artifacts import (
     build_file_url,
@@ -6,6 +9,7 @@ from src.frontend.paper_artifacts import (
     extract_html_title,
     filter_openable_papers,
     inspect_paper_artifact,
+    open_local_html_in_default_app,
 )
 
 
@@ -113,6 +117,26 @@ def test_build_file_url_returns_file_uri(tmp_path: Path):
 
     assert file_url.startswith("file:")
     assert "paper.html" in file_url
+
+
+def test_open_local_html_in_default_app_returns_false_when_missing(tmp_path: Path):
+    assert open_local_html_in_default_app(tmp_path / "missing.html") is False
+
+
+@pytest.mark.parametrize("platform", ["win32", "linux"])
+def test_open_local_html_invokes_os_handler(tmp_path: Path, platform: str):
+    paper_path = tmp_path / "paper.html"
+    paper_path.write_text("<html></html>", encoding="utf-8")
+
+    with patch("sys.platform", platform):
+        if platform == "win32":
+            with patch("src.frontend.paper_artifacts.os.startfile") as mocked:
+                assert open_local_html_in_default_app(paper_path) is True
+                mocked.assert_called_once_with(str(paper_path.resolve()))
+        else:
+            with patch("webbrowser.open", return_value=True) as mocked:
+                assert open_local_html_in_default_app(paper_path) is True
+                mocked.assert_called_once()
 
 
 def test_collect_and_filter_openable_papers(tmp_path: Path):

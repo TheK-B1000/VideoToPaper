@@ -29,7 +29,10 @@ from src.frontend.operator_activity import (
     read_activity_log,
     record_activity,
 )
-from src.frontend.paper_artifacts import build_file_url, inspect_paper_artifact
+from src.frontend.paper_artifacts import (
+    inspect_paper_artifact,
+    open_local_html_in_default_app,
+)
 from src.frontend.queue_status import mark_request_queued, mark_request_running
 from src.frontend.rerun_request import (
     RerunOverrides,
@@ -882,11 +885,21 @@ def run_streamlit_app() -> None:
                         paper_artifact = inspect_paper_artifact(record.paper_path)
 
                         if paper_artifact.is_openable:
-                            st.link_button(
+                            if st.button(
                                 "Open Paper",
-                                build_file_url(paper_artifact.path),
+                                key=f"open-paper-{record.inquiry_id}",
                                 use_container_width=True,
-                            )
+                                help=(
+                                    "Opens this HTML in your default browser. "
+                                    "(file:// links from web apps are blocked by browsers.)"
+                                ),
+                            ):
+                                if open_local_html_in_default_app(paper_artifact.path):
+                                    st.caption("Launched — check your browser.")
+                                else:
+                                    st.warning(
+                                        f"Could not open file. Path: `{paper_artifact.path}`"
+                                    )
 
                             if paper_artifact.title:
                                 st.caption(f"Paper title: {paper_artifact.title}")
