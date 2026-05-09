@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.integration.integration_limitations import apply_integration_limitations
+
 
 def enrich_evidence_records_for_paper(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Paper spec requires ``evidence_id`` on each record; Week 5 rows may omit it."""
@@ -47,6 +49,8 @@ def finalize_evidence_integration_json_for_paper(
         raise ValueError("evidence_records.json must contain a JSON list.")
 
     integration_payload["evidence_records"] = enrich_evidence_records_for_paper(flat_raw)
+
+    apply_integration_limitations(integration_payload)
 
     integration_path.write_text(
         json.dumps(integration_payload, indent=2, ensure_ascii=False),

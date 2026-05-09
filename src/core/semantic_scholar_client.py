@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 import urllib.error
 import urllib.parse
@@ -100,6 +101,7 @@ class SemanticScholarClient:
         *,
         max_retries: int = 4,
         retry_initial_sleep_seconds: float = 2.0,
+        api_key: str | None = None,
     ) -> None:
         self.cache = cache or RetrievalCache()
         self.base_url = base_url
@@ -108,6 +110,12 @@ class SemanticScholarClient:
         self._last_request_time: float | None = None
         self.max_retries = max_retries
         self.retry_initial_sleep_seconds = retry_initial_sleep_seconds
+        if api_key is not None:
+            stripped = api_key.strip()
+            self._api_key: str | None = stripped or None
+        else:
+            env_key = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip()
+            self._api_key = env_key or None
 
     def _respect_rate_limit(self) -> None:
         if self.min_request_interval_seconds <= 0:
@@ -134,11 +142,15 @@ class SemanticScholarClient:
         Empty payloads after exhaustion are **not cacheable** so disk cache cannot
         pin a rate-limit artifact forever.
         """
+        headers = {
+            "User-Agent": "InquiryEngine/0.1 academic-retrieval",
+        }
+        if self._api_key:
+            headers["x-api-key"] = self._api_key
+
         request = urllib.request.Request(
             url,
-            headers={
-                "User-Agent": "InquiryEngine/0.1 academic-retrieval",
-            },
+            headers=headers,
         )
         sleep_s = self.retry_initial_sleep_seconds
 

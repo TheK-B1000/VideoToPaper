@@ -118,6 +118,7 @@ def assemble_html_paper(document: PaperDocument) -> str:
   <meta charset="utf-8">
   <title>{escape(document.title)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <style>
     {_base_css()}
   </style>
@@ -469,11 +470,18 @@ def _claim_embed_iframe(src: str, title: str) -> str:
     if not src.startswith(("http://", "https://")):
         raise HtmlAssemblyError("Inline clip iframe requires a valid embed URL.")
 
+    # referrerpolicy + document referrer help satisfy YouTube embed client-id checks (Error 153).
+    allow = (
+        "accelerometer; autoplay; clipboard-write; encrypted-media; "
+        "gyroscope; picture-in-picture; web-share"
+    )
     return f"""
     <iframe
       src="{_escape_url_attribute(src)}"
       title="{escape(title)}"
       loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="{allow}"
       allowfullscreen>
     </iframe>
     """

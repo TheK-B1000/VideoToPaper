@@ -64,6 +64,8 @@ def test_finalize_evidence_integration_json_for_paper_merges_steelman_and_eviden
     merged = json.loads(integration.read_text(encoding="utf-8"))
     assert merged["steelman"]["narrative_blocks"][0]["text"] == "Hello perspective."
     assert merged["evidence_records"][0]["evidence_id"] == "id:x"
+    assert isinstance(merged.get("limitations"), list)
+    assert len(merged["limitations"]) >= 1
 
 
 test_enrich_evidence_records_for_paper_fills_missing_evidence_id()

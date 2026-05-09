@@ -13,6 +13,23 @@ from src.core.embed_builder import canonical_youtube_watch_url, extract_youtube_
 from src.data.json_store import save_json
 
 
+def normalize_caption_word_spacing(text: str) -> str:
+    """
+    Repair missing spaces between concatenated words in auto-generated captions.
+
+    YouTube often emits glued tokens (e.g. ``foreignthat``, ``stage ofcivilization``).
+    Uses ``wordninja`` when installed; otherwise returns stripped text unchanged.
+    """
+    collapsed = " ".join(text.split())
+    if not collapsed:
+        return text.strip()
+    try:
+        import wordninja
+    except ImportError:
+        return collapsed
+    return " ".join(wordninja.split(collapsed))
+
+
 def fetched_snippets_to_raw_segments(snippets: Any) -> list[dict[str, float | str]]:
     """
     Convert transcript snippets (FetchedTranscript iterable) to raw segment dicts.
@@ -26,6 +43,7 @@ def fetched_snippets_to_raw_segments(snippets: Any) -> list[dict[str, float | st
         text = getattr(sn, "text", None)
         if not isinstance(text, str) or not text.strip():
             continue
+        text = normalize_caption_word_spacing(text)
         start = float(getattr(sn, "start", 0.0))
         duration = float(getattr(sn, "duration", 0.0) or 0.0)
         end = start + duration if duration > 0 else start + 0.05

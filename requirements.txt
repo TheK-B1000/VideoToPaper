@@ -8,3 +8,4 @@ psycopg[binary]>=3.3
 streamlit
 youtube-transcript-api>=1.0.0
 yt-dlp>=2024.1.0
+wordninja>=2.0.0

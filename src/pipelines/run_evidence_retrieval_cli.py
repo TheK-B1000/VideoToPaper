@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -371,6 +372,15 @@ def run_evidence_retrieval_cli(
             default_value=False,
         )
     )
+
+    if not resolved_dry_run:
+        ss_hint = ""
+        if not os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip():
+            ss_hint = (
+                " SEMANTIC_SCHOLAR_API_KEY is unset; Semantic Scholar uses public "
+                "rate limits (set the key for higher throughput)."
+            )
+        print(f"Live evidence retrieval against OpenAlex / Semantic Scholar.{ss_hint}")
 
     input_path = Path(str(resolved_claim_inventory_path))
     destination = Path(str(resolved_output_path))

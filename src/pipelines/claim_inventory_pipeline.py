@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
+from typing import Any, Mapping
 
 from src.core.claim_inventory import (
     build_claim_inventory,
@@ -43,6 +45,88 @@ ITEM_TYPE_TO_CLAIM_TYPE: dict[str, str] = {
     "qualification": "interpretive",
     "summary_claim": "empirical_technical",
 }
+
+# Normalized standalone discourse markers / glue phrases from bad caption segmentation.
+_DISCOURSE_ONLY_VERBATIM: frozenset[str] = frozenset(
+    {
+        "a",
+        "also",
+        "and",
+        "anyway",
+        "but",
+        "furthermore",
+        "however",
+        "indeed",
+        "instead",
+        "meanwhile",
+        "moreover",
+        "nevertheless",
+        "nonetheless",
+        "now",
+        "okay",
+        "or",
+        "otherwise",
+        "plus",
+        "right",
+        "so",
+        "still",
+        "then",
+        "therefore",
+        "though",
+        "thus",
+        "well",
+        "yet",
+        "for example",
+        "for instance",
+        "in contrast",
+        "of course",
+        "on average",
+        "that said",
+        "to summarize",
+    }
+)
+
+
+def normalize_verbatim_for_discourse_check(text: str) -> str:
+    collapsed = " ".join(text.strip().split()).lower()
+    collapsed = collapsed.strip(".,;:!?\"'`").strip()
+    collapsed = re.sub(r"\s+", " ", collapsed)
+    return collapsed
+
+
+def is_discourse_only_claim(candidate: Mapping[str, Any]) -> bool:
+    """
+    True when an interpretive/anecdotal candidate is only a discourse marker.
+
+    Heuristic extraction often emits qualifications/examples that are just
+    \"but\", \"however\", or \"for example\" — too thin to retrieve or adjudicate.
+    """
+    claim_type = candidate.get("claim_type")
+    if claim_type not in {"interpretive", "anecdotal"}:
+        return False
+
+    verbatim = candidate.get("verbatim_quote")
+    if not isinstance(verbatim, str):
+        return False
+
+    norm = normalize_verbatim_for_discourse_check(verbatim)
+    if not norm:
+        return True
+
+    if norm in _DISCOURSE_ONLY_VERBATIM:
+        return True
+
+    words = norm.split()
+    if len(words) == 1 and len(norm) <= 22:
+        return True
+    if len(words) == 2 and len(norm) <= 18:
+        return True
+
+    return False
+
+
+def drop_discourse_marker_candidates(candidates: list[dict]) -> list[dict]:
+    return [c for c in candidates if not is_discourse_only_claim(c)]
 
 
 def _embed_base_from_registry(registry_path: Path) -> str | None:
@@ -391,6 +475,8 @@ def run_claim_inventory_pipeline(
             raw_candidates,
             ci["allowed_claim_types"],
         )
+        pre_discourse = len(candidate_claims)
+        candidate_claims = drop_discourse_marker_candidates(candidate_claims)
 
         inventory = build_claim_inventory(
             candidate_claims=candidate_claims,
@@ -407,6 +493,11 @@ def run_claim_inventory_pipeline(
             run_log,
             "argument_derived_candidate_count",
             len(raw_candidates),
+        )
+        record_metric(
+            run_log,
+            "discourse_marker_drop_count",
+            pre_discourse - len(candidate_claims),
         )
         record_metric(run_log, "candidate_claim_count", len(candidate_claims))
         record_metric(run_log, "accepted_claim_count", len(inventory))

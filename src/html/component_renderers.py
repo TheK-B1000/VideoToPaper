@@ -86,12 +86,18 @@ def render_claim_card(view_model: ClaimCardViewModel) -> str:
     embed_html = ""
     if view_model.embed_url:
         embed_url = _safe_attr(view_model.embed_url)
+        embed_allow = (
+            "accelerometer; autoplay; clipboard-write; encrypted-media; "
+            "gyroscope; picture-in-picture; web-share"
+        )
         embed_html = f"""
 <div class="claim-card__clip">
   <iframe
     src="{embed_url}"
     title="Anchor clip for {label}"
     loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allow="{embed_allow}"
     allowfullscreen>
   </iframe>
 </div>
