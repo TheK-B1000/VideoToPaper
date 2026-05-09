@@ -1,0 +1,2071 @@
+{
+  "results": [
+    {
+      "id": "https://openalex.org/W4249981830",
+      "doi": "https://doi.org/10.34136/sederi.2019",
+      "title": null,
+      "display_name": null,
+      "relevance_score": 3.3624616,
+      "publication_year": 2019,
+      "publication_date": "2019-01-01",
+      "ids": {
+        "openalex": "https://openalex.org/W4249981830",
+        "doi": "https://doi.org/10.34136/sederi.2019"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "doi:10.34136/sederi.2019",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.34136/sederi.2019",
+        "pdf_url": "http://www.sederi.org/wp-content/uploads/2019/11/29_0_volume.pdf",
+        "source": {
+          "id": "https://openalex.org/S4210227261",
+          "display_name": "Sederi",
+          "issn_l": "1135-7789",
+          "issn": [
+            "1135-7789"
+          ],
+          "is_oa": true,
+          "is_in_doaj": false,
+          "is_core": false,
+          "host_organization": null,
+          "host_organization_name": null,
+          "host_organization_lineage": [],
+          "host_organization_lineage_names": [],
+          "type": "journal"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Sederi",
+        "raw_type": "journal-issue"
+      },
+      "type": "paratext",
+      "indexed_in": [
+        "crossref"
+      ],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "diamond",
+        "oa_url": "http://www.sederi.org/wp-content/uploads/2019/11/29_0_volume.pdf",
+        "any_repository_has_fulltext": false
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": null,
+            "display_name": "Mara Luisa",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": true,
+          "raw_author_name": "Mara Luisa",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Daobeitia Fernndez",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Daobeitia Fernndez",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "In Memoriam",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "In Memoriam",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Jess Lpez-Pelez",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Jess Lpez-Pelez",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Casellas",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Casellas",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Manel Bellmunt-Serrano",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Manel Bellmunt-Serrano",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Nikolai Leskov",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Nikolai Leskov",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Dmitri Shostakovich",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Dmitri Shostakovich",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "William Oldroyd",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "William Oldroyd",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Delilah Bermudez Brataas",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Delilah Bermudez Brataas",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Tamara Prez-Fernndez",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Tamara Prez-Fernndez",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Clark Hulse",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Clark Hulse",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Robin Aizlewood",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Robin Aizlewood",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Cristina Alfar",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Cristina Alfar",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Susan Basnett",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Susan Basnett",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Walter Benjamin",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Walter Benjamin",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Esperanza Bielsa",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Esperanza Bielsa",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Calzada Prez",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Calzada Prez",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Mara",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Mara",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Pragati Das",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Pragati Das",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Caryl Emerson",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Caryl Emerson",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Caryl Emerson",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Caryl Emerson",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Judith Gardiner",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Judith Gardiner",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Jef Verschueren",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Jef Verschueren",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Elizabeth Wells",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Elizabeth Wells",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Kelli Weston",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Kelli Weston",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Faith Wigzell",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Faith Wigzell",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Faith Wigzell",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Faith Wigzell",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Faith Wigzell",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Faith Wigzell",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Holly Willis",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Holly Willis",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Neil Gaiman",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Neil Gaiman",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Kazuo Ishiguro",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Kazuo Ishiguro",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Donna Haraway",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Donna Haraway",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Kate Lilley",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Kate Lilley",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Susannah Quinsee",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Susannah Quinsee",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Katherine Romack",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Katherine Romack",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Lisa Sarasohn",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Lisa Sarasohn",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Sophie Tomlinson",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Sophie Tomlinson",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Charles Wolfe",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Charles Wolfe",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "A Bradley",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "A Bradley",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Sophie Chiari",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Sophie Chiari",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Katherine Coombs",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Katherine Coombs",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Raphalle Costa De Beauregard",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Raphalle Costa De Beauregard",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "John Drakakis",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "John Drakakis",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Anne Dulac",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Anne Dulac",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Valrie",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Valrie",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Ewan Fernie",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Ewan Fernie",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Maureen Goggin",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Maureen Goggin",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Daly",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Daly",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Allison Hobgood",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Allison Hobgood",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Raphael Holinshed",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Raphael Holinshed",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Miriam Jacobson",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Miriam Jacobson",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Farah Karim-Cooper",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Farah Karim-Cooper",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Lucy Munro",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Lucy Munro",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "David Kranz",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "David Kranz",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Franois Laroque",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Franois Laroque",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Thomas Lodge",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Thomas Lodge",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Alexander Marr",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Alexander Marr",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "John Mullan",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "John Mullan",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "W Murray",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "W Murray",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Pamela Smith",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Pamela Smith",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Gordon Braden",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Gordon Braden",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Richard Burdett",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Richard Burdett",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Karl Galinsky",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Karl Galinsky",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Clark Hulse",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Clark Hulse",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Michael Murrin",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Michael Murrin",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Michael Richter",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Michael Richter",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Charles Segal",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Charles Segal",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Edmund Spenser",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Edmund Spenser",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Paul Zanker",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Paul Zanker",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Clark Hulse",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Clark Hulse",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Emily Bartels",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Emily Bartels",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "David Daube",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "David Daube",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Lee Edelman",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Lee Edelman",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Carla Freccero",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Carla Freccero",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Lowell Gallagher",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Lowell Gallagher",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Karen Jacques",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Karen Jacques",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Paul Taylor",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Paul Taylor",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Sarah Johnston",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Sarah Johnston",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Iles",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Iles",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Julia Lupton",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Julia Lupton",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Reinhard",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Reinhard",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Michael Macdonald",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Michael Macdonald",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Michael Macdonald",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Michael Macdonald",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Michael Macdonald",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Michael Macdonald",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Lynne Morgan",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Lynne Morgan",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Stephen Ratcliffe",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Stephen Ratcliffe",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Mary Rose",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Mary Rose",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Beth",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Beth",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Kathryn Schwarz",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Kathryn Schwarz",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "William Shakespeare",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "William Shakespeare",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Will Stockton",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Will Stockton",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Jennifer Waldron",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Jennifer Waldron",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Robert Alpert",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Robert Alpert",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Louis Althusser",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Louis Althusser",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Mireia Aragay",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Mireia Aragay",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Mark Burnett",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Mark Burnett",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Thornton",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Thornton",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Campillo Arniz",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Campillo Arniz",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": null,
+            "display_name": "Laura",
+            "orcid": null
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Laura",
+          "raw_affiliation_strings": [],
+          "affiliations": []
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 0,
+      "institutions_distinct_count": 161,
+      "corresponding_author_ids": [],
+      "corresponding_institution_ids": [],
+      "apc_list": null,
+      "apc_paid": null,
+      "fwci": null,
+      "has_fulltext": true,
+      "cited_by_count": 0,
+      "citation_normalized_percentile": null,
+      "cited_by_percentile_year": null,
+      "biblio": {
+        "volume": null,
+        "issue": "29",
+        "first_page": null,
+        "last_page": null
+      },
+      "is_retracted": null,
+      "is_paratext": true,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10165",
+        "display_name": "Classical Antiquity Studies",
+        "score": 0.8374000191688538,
+        "subfield": {
+          "id": "https://openalex.org/subfields/3314",
+          "display_name": "Anthropology"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/33",
+          "display_name": "Social Sciences"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/2",
+          "display_name": "Social Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10165",
+          "display_name": "Classical Antiquity Studies",
+          "score": 0.8374000191688538,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3314",
+            "display_name": "Anthropology"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T13859",
+          "display_name": "Organic Chemistry Synthesis Methods",
+          "score": 0.7289999723434448,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1605",
+            "display_name": "Organic Chemistry"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/16",
+            "display_name": "Chemistry"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/3",
+            "display_name": "Physical Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/computer-science",
+          "display_name": "Computer science",
+          "score": 0.26919519901275635
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C41008148",
+          "wikidata": "https://www.wikidata.org/wiki/Q21198",
+          "display_name": "Computer science",
+          "level": 0,
+          "score": 0.26919519901275635
+        }
+      ],
+      "mesh": [],
+      "locations_count": 1,
+      "locations": [
+        {
+          "id": "doi:10.34136/sederi.2019",
+          "is_oa": true,
+          "landing_page_url": "https://doi.org/10.34136/sederi.2019",
+          "pdf_url": "http://www.sederi.org/wp-content/uploads/2019/11/29_0_volume.pdf",
+          "source": {
+            "id": "https://openalex.org/S4210227261",
+            "display_name": "Sederi",
+            "issn_l": "1135-7789",
+            "issn": [
+              "1135-7789"
+            ],
+            "is_oa": true,
+            "is_in_doaj": false,
+            "is_core": false,
+            "host_organization": null,
+            "host_organization_name": null,
+            "host_organization_lineage": [],
+            "host_organization_lineage_names": [],
+            "type": "journal"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Sederi",
+          "raw_type": "journal-issue"
+        }
+      ],
+      "best_oa_location": {
+        "id": "doi:10.34136/sederi.2019",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.34136/sederi.2019",
+        "pdf_url": "http://www.sederi.org/wp-content/uploads/2019/11/29_0_volume.pdf",
+        "source": {
+          "id": "https://openalex.org/S4210227261",
+          "display_name": "Sederi",
+          "issn_l": "1135-7789",
+          "issn": [
+            "1135-7789"
+          ],
+          "is_oa": true,
+          "is_in_doaj": false,
+          "is_core": false,
+          "host_organization": null,
+          "host_organization_name": null,
+          "host_organization_lineage": [],
+          "host_organization_lineage_names": [],
+          "type": "journal"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Sederi",
+        "raw_type": "journal-issue"
+      },
+      "sustainable_development_goals": [
+        {
+          "score": 0.7900000214576721,
+          "id": "https://metadata.un.org/sdg/4",
+          "display_name": "Quality Education"
+        }
+      ],
+      "awards": [],
+      "funders": [
+        {
+          "id": "https://openalex.org/F4320311737",
+          "display_name": "Northumbria University",
+          "ror": "https://ror.org/049e6bc10"
+        },
+        {
+          "id": "https://openalex.org/F4320320273",
+          "display_name": "University of Cambridge",
+          "ror": "https://ror.org/013meh722"
+        }
+      ],
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W4249981830.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W4249981830.grobid-xml"
+      },
+      "referenced_works_count": 173,
+      "referenced_works": [
+        "https://openalex.org/W40442136",
+        "https://openalex.org/W317015760",
+        "https://openalex.org/W382407697",
+        "https://openalex.org/W397957185",
+        "https://openalex.org/W569954875",
+        "https://openalex.org/W570185495",
+        "https://openalex.org/W570454048",
+        "https://openalex.org/W570935575",
+        "https://openalex.org/W574339030",
+        "https://openalex.org/W581150204",
+        "https://openalex.org/W592899921",
+        "https://openalex.org/W595701745",
+        "https://openalex.org/W597165652",
+        "https://openalex.org/W606887996",
+        "https://openalex.org/W607834877",
+        "https://openalex.org/W615906525",
+        "https://openalex.org/W644432525",
+        "https://openalex.org/W646816852",
+        "https://openalex.org/W655088938",
+        "https://openalex.org/W659187241",
+        "https://openalex.org/W1485877149",
+        "https://openalex.org/W1486672439",
+        "https://openalex.org/W1488213142",
+        "https://openalex.org/W1516022730",
+        "https://openalex.org/W1527224747",
+        "https://openalex.org/W1550420515",
+        "https://openalex.org/W1568902754",
+        "https://openalex.org/W1571869103",
+        "https://openalex.org/W1571960097",
+        "https://openalex.org/W1582735490",
+        "https://openalex.org/W1595644632",
+        "https://openalex.org/W1595843065",
+        "https://openalex.org/W1596957462",
+        "https://openalex.org/W1637437975",
+        "https://openalex.org/W1754273030",
+        "https://openalex.org/W1856420821",
+        "https://openalex.org/W1866721191",
+        "https://openalex.org/W1949120767",
+        "https://openalex.org/W1979017489",
+        "https://openalex.org/W1994156544",
+        "https://openalex.org/W2001639571",
+        "https://openalex.org/W2024033106",
+        "https://openalex.org/W2026110842",
+        "https://openalex.org/W2027223203",
+        "https://openalex.org/W2034718792",
+        "https://openalex.org/W2041933273",
+        "https://openalex.org/W2045920773",
+        "https://openalex.org/W2048139870",
+        "https://openalex.org/W2048378115",
+        "https://openalex.org/W2060279580",
+        "https://openalex.org/W2067205981",
+        "https://openalex.org/W2068353310",
+        "https://openalex.org/W2071999492",
+        "https://openalex.org/W2076689142",
+        "https://openalex.org/W2080998050",
+        "https://openalex.org/W2087547126",
+        "https://openalex.org/W2088997439",
+        "https://openalex.org/W2096441464",
+        "https://openalex.org/W2100210520",
+        "https://openalex.org/W2120086742",
+        "https://openalex.org/W2122493452",
+        "https://openalex.org/W2124137953",
+        "https://openalex.org/W2127479390",
+        "https://openalex.org/W2136046023",
+        "https://openalex.org/W2310934557",
+        "https://openalex.org/W2322654066",
+        "https://openalex.org/W2325808132",
+        "https://openalex.org/W2328598483",
+        "https://openalex.org/W2389969702",
+        "https://openalex.org/W2404851908",
+        "https://openalex.org/W2420560727",
+        "https://openalex.org/W2475366900",
+        "https://openalex.org/W2476643246",
+        "https://openalex.org/W2485026005",
+        "https://openalex.org/W2497959740",
+        "https://openalex.org/W2498982587",
+        "https://openalex.org/W2499964261",
+        "https://openalex.org/W2500692278",
+        "https://openalex.org/W2503625359",
+        "https://openalex.org/W2518733649",
+        "https://openalex.org/W2565733468",
+        "https://openalex.org/W2731816806",
+        "https://openalex.org/W2797247187",
+        "https://openalex.org/W2800194225",
+        "https://openalex.org/W2800544066",
+        "https://openalex.org/W2802917954",
+        "https://openalex.org/W2884307986",
+        "https://openalex.org/W2893116194",
+        "https://openalex.org/W2904362696",
+        "https://openalex.org/W2907591330",
+        "https://openalex.org/W2913346458",
+        "https://openalex.org/W2942733065",
+        "https://openalex.org/W2978089364",
+        "https://openalex.org/W2983838597",
+        "https://openalex.org/W2987626343",
+        "https://openalex.org/W3040809034",
+        "https://openalex.org/W3041687574",
+        "https://openalex.org/W3095542571",
+        "https://openalex.org/W3168866001",
+        "https://openalex.org/W4205448631",
+        "https://openalex.org/W4206599054",
+        "https://openalex.org/W4214546690",
+        "https://openalex.org/W4229503124",
+        "https://openalex.org/W4229804659",
+        "https://openalex.org/W4230610904",
+        "https://openalex.org/W4232729635",
+        "https://openalex.org/W4235366656",
+        "https://openalex.org/W4236193387",
+        "https://openalex.org/W4238564143",
+        "https://openalex.org/W4239737904",
+        "https://openalex.org/W4243258908",
+        "https://openalex.org/W4245309183",
+        "https://openalex.org/W4247885515",
+        "https://openalex.org/W4251539374",
+        "https://openalex.org/W4253170074",
+        "https://openalex.org/W4253691939",
+        "https://openalex.org/W4298244184",
+        "https://openalex.org/W4298281675",
+        "https://openalex.org/W4298411810",
+        "https://openalex.org/W4298453926",
+        "https://openalex.org/W4299824121",
+        "https://openalex.org/W4299847066",
+        "https://openalex.org/W4300669519",
+        "https://openalex.org/W4300695475",
+        "https://openalex.org/W4300823955",
+        "https://openalex.org/W4301001552",
+        "https://openalex.org/W4301215779",
+        "https://openalex.org/W4301271587",
+        "https://openalex.org/W4301772043",
+        "https://openalex.org/W4302559073",
+        "https://openalex.org/W4302586226",
+        "https://openalex.org/W4313239337",
+        "https://openalex.org/W4388372397",
+        "https://openalex.org/W6601634259",
+        "https://openalex.org/W6605926690",
+        "https://openalex.org/W6606674446",
+        "https://openalex.org/W6616217308",
+        "https://openalex.org/W6621500105",
+        "https://openalex.org/W6633216160",
+        "https://openalex.org/W6636434231",
+        "https://openalex.org/W6645154743",
+        "https://openalex.org/W6645356146",
+        "https://openalex.org/W6650538185",
+        "https://openalex.org/W6655209696",
+        "https://openalex.org/W6657225786",
+        "https://openalex.org/W6661687263",
+        "https://openalex.org/W6662588338",
+        "https://openalex.org/W6665540070",
+        "https://openalex.org/W6666661008",
+        "https://openalex.org/W6677927636",
+        "https://openalex.org/W6680028876",
+        "https://openalex.org/W6701979321",
+        "https://openalex.org/W6723786461",
+        "https://openalex.org/W6729724502",
+        "https://openalex.org/W6738287046",
+        "https://openalex.org/W6741838305",
+        "https://openalex.org/W6745917423",
+        "https://openalex.org/W6750122870",
+        "https://openalex.org/W6780399395",
+        "https://openalex.org/W6808329778",
+        "https://openalex.org/W6811151272",
+        "https://openalex.org/W6812496401",
+        "https://openalex.org/W6826212477",
+        "https://openalex.org/W6826409391",
+        "https://openalex.org/W6833319447",
+        "https://openalex.org/W6834224083",
+        "https://openalex.org/W6834904639",
+        "https://openalex.org/W6837493351",
+        "https://openalex.org/W7009256574",
+        "https://openalex.org/W7046905480",
+        "https://openalex.org/W7057146497",
+        "https://openalex.org/W7064980297",
+        "https://openalex.org/W7071523753"
+      ],
+      "related_works": [
+        "https://openalex.org/W2899084033",
+        "https://openalex.org/W2748952813",
+        "https://openalex.org/W2376932109",
+        "https://openalex.org/W2390279801",
+        "https://openalex.org/W2358668433",
+        "https://openalex.org/W1596801655",
+        "https://openalex.org/W2387147530",
+        "https://openalex.org/W2373011076",
+        "https://openalex.org/W1532762289",
+        "https://openalex.org/W2277606789"
+      ],
+      "abstract_inverted_index": {
+        "I": [
+          0,
+          10,
+          76,
+          88
+        ],
+        "met": [
+          1
+        ],
+        "her": [
+          2,
+          23,
+          28,
+          91
+        ],
+        "thirty": [
+          3
+        ],
+        "years": [
+          4
+        ],
+        "ago,": [
+          5
+        ],
+        "back": [
+          6
+        ],
+        "in": [
+          7
+        ],
+        "1989,": [
+          8
+        ],
+        "when": [
+          9
+        ],
+        "took": [
+          11
+        ],
+        "a": [
+          12,
+          58,
+          64,
+          84
+        ],
+        "class": [
+          13
+        ],
+        "she": [
+          14,
+          48,
+          52
+        ],
+        "used": [
+          15
+        ],
+        "to": [
+          16,
+          27,
+          34,
+          45
+        ],
+        "teach": [
+          17
+        ],
+        "at": [
+          18
+        ],
+        "the": [
+          19,
+          37
+        ],
+        "Universidad": [
+          20
+        ],
+        "de": [
+          21
+        ],
+        "Granada.Throughout": [
+          22
+        ],
+        "career,": [
+          24
+        ],
+        "students'": [
+          25
+        ],
+        "reactions": [
+          26
+        ],
+        "teaching": [
+          29
+        ],
+        "went": [
+          30
+        ],
+        "from": [
+          31
+        ],
+        "passionate": [
+          32
+        ],
+        "adoration": [
+          33
+        ],
+        "puzzlement,": [
+          35
+        ],
+        "and": [
+          36,
+          70,
+          75
+        ],
+        "truth": [
+          38
+        ],
+        "is": [
+          39
+        ],
+        "that": [
+          40
+        ],
+        "many": [
+          41
+        ],
+        "could": [
+          42
+        ],
+        "not": [
+          43
+        ],
+        "begin": [
+          44
+        ],
+        "understand": [
+          46
+        ],
+        "what": [
+          47
+        ],
+        "was": [
+          49,
+          63
+        ],
+        "about.Of": [
+          50
+        ],
+        "course,": [
+          51
+        ],
+        "immediately": [
+          53
+        ],
+        "blew": [
+          54
+        ],
+        "my": [
+          55
+        ],
+        "mind": [
+          56
+        ],
+        "(and": [
+          57
+        ],
+        "few": [
+          59,
+          85
+        ],
+        "other": [
+          60
+        ],
+        "minds": [
+          61
+        ],
+        "too).It": [
+          62
+        ],
+        "last-year": [
+          65
+        ],
+        "survey": [
+          66
+        ],
+        "course": [
+          67
+        ],
+        "on": [
+          68
+        ],
+        "medieval": [
+          69
+        ],
+        "early": [
+          71
+        ],
+        "modern": [
+          72
+        ],
+        "English": [
+          73
+        ],
+        "literature,": [
+          74
+        ],
+        "found": [
+          77
+        ],
+        "it": [
+          78
+        ],
+        "enthralling:": [
+          79
+        ],
+        "so": [
+          80,
+          82
+        ],
+        "much": [
+          81
+        ],
+        "that,": [
+          83
+        ],
+        "months": [
+          86
+        ],
+        "later,": [
+          87
+        ],
+        "started": [
+          89
+        ],
+        "under": [
+          90
+        ],
+        "supervision": [
+          92
+        ]
+      },
+      "counts_by_year": [],
+      "updated_date": "2026-01-09T06:25:30.743933",
+      "created_date": "2022-05-12T00:00:00"
+    }
+  ]
+}
