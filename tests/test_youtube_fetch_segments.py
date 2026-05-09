@@ -2,6 +2,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+import pytest
+
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
@@ -34,6 +36,8 @@ def test_fetched_snippets_to_raw_segments_skips_blank_and_fixes_zero_duration():
 
 
 def test_normalize_caption_word_spacing_repairs_glued_youtube_tokens():
+    pytest.importorskip("wordninja")
+
     raw = "foreignthat even at the present stage ofcivilization in this world there aresouls"
     fixed = normalize_caption_word_spacing(raw)
     assert "foreign that" in fixed
@@ -42,6 +46,8 @@ def test_normalize_caption_word_spacing_repairs_glued_youtube_tokens():
 
 
 def test_fetched_snippets_to_raw_segments_normalizes_glued_caption_text():
+    pytest.importorskip("wordninja")
+
     snippets = [
         _FakeSnippet("foreignthat even", 0.0, 1.0),
     ]
@@ -59,11 +65,3 @@ def test_flatten_evidence_records_nested_retrieval_results():
     flat = flatten_evidence_records(doc)
     assert len(flat) == 2
     assert flat[0]["evidence_id"] == "e1"
-
-
-test_fetched_snippets_to_raw_segments_skips_blank_and_fixes_zero_duration()
-test_normalize_caption_word_spacing_repairs_glued_youtube_tokens()
-test_fetched_snippets_to_raw_segments_normalizes_glued_caption_text()
-test_flatten_evidence_records_nested_retrieval_results()
-
-print("All youtube_fetch / flatten tests passed.")

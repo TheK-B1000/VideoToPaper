@@ -151,6 +151,10 @@ def _run_source_ingestion(args: argparse.Namespace) -> None:
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any] | None:
+    from src.core.dotenv_bootstrap import try_load_dotenv
+
+    try_load_dotenv()
+
     parser = argparse.ArgumentParser(
         description="VideoToPaper pipeline entrypoints",
         allow_abbrev=False,
@@ -184,7 +188,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         default="source_ingestion",
         help=(
             "Pipeline stage (default: Week 1 source ingestion demo). "
-            "youtube_paper: YouTube URL → full HTML paper (requires --youtube-url). "
+            "youtube_paper: YouTube URL -> full HTML paper (requires --youtube-url). "
             "Week 4: steelman or speaker_perspective. Week 5: evidence_retrieval. "
             "Week 7: evidence_integration. "
             "Week 8: build_paper_spec, html_paper, assemble_paper, and audit_html_paper."
@@ -195,7 +199,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         "--config-path",
         default=None,
         help=(
-            "Path to argument-structure JSON (Week 2–5). Supplies paths and knobs "
+            "Path to argument-structure JSON (Week 2-5). Supplies paths and knobs "
             "including the evidence_retrieval section when running that stage."
         ),
     )
@@ -343,6 +347,14 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
         default=None,
         help="With --youtube-url: optional free-form speaker notes.",
     )
+    parser.add_argument(
+        "--stub-evidence-retrieval",
+        action="store_true",
+        help=(
+            "With --stage youtube_paper: use DryRun evidence stubs instead of live "
+            "OpenAlex / Semantic Scholar retrieval."
+        ),
+    )
     args, forwarded = parser.parse_known_args(argv)
 
     if args.stage == "youtube_paper":
@@ -361,6 +373,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | None:
             config_path=args.config_path or "configs/argument_config.json",
             speaker_name=args.speaker_name,
             audit_after_assembly=args.audit_after_assembly,
+            stub_evidence_retrieval=bool(args.stub_evidence_retrieval),
         )
         raise SystemExit(code)
 

@@ -14,6 +14,7 @@ from src.core.evidence_retrieval import (
 )
 from src.core.evidence_retrieval_output import validate_evidence_retrieval_output
 from src.pipelines.evidence_retrieval_flatten import flatten_evidence_records
+from src.core.dotenv_bootstrap import try_load_dotenv
 from src.pipelines.run_evidence_retrieval import (
     ClaimForRetrieval,
     EvidenceRetrievalPipeline,
@@ -316,6 +317,8 @@ def run_evidence_retrieval_cli(
     Values can come from explicit CLI args or the ``evidence_retrieval`` section
     inside ``configs/argument_config.json``.
     """
+    try_load_dotenv()
+
     config = _load_evidence_retrieval_config(config_path)
 
     resolved_claim_inventory_path = _resolve_setting(

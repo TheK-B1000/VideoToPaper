@@ -45,6 +45,11 @@ def main(argv: list[str] | None = None) -> int:
             "If timing/embed checks fail, the script exits non-zero."
         ),
     )
+    parser.add_argument(
+        "--stub-evidence-retrieval",
+        action="store_true",
+        help="Use DryRun evidence stubs instead of live OpenAlex / Semantic Scholar retrieval.",
+    )
     args = parser.parse_args(argv)
 
     if str(REPO_ROOT) not in sys.path:
@@ -63,6 +68,7 @@ def main(argv: list[str] | None = None) -> int:
         config_path=args.config_path,
         speaker_name=args.speaker_name,
         audit_after_assembly=args.audit_after_assembly,
+        stub_evidence_retrieval=args.stub_evidence_retrieval,
     )
 
 

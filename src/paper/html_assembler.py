@@ -230,8 +230,12 @@ def _render_header(document: PaperDocument) -> str:
         <h2>Source Attribution</h2>
         <p>Source video: <a href="{escape(video.url)}">{escape(video.title)}</a></p>
         {speaker_html}
+        <p class="muted embed-hint">
+          Embedded clips may show Error&nbsp;153 if this document is opened as a raw
+          <code>file://</code> URL. Serve it over HTTP (for example run
+          <code>python -m http.server</code> in the outputs folder) or open via Inquiry Studio preview.
+        </p>
       </section>
-    </header>
     """
 
 
@@ -562,6 +566,20 @@ def _base_css() -> str:
     .abstract {
       font-size: 1.12rem;
       color: #2b2b2b;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .embed-hint {
+      margin-top: 12px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
     }
 
     .source-attribution {

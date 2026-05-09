@@ -55,14 +55,15 @@ def test_parse_openalex_work_extracts_core_metadata():
     assert work.abstract == "Coordination matters"
 
 
-def test_parse_openalex_work_rejects_missing_title():
-    with pytest.raises(ValueError, match="title"):
-        parse_openalex_work(
-            {
-                "id": "https://openalex.org/W123",
-                "publication_year": 2019,
-            }
-        )
+def test_parse_openalex_work_falls_back_when_title_missing():
+    work = parse_openalex_work(
+        {
+            "id": "https://openalex.org/W123",
+            "publication_year": 2019,
+        }
+    )
+    assert work.title == "(Untitled)"
+    assert work.openalex_id == "https://openalex.org/W123"
 
 
 def test_parse_openalex_work_rejects_missing_id():

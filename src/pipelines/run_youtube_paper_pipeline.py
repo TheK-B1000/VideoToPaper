@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from src.argument.run_argument_structure import run_argument_structure
+from src.core.dotenv_bootstrap import try_load_dotenv
 from src.frontend.inquiry_library_manifest import try_register_studio_library_after_assembly
 from src.pipelines.claim_inventory_pipeline import run_claim_inventory_pipeline
 from src.pipelines.paper_evidence_integration_finalize import (
@@ -30,6 +31,7 @@ def run_youtube_paper_pipeline(
     config_path: str = "configs/argument_config.json",
     speaker_name: str | None = None,
     audit_after_assembly: bool = False,
+    stub_evidence_retrieval: bool = False,
 ) -> int:
     """
     Run ingestion → argument structure → claims → steelman → retrieval → integration → finalize → assemble.
@@ -37,6 +39,8 @@ def run_youtube_paper_pipeline(
     Returns:
         Process exit code (0 on success).
     """
+    try_load_dotenv()
+
     root = repo_root.resolve()
     py = sys.executable
     main_py = root / "main.py"
@@ -55,7 +59,10 @@ def run_youtube_paper_pipeline(
         return int(steel_exit)
 
     retrieval_path = Path(
-        run_evidence_retrieval_cli(config_path=config_path),
+        run_evidence_retrieval_cli(
+            config_path=config_path,
+            dry_run=stub_evidence_retrieval,
+        ),
     ).resolve()
 
     evidence_records_path = retrieval_path.with_name("evidence_records.json")
