@@ -143,6 +143,45 @@ def open_local_html_in_default_app(path: str | Path) -> bool:
     return bool(webbrowser.open(resolved.as_uri()))
 
 
+def reveal_file_in_os_file_manager(path: str | Path) -> bool:
+    """
+    Focus the file in Explorer (Windows), Finder reveal (macOS), or open parent folder (Linux).
+    """
+    resolved = Path(path).resolve()
+
+    if not resolved.is_file():
+        return False
+
+    if sys.platform == "win32":
+        subprocess.run(
+            ["explorer", "/select,", str(resolved)],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
+        return True
+
+    if sys.platform == "darwin":
+        subprocess.run(
+            ["open", "-R", str(resolved)],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
+        return True
+
+    subprocess.run(
+        ["xdg-open", str(resolved.parent)],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        stdin=subprocess.DEVNULL,
+    )
+    return True
+
+
 def collect_paper_artifacts(paths: list[str | Path | None]) -> list[PaperArtifact]:
     return [inspect_paper_artifact(path) for path in paths]
 

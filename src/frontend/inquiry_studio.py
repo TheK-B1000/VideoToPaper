@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from html import escape
 from pathlib import Path
 from typing import Any, Iterable
@@ -30,8 +31,10 @@ from src.frontend.operator_activity import (
     record_activity,
 )
 from src.frontend.paper_artifacts import (
+    build_file_url,
     inspect_paper_artifact,
     open_local_html_in_default_app,
+    reveal_file_in_os_file_manager,
 )
 from src.frontend.queue_status import mark_request_queued, mark_request_running
 from src.frontend.rerun_request import (
@@ -598,6 +601,7 @@ def run_streamlit_app() -> None:
         streamlit run src/frontend/inquiry_studio.py
     """
     import streamlit as st
+    import streamlit.components.v1 as components
 
     st.set_page_config(
         page_title="Inquiry Studio",
@@ -879,47 +883,99 @@ def run_streamlit_app() -> None:
                     st.write(f"**Created:** {record.created_at}")
                     st.write(f"**Source:** {record.youtube_url}")
 
-                    cols = st.columns(4)
+                    paper_artifact = inspect_paper_artifact(record.paper_path)
 
-                    with cols[0]:
-                        paper_artifact = inspect_paper_artifact(record.paper_path)
+                    if paper_artifact.is_openable:
+                        paper_abs = Path(paper_artifact.path).resolve()
+                        paper_bytes = paper_abs.read_bytes()
+                        st.markdown("##### Paper")
 
-                        if paper_artifact.is_openable:
+                        action_cols = st.columns([1, 1, 1, 2])
+                        with action_cols[0]:
                             if st.button(
-                                "Open Paper",
+                                "Open in browser",
                                 key=f"open-paper-{record.inquiry_id}",
+                                type="primary",
                                 use_container_width=True,
-                                help=(
-                                    "Opens this HTML in your default browser. "
-                                    "(file:// links from web apps are blocked by browsers.)"
-                                ),
+                                help='Uses Windows "start" / OS default handler (not a web link).',
                             ):
-                                if open_local_html_in_default_app(paper_artifact.path):
-                                    st.caption("Launched — check your browser.")
+                                if open_local_html_in_default_app(paper_abs):
+                                    st.success(
+                                        "Opened externally — check your browser or taskbar."
+                                    )
                                 else:
                                     st.warning(
-                                        f"Could not open file. Path: `{paper_artifact.path}`"
+                                        "Could not launch automatically. Use Download or "
+                                        "copy the path below."
                                     )
-
-                            if paper_artifact.title:
-                                st.caption(f"Paper title: {paper_artifact.title}")
-
-                            if paper_artifact.size_bytes is not None:
-                                st.caption(f"Size: {paper_artifact.size_bytes:,} bytes")
-                        else:
-                            st.button(
-                                "Paper Missing",
-                                disabled=True,
+                        with action_cols[1]:
+                            st.download_button(
+                                label="Download HTML",
+                                data=paper_bytes,
+                                file_name=f"{record.inquiry_id}.html",
+                                mime="text/html",
+                                key=f"dl-paper-{record.inquiry_id}",
                                 use_container_width=True,
+                                help="Save the file, then double-click it or drag it into a browser tab.",
+                            )
+                        with action_cols[2]:
+                            reveal_label = (
+                                "Show in Explorer"
+                                if sys.platform == "win32"
+                                else ("Reveal in Finder" if sys.platform == "darwin" else "Open folder")
+                            )
+                            if st.button(
+                                reveal_label,
+                                key=f"reveal-paper-{record.inquiry_id}",
+                                use_container_width=True,
+                            ):
+                                if reveal_file_in_os_file_manager(paper_abs):
+                                    st.caption("File manager should show this HTML file.")
+                                else:
+                                    st.warning("Could not open the file manager for this path.")
+
+                        if paper_artifact.title:
+                            st.caption(f"Detected title: **{paper_artifact.title}**")
+                        if paper_artifact.size_bytes is not None:
+                            st.caption(f"Size: {paper_artifact.size_bytes:,} bytes")
+
+                        with st.expander(
+                            "Preview in Studio (embedded — uses a second scroll area)",
+                            expanded=False,
+                        ):
+                            components.html(
+                                paper_bytes.decode("utf-8", errors="replace"),
+                                height=900,
+                                scrolling=True,
                             )
 
-                    with cols[1]:
+                        st.markdown(
+                            "**Open in a new browser tab:** "
+                            "- **Ctrl+O** (Chrome/Edge) → paste the **native path** below → Open. "
+                            "Or paste the **file URI** into the address bar (**Ctrl+L**)."
+                        )
+                        st.caption("Native path (File Explorer / Ctrl+O)")
+                        st.code(str(paper_abs), language=None)
+                        st.caption("File URI (address bar)")
+                        st.code(build_file_url(paper_abs), language=None)
+                    else:
+                        st.markdown("##### Paper")
+                        st.button(
+                            "Paper missing",
+                            disabled=True,
+                            use_container_width=True,
+                            key=f"paper-missing-{record.inquiry_id}",
+                        )
+
+                    cols = st.columns([1, 2])
+
+                    with cols[0]:
                         if record.audit_report_path:
                             st.write(f"Audit: `{record.audit_report_path}`")
                         else:
                             st.write("Audit: not available")
 
-                    with cols[2]:
+                    with cols[1]:
                         with st.expander("Create rerun request"):
                             rerun_depth = st.slider(
                                 "Rerun retrieval depth",
